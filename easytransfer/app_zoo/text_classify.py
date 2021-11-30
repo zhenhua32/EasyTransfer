@@ -23,6 +23,9 @@ from easytransfer.preprocessors.deeptext_preprocessor import DeepTextPreprocesso
 
 
 class BaseTextClassify(ApplicationModel):
+    """
+    基础的文本分类模型
+    """
     def __init__(self, **kwargs):
         """ Basic Text Classification Model """
         super(BaseTextClassify, self).__init__(**kwargs)
@@ -39,12 +42,17 @@ class BaseTextClassify(ApplicationModel):
 
     def build_loss(self, logits, labels):
         """ Building loss for training the Text Classification Model
+        logits: 是预测结果
+        labels: 是正确标签
         """
+        # 多标签分类
         if hasattr(self.config, "multi_label") and self.config.multi_label:
             return multi_label_sigmoid_cross_entropy(labels, self.config.num_labels, logits)
         elif self.config.num_labels == 1:
+            # 类别数只有一个, 比较奇怪, 难道判断是否是正确的类别?
             return mean_square_error(labels, logits)
         else:
+            # 多类别
             return softmax_cross_entropy(labels, self.config.num_labels, logits)
 
     def build_eval_metrics(self, logits, labels):
@@ -56,6 +64,7 @@ class BaseTextClassify(ApplicationModel):
         Returns:
             ret_dict (`dict`): A dict with (`py_accuracy`, `py_micro_f1`, `py_macro_f1`) tf.metrics op
         """
+        # 评估指标, 代码结构类似上面的 build_loss
         if hasattr(self.config, "multi_label") and self.config.multi_label:
             return multi_label_eval_metrics(logits, labels, self.config.num_labels)
         elif self.config.num_labels == 1:
@@ -71,6 +80,7 @@ class BaseTextClassify(ApplicationModel):
         Returns:
             ret_dict (`dict`): A dict with (`predictions`, `probabilities`, `logits`)
         """
+        # 预测只需要分为多标签 和 单标签
         if hasattr(self.config, "multi_label") and self.config.multi_label:
             return self._build_multi_label_predictions(predict_output)
         else:

@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+"""
+AppZoo是将一些常用的应用模型（如基于BERT/Roberta/ALBERT的文本分类、文本匹配、阅读理解、序列标注等）集中在一个命令中，
+用户可以抛去繁琐的配置文件，无需接触代码，只需调用几行命令即可迅速试验相应的模型。本教程给出一个新闻分类BERT模型，让用户快速上手。
+更详细AppZoo的介绍见 《AppZoo详解》。
+
+就是说是常见模型的命令行用法
+"""
+
+
 import traceback
 import tensorflow as tf
 
