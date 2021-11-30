@@ -26,6 +26,7 @@ from easytransfer.app_zoo import get_application_model
 from easytransfer.app_zoo.app_config import AppConfig
 
 
+# 定义命令行参数
 _app_flags = tf.app.flags
 _app_flags.DEFINE_string("inputTable", default=None, help='Input table/path,'
                                                           'train_path,eval_path for `train` mode'
@@ -93,6 +94,7 @@ def main():
             setattr(_APP_FLAGS, argname, arg)
     FLAGS.modelZooBasePath = FLAGS.modelZooBasePath.replace("\\x01", "\x01").replace("\\x02", "\x02")
 
+    # 初始化配置, 并运行
     # Main function start
     config = AppConfig(mode=FLAGS.mode, flags=_APP_FLAGS)
     app = get_application_model(config)

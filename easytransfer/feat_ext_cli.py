@@ -55,21 +55,27 @@ class BertFeatConfig(Config):
         """ Configuration adapter for `ez_bert_feat`
             It adapts user command args to configuration protocol of `ez_transfer` engine
         """
+        """
+        bert 特征提取器的参数配置器
+        """
         self.mode = "predict_on_the_fly"
 
         input_table = _APP_FLAGS.inputTable
         output_table = _APP_FLAGS.outputTable
 
+        # 预训练模型的路径
         predict_checkpoint_path = _APP_FLAGS.modelName
 
         predict_checkpoint_dir = os.path.dirname(predict_checkpoint_path)
         if tf.gfile.Exists(os.path.join(predict_checkpoint_dir, "train_config.json")):
             with tf.gfile.Open(os.path.join(predict_checkpoint_dir, "train_config.json")) as f:
                 train_config_json = json.load(f)
+            # 读取 model_name
             if "model_name" in train_config_json:
                 finetune_model_name = train_config_json["model_name"]
             else:
                 finetune_model_name = None
+            # 读取 model_config
             if "_config_json" in train_config_json:
                 train_model_config = train_config_json["_config_json"]["model_config"]
             else:
@@ -78,15 +84,24 @@ class BertFeatConfig(Config):
             finetune_model_name = None
             train_model_config = None
 
+        """
+        ODPS（Open Data Processing Service），是阿里巴巴通用计算平台提供的一种快速、完全托管的 GB/TB/PB 级数据仓库解决方案，
+        现在已更名为MaxCompute，MaxCompute 向用户提供了完善的数据导入方案以及多种经典的分布式计算模型，
+        能够更快速的解决用户海量数据计算问题，有效降低企业成本，并保障数据安全。
+        """
         if "odps://" in FLAGS.inputTable and "PAI" in tf.__version__:
             all_input_col_names = get_all_columns_name(input_table)
         else:
+            # 结构是逗号分隔的, 然后又是冒号分隔的, 去重说明顺序不重要
             all_input_col_names = set([t.split(":")[0] for t in _APP_FLAGS.inputSchema.split(",")])
         first_sequence = _APP_FLAGS.firstSequence
+        # assert 的第二个参数是错误信息
         assert first_sequence in all_input_col_names, "The first sequence should be in input schema"
+        # 第二个句子的列名可以是空的
         second_sequence = _APP_FLAGS.secondSequence
         if second_sequence not in all_input_col_names:
             second_sequence = ""
+        # 附加列
         append_columns = [t for t in _APP_FLAGS.appendCols.split(",") if t and t in all_input_col_names] \
                           if _APP_FLAGS.appendCols else []
         tf.logging.info(input_table)
@@ -101,6 +116,7 @@ class BertFeatConfig(Config):
             assert _APP_FLAGS.inputSchema is not None
             input_schema = _APP_FLAGS.inputSchema
         output_schema = _APP_FLAGS.outputSchema
+        # 将附加的列添加进去
         for column_name in append_columns:
             output_schema += "," + column_name
 
@@ -114,7 +130,7 @@ class BertFeatConfig(Config):
                 "max_predictions_per_seq": 20
             },
             'model_config': {
-                'model_name': 'feat_ext_bert',
+                'model_name': 'feat_ext_bert',  # 模型名字是固定的
                 'pretrain_model_name_or_path': _APP_FLAGS.modelName,
                 'finetune_model_name': finetune_model_name,
             },
@@ -125,6 +141,7 @@ class BertFeatConfig(Config):
                 'predict_output_fp': output_table
             }
         }
+        # 将 train_model_config 添加到 model_config 上, 但是不能覆盖已有的配置
         if train_model_config:
             for key, val in train_model_config.items():
                 if key not in config_json["model_config"]:
@@ -136,6 +153,7 @@ class BertFeatConfig(Config):
         config_json["num_gpus"] = FLAGS.workerGPU
         config_json["num_workers"] = FLAGS.workerCount
         tf.logging.info("{}".format(config_json))
+        # 调用父类的初始化
         super(BertFeatConfig, self).__init__(mode="predict_on_the_fly", config_json=config_json)
 
         for key, val in self.__dict__.items():
