@@ -76,7 +76,7 @@ class BaseTextClassify(ApplicationModel):
         """ Building  prediction dict of the Text Classification Model
 
         Args:
-            predict_output (`tuple`): (logits, _)
+            predict_output (`tuple`): (logits, _) 是从 build_logits 返回的
         Returns:
             ret_dict (`dict`): A dict with (`predictions`, `probabilities`, `logits`)
         """
@@ -161,22 +161,32 @@ class BertTextClassify(BaseTextClassify):
             logits (`Tensor`): The output after the last dense layer. Shape of [None, num_labels]
             label_ids (`Tensor`): label_ids, shape of [None]
         """
+        """
+        前向传播的过程
+        """
+        # 是否是多标签分类
         multi_label_flag = self.config.multi_label if hasattr(self.config, "multi_label") else False
+        # 预处理器
         preprocessor = preprocessors.get_preprocessor(self.config.pretrain_model_name_or_path,
                                                       multi_label=multi_label_flag,
                                                       user_defined_config=self.config)
+        # 将输入 features 进行预处理后的结果
         input_ids, input_mask, segment_ids, labels = preprocessor(features)
 
+        # bert 模型, 然后直接调用前向传播
         bert_backbone = model_zoo.get_pretrained_model(self.config.pretrain_model_name_or_path)
         _, pool_output = bert_backbone([input_ids, input_mask, segment_ids], mode=mode)
 
+        # 添加一个 dropout 层
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
         pool_output = tf.layers.dropout(
             pool_output, rate=self.config.dropout_rate, training=is_training)
+        # 添加一个 dense 层, 输出的长度是标签数
         logits = layers.Dense(self.config.num_labels,
                               kernel_initializer=layers.get_initializer(0.02),
                               name='app/ez_dense')(pool_output)
 
+        # 如果可以, 就从检查点加载
         self.check_and_init_from_checkpoint(mode)
         return logits, labels
 
@@ -223,17 +233,20 @@ class TextCNNClassify(BaseTextClassify):
             logits (`Tensor`): The output after the last dense layer. Shape of [None, num_labels]
             label_ids (`Tensor`): label_ids, shape of [None]
         """
+        # 预处理器
         text_preprocessor = DeepTextPreprocessor(self.config, mode=mode)
         text_indices, text_masks, _, _, label_ids = text_preprocessor(features)
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
+        # 词嵌入层
         word_embeddings = self._add_word_embeddings(vocab_size=text_preprocessor.vocab.size,
                                                     embed_size=self.config.embedding_size,
                                                     pretrained_word_embeddings=text_preprocessor.pretrained_word_embeddings,
                                                     trainable=not self.config.fix_embedding)
         text_embeds = tf.nn.embedding_lookup(word_embeddings, text_indices)
 
+        # textcnn 编码器
         output_features = layers.TextCNNEncoder(num_filters=self.config.num_filters,
                                                 filter_sizes=self.config.filter_sizes,
                                                 embed_size=self.config.embedding_size,
@@ -243,6 +256,7 @@ class TextCNNClassify(BaseTextClassify):
         output_features = tf.layers.dropout(
             output_features, rate=self.config.dropout_rate, training=is_training, name='output_features')
 
+        # 最后的 dense 层
         logits = layers.Dense(self.config.num_labels,
                               kernel_initializer=layers.get_initializer(0.02),
                               name='output_layer')(output_features)
@@ -252,11 +266,14 @@ class TextCNNClassify(BaseTextClassify):
 
     def _add_word_embeddings(self, vocab_size, embed_size, pretrained_word_embeddings=None, trainable=False):
         with tf.name_scope("input_representations"):
+            # 使用预训练的词嵌入
             if pretrained_word_embeddings is not None:
                 tf.logging.info("Initialize word embedding from pretrained")
+                # 常量初始化器
                 word_embedding_initializer = tf.constant_initializer(pretrained_word_embeddings)
             else:
                 word_embedding_initializer = layers.get_initializer(0.02)
+            # 得到或创建一个新的 tf 变量
             word_embeddings = tf.get_variable("word_embeddings",
                                               [vocab_size, embed_size],
                                               dtype=tf.float32, initializer=word_embedding_initializer,
