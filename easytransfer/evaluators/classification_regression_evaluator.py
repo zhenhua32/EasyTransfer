@@ -33,16 +33,24 @@ class ClassificationEvaluator(Evaluator):
         super(ClassificationEvaluator, self).__init__(metric_names)
 
     def clear(self):
+        # 感觉不仅是清除函数, 也是初始化函数
         self.predictions = []
         self.labels = []
 
     def add_batch_info(self, predictions, labels):
+        """
+        将每个批次的结果添加到对应的数组中
+        """
+        # 所以用 zip 是为了按最短的长度进行操作吗?
         for pred, label in zip(predictions, labels):
             self.predictions.append(pred)
             self.labels.append(label)
 
     def evaluate(self, labels):
-
+        """
+        执行评估
+        """
+        # 结果是空的, 表示哪里出现了问题
         if len(self.predictions) == 0 or len(self.labels) == 0:
             tf.logging.info('empty data to evaluate')
             return {'py_accuracy': 0.0, 'py_micro_f1': 0.0,
@@ -51,6 +59,8 @@ class ClassificationEvaluator(Evaluator):
         self.labels = np.stack(self.labels)
         self.predictions = np.stack(self.predictions)
 
+        # 四种评估方法
+        # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
         micro_f1 = f1_score(self.labels, self.predictions, labels=labels, average='micro')
         macro_f1 = f1_score(self.labels, self.predictions, labels=labels, average='macro')
         weighted_f1 = f1_score(self.labels, self.predictions, labels=labels, average='weighted')
@@ -60,6 +70,9 @@ class ClassificationEvaluator(Evaluator):
 
 
 class MultiLabelEvaluator(Evaluator):
+    """
+    多标签的评估器
+    """
     def __init__(self, num_labels):
         # declare metric names this evaluator will return
         metric_names = [
@@ -86,16 +99,19 @@ class MultiLabelEvaluator(Evaluator):
         Args:
           predictions batched prediction result, numpy array with shape N
           labels batched labels, numpy array with shape N
+        prediction 和 labels 的 shape 是 [batch_size, max_num_labels], 第一个维度是批次数量, 第二个维度是多标签分类中最大类别数
         '''
         for prob, label in zip(predictions, labels):
             self.probabilities.append(prob.tolist())
-            self.predictions.append([int(val > 0.5) for val in prob])
+            self.predictions.append([int(val > 0.5) for val in prob])  # 将 prob 从概率的数组变成 1 和 0 的数组
             onehot = [0] * self.num_labels
             for cls_idx in label:
+                # 难道一般的都是 -1 吗?
                 if cls_idx != -1:
                     onehot[cls_idx] = 1
             self.labels.append(onehot)
 
+    # 以下三个静态方法未读
     @staticmethod
     def macro_f1_score(grt_array, pred_array, n_class):
         # print(f1_score(grt_array, pred_array, average="macro"))
@@ -146,6 +162,7 @@ class MultiLabelEvaluator(Evaluator):
         python evaluation code which will be run after
         all test batched data are predicted
         '''
+        # 结构同 ClassificationEvaluator 的 evaluate
         if len(self.predictions) == 0 or len(self.labels) == 0:
             tf.logging.info('empty data to evaluate')
             return {'py_micro_f1': 0.0, 'py_macro_f1': 0.0, 'py_mean_auc': 0.0}
@@ -160,6 +177,10 @@ class MultiLabelEvaluator(Evaluator):
 
 
 def classification_eval_metrics(logits, labels, num_labels):
+    """
+    labels 的内部类型实际上是整数, 是个整数的数组
+    """
+    # 求出概率最大的索引
     predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
 
     info_dict = {
@@ -167,10 +188,9 @@ def classification_eval_metrics(logits, labels, num_labels):
         "labels": labels,
     }
 
-
     evaluator = ClassificationEvaluator()
-
     label_idxs = [i for i in range(num_labels)]
+    # 第二个参数是标签的索引值的数组
     metric_dict = evaluator.get_metric_ops(info_dict, label_idxs)
     ret_metrics = evaluator.evaluate(label_idxs)
 

@@ -41,6 +41,8 @@ class Evaluator(six.with_metaclass(ABCMeta, object)):
           tensor_dict: a dict of tensors for evaluation, each key-value represents a
             param in function `add_batch_sample`, key represents the arg-name, and
             the tensor value will be converted to numpy array through pyfunc
+        也是个过时的注释, add_batch_sample 现在应该是叫做 add_batch_info
+        labels: 是给 evaluate 的参数
         '''
         if len(self._metric_names) < 1:
             raise ValueError('metric_names should be passed to evaluator.')
@@ -89,5 +91,5 @@ class Evaluator(six.with_metaclass(ABCMeta, object)):
                 eval_metric_ops[metric_name] = (tf.py_func(
                     value_func_factory(metric_name), [], np.float32), update_op)
 
-        # 返回的是一个字典, key 是 _metric_names 中的每个值, value 是一个元组, 第一个元素是 metric 函数, 第二个元素是 update_op
+        # 返回的是一个字典, key 是 _metric_names 中的每个值, value 是一个元组, 第一个元素是 metric 函数的结果, 第二个元素是 update_op
         return eval_metric_ops
