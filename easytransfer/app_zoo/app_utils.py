@@ -51,6 +51,7 @@ def copy_file_to_new_path(old_dir, new_dir, fname, newfname=None):
 
 def get_reader_fn(input_fp=None):
     """ Automatically  get ez_transfer's reader for different env
+    input_fp 其实是字符串格式, 用于判断应该用哪种方式来读取
     """
     if input_fp is None:
         return OdpsTableReader if "PAI" in tf.__version__ else CSVReader
