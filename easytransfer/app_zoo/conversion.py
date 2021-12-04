@@ -29,6 +29,9 @@ class ConversionModel(ApplicationModel):
 
     @log_duration_time
     def run(self):
+        """
+        用来在 google bert 和 ali bert 之间转换
+        """
         if self.config.export_type == "convert_bert_to_google":
             self.convert_bert_model_to_google()
         elif self.config.export_type == "convert_google_bert_to_ez_transfer":
@@ -38,7 +41,7 @@ class ConversionModel(ApplicationModel):
 
     def convert_bert_model_to_google(self):
         """ convert EasyTransfer model to google/bert
-
+        转换成 google bert 形式
         """
         pre_defined_model_dirs = set()
         for val in BERT_PRETRAINED_MODEL_ARCHIVE_MAP.values():
@@ -46,6 +49,7 @@ class ConversionModel(ApplicationModel):
             pre_defined_model_dirs.add(_dir)
         checkpoint_dir = os.path.dirname(self.config.checkpoint_path)
         export_dir_base = self.config.export_dir_base
+        # 检查是否有 checkpoint 目录
         flag = True
         if checkpoint_dir in pre_defined_model_dirs:
             flag = False
@@ -54,32 +58,42 @@ class ConversionModel(ApplicationModel):
             raise RuntimeError("Invalid operation")
 
         prefix = "bert_pre_trained_model/"
+        # 这变量都没用上, 是为了测试能否正常加载吗?
         checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
         with tf.Session() as sess:
+            # 列出检查点的变量名和变量形状
             for var_name, _ in tf.contrib.framework.list_variables(checkpoint_dir):
                 # Load the variable
+                # 跳过这些变量
                 if "Adam" in var_name or "beta1_power" in var_name or "beta2_power" in var_name:
                     continue
                 if "global_step" in var_name:
                     continue
+                # 直接加载变量
                 var = tf.contrib.framework.load_variable(checkpoint_dir, var_name)
 
                 # Set the new name
+                # 取个新名字
                 new_name = var_name
                 new_name = new_name.replace(prefix, "")
+                # 直接把变量覆盖掉, 就是替换成功了吗?
                 var = tf.Variable(var, name=new_name)
 
             # Save the variables
+            # 在循环完所有的变量后, 直接导出就可以了吗?
             saver = tf.train.Saver()
+            # 那这一步就是收集到所有变量了?
             sess.run(tf.global_variables_initializer())
             saver.save(sess, os.path.join(export_dir_base, "bert_model.ckpt"))
 
+        # 复制词汇表和配置文件
         copy_file_to_new_path(checkpoint_dir, export_dir_base, "vocab.txt")
         copy_file_to_new_path(checkpoint_dir, export_dir_base, "config.json", "bert_config.json")
 
     def convert_google_bert_to_ez_transfer(self):
         """ convert google/bert model to EasyTransfer model
 
+        转换成 EasyTransfer 形式, 基本就是反向操作了
         """
         pre_defined_model_dirs = set()
         for val in BERT_PRETRAINED_MODEL_ARCHIVE_MAP.values():
@@ -103,6 +117,7 @@ class ConversionModel(ApplicationModel):
 
                 # Set the new name
                 new_name = var_name
+                # 名字加上前缀
                 new_name = prefix + new_name
                 var = tf.Variable(var, name=new_name)
 
@@ -118,6 +133,7 @@ class ConversionModel(ApplicationModel):
             sess.run(tf.global_variables_initializer())
             saver.save(sess, os.path.join(export_dir_base, "model.ckpt"))
 
+        # 产生新的配置文件
         with tf.gfile.Open(os.path.join(checkpoint_dir, "bert_config.json")) as f:
             config_json = json.load(f)
         new_config_json = {
