@@ -38,6 +38,9 @@ def get_time():
 
 
 class Mythread(threading.Thread):
+    """
+    线程, 用来并发的
+    """
     def __init__(self, name, *args):
         threading.Thread.__init__(self)
         self.func = args[0]
@@ -56,12 +59,18 @@ class Mythread(threading.Thread):
 
 
 def print_time(threadName, delay, counter):
+    """
+    用来休眠的, 每次休眠 delay * counter 秒
+    """
     while counter:
         time.sleep(delay)
         counter -= 1
 
 
 class MultiThread(object):
+    """
+    多线程的封装类
+    """
     def __init__(self, job_name, thread_num, func, args_list, time_out=0):
         """
         Args:
@@ -76,6 +85,7 @@ class MultiThread(object):
         self.func = func
         self.args_list = args_list
         self.time_out = time_out
+        # 构建线程池. 每个线程会得到 args_list 中的一份参数
         if len(self.args_list) <= 1:
             self.thread_pool = [Mythread(job_name + '_%d' % i, func, args_list[0]) for i in range(thread_num)]
         else:
@@ -84,18 +94,22 @@ class MultiThread(object):
                 self.thread_pool.append(Mythread(job_name + '_%d' % i, func, args_list[i]))
 
     def run(self):
+        # 启动所有线程
         for t in self.thread_pool:
             tf.logging.info('thread %s start' % t.get_name())
             t.start()
 
     def join(self):
+        # 等待线程完成
         for t in self.thread_pool:
+            # 如果有超时时间, 就等待这个时长, 不然就一直等下去 
             if self.time_out > 0:
                 t.join(self.time_out)
             else:
                 t.join()
             tf.logging.info('thread %s has finished' % t.get_name())
 
+        # 如果线程有还活着的, 就记录下异常
         for t in self.thread_pool:
             if t.isAlive():
                 tf.logging.error('thread %s not exit correctly.' % t.get_name())
@@ -104,6 +118,7 @@ class MultiThread(object):
 class Process(six.with_metaclass(abc.ABCMeta)):
     """
     base class for all process, including downloading, decoding, inference
+    所有处理器的基类
     """
 
     def __init__(self,
@@ -112,6 +127,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                  input_queue=None,
                  output_queue=None,
                  batch_size=1):
+        # 输入和输出队列
         self.input_queue = input_queue
         self.output_queue = output_queue
         assert self.input_queue is None or isinstance(self.input_queue, queue.Queue), \
@@ -123,8 +139,11 @@ class Process(six.with_metaclass(abc.ABCMeta)):
         self.batch_size = batch_size
 
         self.num_finished = 0
+        # 还有个线程锁
         self.lock = threading.Lock()
+        # 是否退出
         self.exit = False
+        # 是否非正常退出
         self.abnormal_exit = False
 
     @abc.abstractmethod
@@ -149,12 +168,21 @@ class Process(six.with_metaclass(abc.ABCMeta)):
         pass
 
     def run(self):
-
+        """
+        运行
+        """
         def noinput_thread_func():
+            """
+            没有输入的线程函数
+            """
             global ALL_PROCESS_EXIT
+            # self.exit 可能是在 self.process 中设置的.
+            # ALL_PROCESS_EXIT 会在异常的时候被设置为 True
             while not self.exit and not ALL_PROCESS_EXIT:
                 try:
+                    # 没有输入的
                     out = self.process(None)
+                    # 如果输出队列和输出都存在的话, 就将输出加入到输出队列中
                     if self.output_queue is not None and out is not None:
                         self.put(out)
                 except IndexError:
@@ -162,32 +190,49 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                 except Exception:
                     tf.logging.info(
                         'Exception occured in thread\n %s' % traceback.format_exc())
+                    # 将非正常退出设置为 True
                     self.abnormal_exit = True
                     ALL_PROCESS_EXIT = True
                     break
+            # 获取线程锁
             self.lock.acquire()
             self.num_finished += 1
+            # 用了个线程锁就是为了这个吗?
             if self.thread_num == self.num_finished or self.abnormal_exit:
                 self.exit = True
+                # 毒药填充
                 self.put(POISON_PILL)
             self.lock.release()
 
         def thread_func():
+            """
+            有输入的线程函数
+            """
             global ALL_PROCESS_EXIT
             while not self.exit and not ALL_PROCESS_EXIT:
+                # 输入参数
                 input_list = []
                 no_data = False
                 try:
+                    # 批次数量
                     for i in range(self.batch_size):
+                        # 获取输入, 从输入队列中
                         input_data = self.get()
+                        # 如果是毒药填充
                         if input_data == POISON_PILL:
                             # POISON_PILL indicates that input_queue is empty now,
                             # so input_queue.put can not be blocked
+                            # 又把毒药放回去了
                             self.input_queue.put(POISON_PILL)
+                            # 表示没数据, 跳出循环了
                             no_data = True
                             break
+                        # 添加到输入列表中
                         input_list.append(input_data)
+                    # 如果有输入列表
                     if len(input_list) > 0:
+                        # 开始处理
+                        # 如果批次数量为 1, 就放入这个输入参数. 否则就放入输入参数的列表
                         if self.batch_size == 1:
                             out = self.process(input_list[0])
                         else:
@@ -203,6 +248,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                 if no_data:
                     break
 
+            # 又是获取线程锁
             self.lock.acquire()
             self.num_finished += 1
             if self.thread_num == self.num_finished or self.abnormal_exit:
@@ -211,7 +257,9 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                     self.put(POISON_PILL)
             self.lock.release()
 
+        # 根据是否有 input_queue 调用不同的函数
         func = noinput_thread_func if self.input_queue is None else thread_func
+        # 最后一个参数就是为了让参数的长度为 1, 然后因为每次会取第一个元素, 也就是取到一个空的数组 []
         self.multi_threads = MultiThread(self.job_name, self.thread_num, func, [[]])
         self.multi_threads.run()
 
@@ -224,6 +272,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                 return data
             except queue.Empty:
                 continue
+        # 从输入队列中取, 取不到就返回毒药填充
         # when ALL_PROCESS_EXIT, we return POISON_PILL to notify threads exit
         return POISON_PILL
 
@@ -231,6 +280,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
         """put data to output queue"""
         global ALL_PROCESS_EXIT
         while not ALL_PROCESS_EXIT:
+            # 将数据放入到输入队列中
             try:
                 self.output_queue.put(data, timeout=10)
                 break
@@ -238,6 +288,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                 continue
 
     def join(self):
+        # 等待完成, 并清理
         self.multi_threads.join()
         self.destroy()
         if self.abnormal_exit:
@@ -245,6 +296,9 @@ class Process(six.with_metaclass(abc.ABCMeta)):
 
 
 class Counter(object):
+    """
+    简单的计数器
+    """
     def __init__(self, interval=100):
         self.cnt = 0
         self.interval = interval
@@ -257,6 +311,9 @@ class Counter(object):
             tf.logging.info('%d batches have been processed' % self.cnt)
 
 class ProcessExecutor(object):
+    """
+    多个处理器的执行器
+    """
     def __init__(self, queue_size):
         """
         executor to manage ev_process running, which include automatically creating input output queue for each
