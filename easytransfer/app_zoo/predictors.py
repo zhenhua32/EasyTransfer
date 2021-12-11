@@ -52,29 +52,39 @@ class PredictProcess(distribution.Process):
         self.graph = self.sess.graph
 
     def set_saved_model_io(self, input_keys, output_keys):
+        """
+        input_keys=["input_ids", "input_mask", "segment_ids"],
+        output_keys=["pool_output", "first_token_output", "all_hidden_outputs"],
+        """
         self.input_keys = input_keys
         self.output_keys = output_keys
+        # 将输入的 key 加上 _tensor 后缀, 添加到 self 上
         for key in input_keys:
             tensor_name = self.signature[self.signature_key].inputs[key].name
             setattr(self, key + '_tensor', self.graph.get_tensor_by_name(tensor_name))
+        # 获取输出的 key 对应的 tensor
         self.predictions = dict()
         for key in output_keys:
             tensor_name = self.signature[self.signature_key].outputs[key].name
             self.predictions[key] = self.graph.get_tensor_by_name(tensor_name)
 
     def process(self, in_data):
+        # 进行预测
         predictions = self.sess.run(
             self.predictions, feed_dict={
                 getattr(self, key + '_tensor'): in_data[key]
                 for key in self.input_keys})
         ret = {}
+        # 先直接用 in_data 填充一遍
         for key, val in in_data.items():
             ret[key] = val
+        # 再用 predictions 填充, 覆盖掉已存在的 key 吗?
         for key, val in predictions.items():
             ret[key] = val
         return ret
 
     def destroy(self):
+        # 释放资源
         self.sess.close()
 
 
@@ -113,8 +123,10 @@ class AppPredictor(object):
             app_model_name = self.config.model_name
         else:
             app_model_name = None
+        # 替换掉
         if app_model_name == "feat_ext_bert":
             app_model_name = "text_classify_bert"
+        # 预处理器
         return preprocessors.get_preprocessor(
             self.config.pretrain_model_name_or_path,
             thread_num=self.thread_num,
@@ -133,6 +145,7 @@ class AppPredictor(object):
             app_model_name = self.config.model_name
         else:
             app_model_name = None
+        # 中间流程的处理器
         return postprocessors.get_postprocessors(
             label_enumerate_values=label_enumerate_values,
             output_schema=self.config.output_schema,
@@ -142,6 +155,7 @@ class AppPredictor(object):
             app_model_name=app_model_name)
 
     def get_predictor(self):
+        # 预测处理器
         predictor = PredictProcess(saved_model_path=self.config.predict_checkpoint_path,
                                    thread_num=self.thread_num,
                                    input_queue=queue.Queue(),
@@ -151,25 +165,34 @@ class AppPredictor(object):
         return predictor
 
     def run_predict(self, reader=None, preprocessor=None, postprocessor=None, writer=None):
+        """
+        进行预测
+        """
         self.proc_executor = distribution.ProcessExecutor(self.queue_size)
+        # 添加读取器
         reader = reader if reader else self.get_default_reader()
         reader.output_queue = self.proc_executor.get_output_queue()
         self.proc_executor.add(reader)
+        # 添加预处理器
         preprocessor = preprocessor if preprocessor else self.get_default_preprocessor()
         preprocessor.input_queue = self.proc_executor.get_input_queue()
         preprocessor.output_queue = self.proc_executor.get_output_queue()
         self.proc_executor.add(preprocessor)
+        # 添加预测器
         predictor = self.get_predictor()
         predictor.input_queue = self.proc_executor.get_input_queue()
         predictor.output_queue = self.proc_executor.get_output_queue()
         self.proc_executor.add(predictor)
+        # 添加中间处理器
         posprocessor = postprocessor if postprocessor else self.get_default_postprocessor()
         posprocessor.input_queue = self.proc_executor.get_input_queue()
         posprocessor.output_queue = self.proc_executor.get_output_queue()
         self.proc_executor.add(posprocessor)
+        # 添加写入器
         writer = writer if writer else self.get_default_writer()
         writer.input_queue = self.proc_executor.get_input_queue()
         self.proc_executor.add(writer)
+        # 开始执行
         self.proc_executor.run()
         self.proc_executor.wait()
         writer.close()
@@ -220,8 +243,10 @@ def run_app_predictor(config):
                                                 job_name=config.model_name + "_predictor")
             predictor.run_predict(preprocessor=preprocessor)
         elif config.model_name in ["text_match_bert_two_tower"]:
+            # 居然还有个未实现的
             raise NotImplementedError
         else:
+            # text_classify_bert 是在这一层的
             predictor = AppPredictor(config,
                                      input_keys=["input_ids", "input_mask", "segment_ids"],
                                      output_keys=["predictions", "probabilities", "logits"],

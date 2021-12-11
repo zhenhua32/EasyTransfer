@@ -143,8 +143,12 @@ def get_user_defined_prams_dict(user_defined_params_str):
 
 
 def get_label_enumerate_values(label_enumerate_value_or_path):
+    """
+    获取标签的枚举值, 用逗号拼接的字符串
+    """
     if label_enumerate_value_or_path is None:
         return ""
+    # 先尝试从文件中读取, 读取行, 用逗号拼接
     if tf.gfile.Exists(label_enumerate_value_or_path):
         with tf.gfile.Open(label_enumerate_value_or_path) as f:
             label_enumerate_value = ",".join([convert_to_unicode(line.strip()) for line in f])
