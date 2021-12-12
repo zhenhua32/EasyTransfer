@@ -177,7 +177,6 @@ class BundleCSVReader(CSVReader):
         super(BundleCSVReader, self).__init__(input_glob, batch_size, is_training, **kwargs)
 
         self.input_fps = []
-        # input_glob 是 glob 语法, 允许多文件, 即允许 * 符号
         with tf.gfile.Open(input_glob, 'r') as f:
             for line in f:
                 line = line.strip()

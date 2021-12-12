@@ -49,15 +49,18 @@ class TFRecordReader(Reader):
         self.num_train_examples = 0
 
         if ".list_tfrecord" in self.input_glob:
+            # .list_tfrecord 就一定是训练集
             if is_training:
                 with tf.gfile.Open(input_glob, 'r') as f:
                     for i, line in enumerate(f):
+                        # 如果是第一行, 且第一行是数字, 就用这个数字作为训练集的长度
                         if i == 0 and line.strip().isdigit():
                             self.num_train_examples = int(line.strip())
                             break
                         if i % 10 == 0:
                             tf.logging.info("Reading {} files".format(i))
                         fp = line.strip()
+                        # 那就是每行是一个 tf_record 文件的路径
                         for record in tf.python_io.tf_record_iterator(fp):
                             self.num_train_examples += 1
                 tf.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
@@ -83,12 +86,17 @@ class TFRecordReader(Reader):
     def _decode_tfrecord(self, record):
         name_to_features = {}
         for name, feature in self.input_tensors.items():
+            # 也是解析为固定长度的特征
             name_to_features[name] = tf.io.FixedLenFeature(feature.shape, feature.dtype, None)
+        # 解析单条样本, name_to_features 指定需要的特征
         example = tf.parse_single_example(record, name_to_features)
         return example
 
 
 class BundleTFRecordReader(TFRecordReader):
+    """
+    分布式, task_index 用于任务索引(或者说分片索引)
+    """
     def __init__(self, input_glob, batch_size, worker_hosts, task_index, distribution_strategy, is_training=False, **kwargs):
         super(BundleTFRecordReader, self).__init__(input_glob, batch_size, is_training, **kwargs)
 
