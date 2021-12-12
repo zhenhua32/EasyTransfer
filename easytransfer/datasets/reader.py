@@ -55,7 +55,8 @@ class Reader(Process):
         self.input_tensor_names = []  # 包含所有的列名
         # self.input_schema 可能是 None, 这会导致出错
         """
-        input_schema 的结构是用逗号`,`分隔的, 每个表示一个列, 每个列用冒号`:`分隔
+        input_tensor_names 是一个列表, 包含所有的列名.
+        input_schema 的结构是用逗号`,`分隔的, 每个表示一个列, 每个列用冒号`:`分隔.
         column_name:type:length
         """
         for schema in self.input_schema.split(","):
@@ -64,7 +65,7 @@ class Reader(Process):
             self.input_tensor_names.append(name)
             # 第二个是类型名
             type = schema.split(":")[1]
-            # 第三个序列长度
+            # 第三个是长度, 长度一般取1，如果为逗号分隔的数组，则为数组长度
             seq_len = int(schema.split(":")[2])
             # 对类型名直接进行枚举, 转换成对应的 tf.Tensor 类型, 以及指定默认值
             if type == "int":
@@ -127,6 +128,7 @@ class Reader(Process):
         dataset = dataset.apply(
             # map_and_batch 已被弃用, 等效于 map 和 batch 的组合
             tf.data.experimental.map_and_batch(
+                # decode_fn 会用在每个 record 上
                 lambda *record: decode_fn(*record),
                 batch_size=self.batch_size,
                 num_parallel_batches=self.num_parallel_batches,
