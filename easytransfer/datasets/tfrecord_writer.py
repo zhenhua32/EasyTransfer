@@ -49,6 +49,7 @@ class TFRecordWriter(Process):
         return feature
 
     def process(self, features):
+        # 前面这个部分和 CSVWriter 是一样的
         ziped_list = []
         for idx, feat_name in enumerate(self.output_schema.split(",")):
             batch_feat_value = features[feat_name]
@@ -63,13 +64,16 @@ class TFRecordWriter(Process):
 
         feat_names = self.output_schema.split(",")
         for ele in zip(*ziped_list):
-            features = collections.OrderedDict()
+            features = collections.OrderedDict()  # 重命名了, 覆盖了输入参数
+            # 加了名字, 即 feat_names
             for feat_name, value in zip(feat_names, ele):
+                # 对不同的类型, 要用不同的方式创建
                 if isinstance(value[0], float):
                     features[feat_name] = self.create_float_feature(value)
                 elif isinstance(value[0], int):
                     features[feat_name] = self.create_int_feature(value)
                 elif isinstance(value[0], str):
+                    # 居然是直接转换成 int
                     new_value = [int(x) for x in value]
                     features[feat_name] = self.create_int_feature(new_value)
 
