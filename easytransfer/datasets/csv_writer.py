@@ -41,32 +41,44 @@ class CSVWriter(Process):
 
     def process(self, features):
         def str_format(element):
+            # 格式化成字符串
             if isinstance(element, float) or isinstance(element, int) \
                     or isinstance(element, str):
                 return str(element)
+            # 是空数组就返回空字符串
             if element == []:
                 return ''
+            # 如果是数组, 且数组里的第一个元素的类型不是数组, 就直接用逗号 join
             if isinstance(element, list) and not isinstance(element[0], list):
                 return ','.join([str(t) for t in element])
+            # 如果第一个元素是数组, 就把里面的用逗号join, 然后在外面用分号join
             elif isinstance(element[0], list):
                 return ';'.join([','.join([str(t) for t in item]) for item in element])
             else:
                 raise RuntimeError("type {} not support".format(type(element)))
 
         ziped_list = []
+        # 输出格式 output_schema, 也是用逗号分隔的
         for idx, feat_name in enumerate(self.output_schema.split(",")):
+            # 然后从 features 中获取对应的值
             batch_feat_value = features[feat_name]
             curr_list = []
+            # 遍历这个值
             for feat in batch_feat_value:
+                # 如果是一维的, 就变成一个元素的数组加进去
                 if len(batch_feat_value.shape) == 1:
                     curr_list.append([feat])
                 else:
+                    # 否则调用 tolist 转换成数组加进去
                     curr_list.append(feat.tolist())
+            # 然后把整个 curr_list 加入到 ziped_list 中
             ziped_list.append(curr_list)
 
+        # ziped_list 就是有 N 列, 每列是一个 feat_name 的所有结果
         for ele in zip(*ziped_list):
             str_list = []
             for curr in ele:
                 str_list.append(str_format(curr))
+            # 然后就是每行写入所有列名的值
             self.writer.write("\t".join(str_list) + "\n")
 
