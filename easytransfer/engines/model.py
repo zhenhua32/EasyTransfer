@@ -21,6 +21,8 @@ import os
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.INFO)
 tf.logging.info("*********** tf.__version__ is {} ******".format(tf.__version__))
+
+# 固定的种子
 SEED = 123123
 os.environ['PYTHONHASHSEED'] = str(SEED)
 random.seed(SEED)
@@ -28,6 +30,7 @@ np.random.seed(SEED)
 tf.reset_default_graph()
 tf.set_random_seed(SEED)
 
+# 一堆命令行参数, 也是不同的风格, 一人用 keyword, 另一人不用. 居然还是同一人, 那就是不同时期了
 flags = tf.app.flags
 flags.DEFINE_string("config", default=None, help='')
 flags.DEFINE_string("tables", default=None, help='')
@@ -48,8 +51,74 @@ from easytransfer.optimizers import get_train_op
 
 
 class Config(object):
+    """
+    配置解析器
+
+    worker_hosts: str
+    task_index: int
+    job_name: str
+    num_gpus: int
+    num_workers: int
+
+    train_config
+        distribution_config
+            enable_xla: bool
+            distribution_strategy: str
+            pull_evaluation_in_multiworkers_training: bool
+            num_accumulated_batches: int
+            num_model_replica: int
+            num_communicators: int
+            num_splits: int
+        optimizer_config
+            weight_decay_ratio: float
+            lr_decay: str
+            warmup_ratio: float
+            clip_norm_value: float
+            gradient_clip: bool
+            num_freezed_layers: int
+        num_epochs: int
+        model_dir: str
+        throttle_secs: int
+        keep_checkpoint_max: int
+        save_steps: int
+        log_step_count_steps: int
+        train_input_fp: str
+        train_batch_size: int
+    model_config
+    preprocess_config
+        input_schema: str
+        sequence_length: int
+        first_sequence: int
+        second_sequence: int
+        label_name: str
+        label_enumerate_values: str
+        append_feature_columns: str
+        max_predictions_per_seq: int
+        preprocess_input_fp: str
+        preprocess_output_fp: str
+        preprocess_batch_size: int
+        tokenizer_name_or_path: str
+    evaluate_config
+        eval_batch_size: int
+        num_eval_steps: int
+        eval_input_fp: str
+        eval_checkpoint_path: str
+    predict_config
+        predict_checkpoint_path: str
+        output_schema: str
+        predict_batch_size: int
+        predict_input_fp: str
+        predict_output_fp: str
+    export_config
+        checkpoint_path: str
+        export_dir_base: str
+        receiver_tensors_schema: str
+        input_tensors_schema: str
+    """
     def __init__(self, mode, config_json):
+        # 直接复制原始的配置项
         self._config_json = copy.deepcopy(config_json)
+        # 模式
         self.mode = mode
 
         self.worker_hosts = str(config_json["worker_hosts"])
@@ -57,12 +126,16 @@ class Config(object):
         self.job_name = str(config_json["job_name"])
         self.num_gpus = int(config_json["num_gpus"])
         self.num_workers = int(config_json["num_workers"])
+        # 如果 oss 不在 modelZooBasePath, 就会尝试从 config_json 中取, 默认值是 ~/.eztransfer_modelzoo
         if "oss://" not in FLAGS.modelZooBasePath:
             FLAGS.modelZooBasePath = config_json.get("modelZooBasePath", os.path.join(os.getenv("HOME"), ".eztransfer_modelzoo"))
         tf.logging.info("***************** modelZooBasePath {} ***************".format(FLAGS.modelZooBasePath))
+
+        # 以 train 开头的模式
         if self.mode == 'train' or self.mode == "train_and_evaluate" \
                 or self.mode == "train_and_evaluate_on_the_fly" or self.mode == "train_on_the_fly":
 
+            # 分布式策略 distribution_config
             self.enable_xla = bool(config_json["train_config"].get('distribution_config', {}).get(
                 'enable_xla', False))
 
@@ -87,11 +160,15 @@ class Config(object):
             self.optimizer = str(config_json["train_config"]['optimizer_config'].get('optimizer', "adam"))
             self.learning_rate = float(config_json['train_config']['optimizer_config'].get('learning_rate', 0.001))
 
+            # 权重衰减比率
             self.weight_decay_ratio = float(
                 config_json['train_config']['optimizer_config'].get('weight_decay_ratio', 0))
+            # 学习率衰减方式
             self.lr_decay = config_json['train_config']['optimizer_config'].get('lr_decay', "polynomial")
+            # 学习率开始warm up的比率
             self.warmup_ratio = float(config_json['train_config']['optimizer_config'].get('warmup_ratio', 0.1))
             self.clip_norm_value = float(config_json['train_config']['optimizer_config'].get('clip_norm_value', 1.0))
+            # 是否做梯度裁剪
             self.gradient_clip = bool(config_json['train_config']['optimizer_config'].get('gradient_clip', True))
             self.num_freezed_layers = int(config_json['train_config']['optimizer_config'].get('num_freezed_layers', 0))
 
@@ -102,36 +179,50 @@ class Config(object):
             except:
                 raise ValueError("input model dir")
 
+            # 评估最小间隔时间（秒）
             self.throttle_secs = int(config_json['train_config'].get('throttle_secs', 100))
+            # 最多存储X个checkpoint，新覆盖旧
             self.keep_checkpoint_max = int(config_json['train_config'].get('keep_checkpoint_max', 10))
 
+            # 这个写的也是真混乱, 没有就是设置为 None, 有就是 int 类型
             if 'save_steps' not in config_json['train_config']:
                 self.save_steps = None
             else:
                 self.save_steps = int(config_json['train_config']['save_steps']) \
                     if config_json['train_config']['save_steps'] else \
-                    config_json['train_config']['save_steps']
+                    config_json['train_config']['save_steps']  # else 这种情况, 就是为 None 或者为 0 之类的
 
+            # 每处理X批打印训练状态（如loss等）
             self.log_step_count_steps = int(config_json['train_config'].get('log_step_count_steps', 100))
 
             # model
+            # 将 model_config 中的配置直接设置在 self 上
             for key, val in config_json['model_config'].items():
                 setattr(self, key, val)
 
             # data
+            # 输入文件的列schema（本地运行）
             self.input_schema = str(config_json['preprocess_config'].get('input_schema', None))
 
             if self.mode == 'train_and_evaluate_on_the_fly' or self.mode == 'train_on_the_fly':
+                # 序列整体最大长度
                 self.sequence_length = int(config_json['preprocess_config']['sequence_length'])
+                # 序列一的长度
                 self.first_sequence = str(config_json['preprocess_config']['first_sequence'])
+                # 序列二的长度
                 self.second_sequence = str(config_json['preprocess_config'].get('second_sequence', None))
+                # 标签在输入格式中对应的列名
                 self.label_name = str(config_json['preprocess_config']['label_name'])
+                # 标签枚举值
                 self.label_enumerate_values = config_json['preprocess_config'].get('label_enumerate_values', None)
                 self.append_feature_columns = config_json['preprocess_config'].get('append_feature_columns', None)
 
             if self.mode == 'train_and_evaluate' or self.mode == 'train_and_evaluate_on_the_fly':
+                # 评估时批处理大小
                 self.eval_batch_size = int(config_json['evaluate_config']['eval_batch_size'])
 
+                # 这个处理方式和上面的 save_steps 是一样的
+                # 评估时在评估集上跑多少批
                 if 'num_eval_steps' not in config_json['evaluate_config']:
                     self.num_eval_steps = None
                 else:
@@ -144,6 +235,7 @@ class Config(object):
             self.train_input_fp = str(config_json['train_config']['train_input_fp'])
             self.train_batch_size = int(config_json['train_config']['train_batch_size'])
 
+        # 以 evaluate 开头的模式
         elif self.mode == "evaluate" or self.mode == "evaluate_on_the_fly":
             self.eval_ckpt_path = config_json['evaluate_config']['eval_checkpoint_path']
 
@@ -166,6 +258,7 @@ class Config(object):
             self.num_eval_steps = config_json['evaluate_config'].get('num_eval_steps', None)
             self.eval_input_fp = config_json['evaluate_config']['eval_input_fp']
 
+        # 以 predict 开头的模式
         elif self.mode == 'predict' or self.mode == 'predict_on_the_fly':
             self.predict_checkpoint_path = config_json['predict_config'].get('predict_checkpoint_path', None)
             self.input_schema = config_json['preprocess_config']['input_schema']
@@ -173,6 +266,7 @@ class Config(object):
             self.label_enumerate_values = config_json['preprocess_config'].get('label_enumerate_values', None)
             self.append_feature_columns = config_json['preprocess_config'].get('append_feature_columns', None)
             self.model_dir = config_json.get('train_config', {}).get('model_dir', None)
+            # 选择输出数据中需要哪几个预测值
             self.output_schema = config_json['preprocess_config'].get('output_schema', None)
 
             if self.mode == 'predict_on_the_fly':
@@ -183,17 +277,18 @@ class Config(object):
 
             self.predict_batch_size = config_json['predict_config']['predict_batch_size']
 
+            # output_schema 可以定义一些简写, 在这里自动还原
             if config_json['preprocess_config'].get('output_schema', None) == "bert_finetune":
                 self.output_schema = "input_ids,input_mask,segment_ids,label_id"
-
             elif config_json['preprocess_config'].get('output_schema', None) == "bert_pretrain":
                 self.output_schema = "input_ids,input_mask,segment_ids,masked_lm_positions,masked_lm_ids,masked_lm_weights"
-
             elif config_json['preprocess_config'].get('output_schema', None) == "bert_predict":
                 self.output_schema = "input_ids,input_mask,segment_ids"
             else:
+                # WARN: 这句话真是多余, 和 前面的重复了
                 self.output_schema = config_json['preprocess_config'].get('output_schema', None)
 
+            # 这个和前面不太一样, 将本身也设置到了 self 上
             self.model_config = config_json['model_config']
             for key, val in config_json['model_config'].items():
                 setattr(self, key, val)
@@ -205,7 +300,9 @@ class Config(object):
             self.checkpoint_path = config_json['export_config']['checkpoint_path']
             for key, val in config_json['model_config'].items():
                 setattr(self, key, val)
+            # 导出模型的目录
             self.export_dir_base = config_json['export_config']['export_dir_base']
+            # WARN: 所以, 这行代码又是重复的
             self.checkpoint_path = config_json['export_config']['checkpoint_path']
             self.receiver_tensors_schema = config_json['export_config']['receiver_tensors_schema']
             self.input_tensors_schema = config_json['export_config']['input_tensors_schema']
@@ -219,6 +316,7 @@ class Config(object):
             self.sequence_length = config_json['preprocess_config']['sequence_length']
             self.max_predictions_per_seq = config_json['preprocess_config'].get('max_predictions_per_seq', None)
 
+            # output_schema 定义了一些简写, 在这里自动还原
             if config_json['preprocess_config']['output_schema'] == "bert_finetune":
                 self.output_schema = "input_ids,input_mask,segment_ids,label_id"
 
