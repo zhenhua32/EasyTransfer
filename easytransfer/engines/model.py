@@ -141,9 +141,11 @@ class Config(object):
 
             self.distribution_strategy = str(
                 config_json["train_config"].get('distribution_config', {}).get("distribution_strategy", None))
+            # 多机多卡的时候输出评测
             self.pull_evaluation_in_multiworkers_training = bool(config_json["train_config"].get('distribution_config', {}).get(
                 'pull_evaluation_in_multiworkers_training', False))
 
+            # 梯度每X批反向传播一次
             self.num_accumulated_batches = int(config_json["train_config"].get('distribution_config', {}).get(
                 'num_accumulated_batches', 1))
 
@@ -233,6 +235,7 @@ class Config(object):
                 self.eval_input_fp = str(config_json['evaluate_config']['eval_input_fp'])
 
             self.train_input_fp = str(config_json['train_config']['train_input_fp'])
+            # 训练时的批次大小
             self.train_batch_size = int(config_json['train_config']['train_batch_size'])
 
         # 以 evaluate 开头的模式
@@ -340,11 +343,14 @@ class Config(object):
 class EzTransEstimator(object):
     def __init__(self, **kwargs):
 
+        # 有点奇怪, self.config 是在哪里初始化的?
+        # 以 train 开头的模式
         if self.config.mode == 'train' or self.config.mode == "train_and_evaluate" or \
                 self.config.mode == "train_and_evaluate_on_the_fly" or self.config.mode == "train_on_the_fly":
 
             tf.logging.info("***********Running in {} mode***********".format(self.config.mode))
 
+            # 是否启用 xla, 也不知道是什么
             if self.config.enable_xla is True:
                 tf.logging.info("***********Enable Tao***********")
                 os.environ['BRIDGE_ENABLE_TAO'] = 'True'
@@ -354,6 +360,7 @@ class EzTransEstimator(object):
             else:
                 tf.logging.info("***********Disable Tao***********")
 
+            # 也不知道是什么特定的变量
             NCCL_MAX_NRINGS = "4"
             NCCL_MIN_NRINGS = "2"
             NCCL_IB_DISABLE = "0"
@@ -383,13 +390,18 @@ class EzTransEstimator(object):
             tf.logging.info("***********TF_JIT_PROFILING {}***********".format(TF_JIT_PROFILING))
             tf.logging.info("***********PAI_ENABLE_HLO_DUMPER {}***********".format(PAI_ENABLE_HLO_DUMPER))
 
+            # 分布式策略
             self.strategy = None
+            # 多机多卡
             if self.config.num_gpus >= 1 and self.config.num_workers >= 1 and \
                     (self.config.distribution_strategy == "ExascaleStrategy" or
                      self.config.distribution_strategy == "CollectiveAllReduceStrategy"):
 
+                # 阿里巴巴集团的机器学习平台PAI(Platform of Artificial Intelligence)
+                # https://pypi.org/project/alipai/
                 if "PAI" in tf.__version__:
                     import pai
+                    # 用逗号隔开的主机列表
                     worker_hosts = self.config.worker_hosts.split(',')
                     tf.logging.info("***********Job Name is {}***********".format(self.config.job_name))
                     tf.logging.info("***********Task Index is {}***********".format(self.config.task_index))
@@ -399,6 +411,7 @@ class EzTransEstimator(object):
                                                  worker_hosts,
                                                  has_evaluator=self.config.pull_evaluation_in_multiworkers_training)
 
+                # ExascaleStrategy 策略
                 if self.config.distribution_strategy == "ExascaleStrategy":
                     tf.logging.info("*****************Using ExascaleStrategy*********************")
                     if "PAI" in tf.__version__:
@@ -414,6 +427,7 @@ class EzTransEstimator(object):
                     else:
                         raise ValueError("Please run ExascaleStrategy in DLC")
 
+                # CollectiveAllReduceStrategy 策略
                 elif self.config.distribution_strategy == "CollectiveAllReduceStrategy":
                     tf.logging.info("*****************Using CollectiveAllReduceStrategy*********************")
                     if "PAI" in tf.__version__:
@@ -429,14 +443,17 @@ class EzTransEstimator(object):
                         self.strategy = tf.contrib.distribute.CollectiveAllReduceStrategy(
                             num_gpus_per_worker=self.config.num_gpus)
 
+                # 是否在多机多卡的时候输出评测
                 if self.config.pull_evaluation_in_multiworkers_training is True:
                     real_num_workers = self.config.num_workers - 1
                 else:
                     real_num_workers = self.config.num_workers
 
+                # 单次训练的批次 * GPU数量 * worker数量 * 梯度每X批反向传播一次
                 global_batch_size = self.config.train_batch_size * self.config.num_gpus * real_num_workers * self.config.num_accumulated_batches
 
 
+            # 单机多卡
             elif self.config.num_gpus > 1 and self.config.num_workers == 1 and \
                     self.config.distribution_strategy == "MirroredStrategy":
                 tf.logging.info("*****************Using MirroredStrategy*********************")
@@ -477,23 +494,27 @@ class EzTransEstimator(object):
                 tf.logging.info("***********WHALE_UNBALANCED_IO_SLICING {}***********".format(WHALE_UNBALANCED_IO_SLICING))
                 global_batch_size = self.config.train_batch_size * self.config.num_accumulated_batches * self.config.num_model_replica
 
+            # 单机单卡
             elif self.config.num_gpus == 1 and self.config.num_workers == 1:
                 if 'TF_CONFIG' in os.environ:
                     del os.environ['TF_CONFIG']
                 global_batch_size = self.config.train_batch_size * self.config.num_accumulated_batches
                 tf.logging.info("***********Single worker, Single gpu, Don't use distribution strategy***********")
 
+            # 没有 GPU
             elif self.config.num_gpus == 0 and self.config.num_workers == 1:
                 global_batch_size = self.config.train_batch_size * self.config.num_accumulated_batches
                 tf.logging.info("***********Single worker, Running on CPU***********")
 
             else:
+                # 也算是总结了几种可选的分布式策略
                 raise ValueError(
                     "In train model, Please set correct num_workers, num_gpus and distribution_strategy, \n"
                     "num_workers>=1, num_gpus>=1, distribution_strategy=WhaleStrategy|ExascaleStrategy|CollectiveAllReduceStrategy \n"
                     "num_workers>1, num_gpus==1, distribution_strategy=MirroredStrategy \n"
                     "num_workers=1, num_gpus=1, distribution_strategy=None")
 
+            # num_train_examples 这个关键字参数必须存在
             # Validate optional keyword arguments.
             if "num_train_examples" not in kwargs:
                 raise ValueError('Please pass num_train_examples')
@@ -502,10 +523,12 @@ class EzTransEstimator(object):
 
             # if save steps is None, save per epoch
             if self.config.save_steps is None:
+                # 保存步长 = 训练样本数 / 总的批次数量, 相当于单个纪元的步长
                 self.save_steps = int(self.num_train_examples / global_batch_size)
             else:
                 self.save_steps = self.config.save_steps
 
+            # 总的训练步长, 就是多乘了 num_epochs
             self.train_steps = int(self.num_train_examples *
                                    self.config.num_epochs / global_batch_size) + 1
 
@@ -530,6 +553,7 @@ class EzTransEstimator(object):
             tf.logging.info("clip norm value: {}".format(self.config.clip_norm_value))
             tf.logging.info("log step count steps: {}".format(self.config.log_step_count_steps))
 
+            # 构建评估器
             if self.config.distribution_strategy != "WhaleStrategy":
                 self.estimator = tf.estimator.Estimator(
                     model_fn=self._build_model_fn(),
@@ -539,6 +563,7 @@ class EzTransEstimator(object):
                 tf.logging.info("***********Using Whale Estimator***********")
                 try:
                     from easytransfer.engines.whale_estimator import WhaleEstimator
+                    # https://github.com/hyperqueryhq/whale
                     import whale as wh
                     wh.init()
                     self.estimator = WhaleEstimator(
@@ -552,31 +577,36 @@ class EzTransEstimator(object):
                 except:
                     raise NotImplementedError("WhaleStrategy doesn't work well")
 
-
+            # 需要评估的时候, 初始化下 num_eval_steps
             if self.config.mode == 'train_and_evaluate' or self.config.mode == 'train_and_evaluate_on_the_fly':
                 self.num_eval_steps = self.config.num_eval_steps
                 tf.logging.info("num eval steps: {}".format(self.num_eval_steps))
 
+        # 以 evaluate 开头的模式
         elif self.config.mode == 'evaluate' or self.config.mode == 'evaluate_on_the_fly':
             self.num_eval_steps = self.config.num_eval_steps
             tf.logging.info("num eval steps: {}".format(self.num_eval_steps))
             tf.logging.info("***********Running in {} mode***********".format(self.config.mode))
+            # 也是初始化 Estimator
             self.estimator = tf.estimator.Estimator(
                 model_fn=self._build_model_fn(),
                 config=self._get_run_predict_config())
 
+        # 以 predict 开头的模式
         elif self.config.mode == 'predict' or self.config.mode == 'predict_on_the_fly':
             tf.logging.info("***********Running in {} mode***********".format(self.config.mode))
             self.estimator = tf.estimator.Estimator(
                 model_fn=self._build_model_fn(),
                 config=self._get_run_predict_config())
 
+        # 以 export 开头的模式
         elif self.config.mode == 'export':
             tf.logging.info("***********Running in {} mode***********".format(self.config.mode))
             self.estimator = tf.estimator.Estimator(
                 model_fn=self._build_model_fn(),
                 config=self._get_run_predict_config())
 
+        # 以 preprocess 开头的模式
         elif self.config.mode == 'preprocess':
             tf.logging.info("***********Running in {} mode***********".format(self.config.mode))
             self.estimator = tf.estimator.Estimator(
@@ -587,8 +617,12 @@ class EzTransEstimator(object):
             self.second_sequence = self.config.second_sequence
             self.label_enumerate_values = self.config.label_enumerate_values
             self.label_name = self.config.label_name
+        # 总结看下来就是, 初始化的核心都是构建 Estimator
 
     def _get_run_train_config(self, config):
+        """
+        获取训练时需要的配置
+        """
         session_config = tf.ConfigProto(
             allow_soft_placement=True,
             log_device_placement=False,
@@ -609,7 +643,9 @@ class EzTransEstimator(object):
         return run_config
 
     def _get_run_predict_config(self):
-
+        """
+        获取预测时需要的配置
+        """
         session_config = tf.ConfigProto(
             allow_soft_placement=True,
             log_device_placement=False,
@@ -619,15 +655,25 @@ class EzTransEstimator(object):
                                       force_gpu_compatible=True,
                                       per_process_gpu_memory_fraction=1.0))
 
+        # 上面的 session_config 和训练时是一致的, 但 RunConfig 就不需要其他参数了
         run_config = tf.estimator.RunConfig(session_config=session_config)
         return run_config
 
     def _build_model_fn(self):
+        """
+        构建模型的前向函数
+        """
+        # 函数需要这些参数, 第四个参数名在文档中是 config, 估计实际上也是用位置传的, 要么就是后来的 tf 版本改了参数名
+        # https://www.tensorflow.org/api_docs/python/tf/estimator/Estimator
         def model_fn(features, labels, mode, params):
             if mode == tf.estimator.ModeKeys.TRAIN:
+                # 前向计算
                 logits, labels = self.build_logits(features, mode=mode)
+                # 计算损失
                 total_loss = self.build_loss(logits, labels)
+                # tower 是塔?
                 num_towers = self.config.num_workers * self.config.num_gpus
+                # 获取训练的操作函数
                 train_op = get_train_op(learning_rate=self.config.learning_rate,
                                         weight_decay_ratio=self.config.weight_decay_ratio,
                                         loss=total_loss,
@@ -642,9 +688,11 @@ class EzTransEstimator(object):
                                         num_freezed_layers=self.config.num_freezed_layers
                                         )
 
+                # 这个分布式策略, 提前返回了, 不正经的返回值
                 if self.config.distribution_strategy == "WhaleStrategy":
                     return total_loss, train_op
 
+                # 注册钩子函数
                 avgloss_hook = avgloss_logger_hook(self.train_steps,
                                                    total_loss,
                                                    self.model_dir,
@@ -652,22 +700,32 @@ class EzTransEstimator(object):
                                                    self.config.task_index)
 
                 summary_hook = tf.train.SummarySaverHook(save_steps=100, summary_op=tf.summary.merge_all())
+                # 文档里说的正经人都是返回 EstimatorSpec 的
+                # 就是返回了 mode, 总的损失, 训练操作, 钩子函数的列表
                 return tf.estimator.EstimatorSpec(
                     mode=mode, loss=total_loss, train_op=train_op,
                     training_hooks=[summary_hook, avgloss_hook])
 
             elif mode == tf.estimator.ModeKeys.EVAL:
+                # 评估阶段, 前两步也是一样的
                 logits, labels = self.build_logits(features, mode=mode)
                 eval_loss = self.build_loss(logits, labels)
+                # 记录下结果
                 tf.summary.scalar("eval_loss", eval_loss)
+                # 获取评估值
                 metrics = self.build_eval_metrics(logits, labels)
+                # 一样的钩子
                 summary_hook = tf.train.SummarySaverHook(save_steps=100,
                                                          summary_op=tf.summary.merge_all())
+                # 参数换成了 eval 开头的
                 return tf.estimator.EstimatorSpec(mode, loss=eval_loss,
                                                   eval_metric_ops=metrics,
                                                   evaluation_hooks=[summary_hook])
 
             elif mode == tf.estimator.ModeKeys.PREDICT:
+                # 预测阶段
+
+                # 这给我看晕了, 前面几个 if 都是一样的操作, 有必要区分吗?
                 if self.config.mode == 'predict' or self.config.mode == 'export':
                     output = self.build_logits(features, mode=mode)
                     predictions = self.build_predictions(output)
@@ -682,9 +740,11 @@ class EzTransEstimator(object):
                 else:
                     predictions = features
 
+                # predictions 是类似字典的结构? 可以用 update 方法
                 output = {'serving_default': tf.estimator.export.PredictOutput(predictions)}
                 predictions.update(features)
 
+                # 参数换成了 predict 和 export
                 return tf.estimator.EstimatorSpec(
                     mode=mode,
                     predictions=predictions,
