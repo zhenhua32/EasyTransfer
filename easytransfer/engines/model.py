@@ -532,6 +532,7 @@ class EzTransEstimator(object):
             self.train_steps = int(self.num_train_examples *
                                    self.config.num_epochs / global_batch_size) + 1
 
+            # 评估最小间隔时间
             self.throttle_secs = self.config.throttle_secs
             self.model_dir = self.config.model_dir
             tf.logging.info("model_dir: {}".format(self.config.model_dir))
@@ -753,11 +754,15 @@ class EzTransEstimator(object):
         return model_fn
 
     def run_train_and_evaluate(self, train_reader, eval_reader):
+        """
+        训练且评估
+        """
         train_spec = tf.estimator.TrainSpec(input_fn=train_reader.get_input_fn(),
                                             max_steps=self.train_steps)
 
         eval_spec = tf.estimator.EvalSpec(input_fn=eval_reader.get_input_fn(),
                                           steps=self.num_eval_steps,
+                                          # 评估最小间隔时间
                                           throttle_secs=self.throttle_secs)
 
         tf.logging.info("*********Calling tf.estimator.train_and_evaluate *********")
@@ -766,22 +771,32 @@ class EzTransEstimator(object):
                                         eval_spec=eval_spec)
 
     def run_train(self, reader):
+        """
+        训练
+        """
         self.estimator.train(input_fn=reader.get_input_fn(),
                              max_steps=self.train_steps)
 
     def run_evaluate(self, reader, checkpoint_path=None):
+        """
+        评估
+        """
         return self.estimator.evaluate(input_fn=reader.get_input_fn(),
                                        steps=self.num_eval_steps,
                                        checkpoint_path=checkpoint_path)
 
     def run_predict(self, reader, writer=None, checkpoint_path=None, yield_single_examples=False):
-
+        """
+        预测
+        """
+        # 当没有写入器时, 直接返回结果
         if writer is None:
             return self.estimator.predict(
                 input_fn=reader.get_input_fn(),
                 yield_single_examples=yield_single_examples,
                 checkpoint_path=checkpoint_path)
 
+        # 否则就遍历结果, 然后调用 writer.process 的方法处理
         for batch_idx, outputs in enumerate(self.estimator.predict(input_fn=reader.get_input_fn(),
                                                                    yield_single_examples=yield_single_examples,
                                                                    checkpoint_path=checkpoint_path)):
@@ -793,6 +808,9 @@ class EzTransEstimator(object):
         writer.close()
 
     def run_preprocess(self, reader, writer):
+        """
+        进行预处理
+        """
         for batch_idx, outputs in enumerate(self.estimator.predict(input_fn=reader.get_input_fn(),
                                                                    yield_single_examples=False,
                                                                    checkpoint_path=None)):
@@ -803,7 +821,9 @@ class EzTransEstimator(object):
         writer.close()
 
     def export_model(self):
-
+        """
+        导出模型
+        """
         export_dir_base = self.config.export_dir_base
         checkpoint_path = self.config.checkpoint_path
 
@@ -816,20 +836,27 @@ class EzTransEstimator(object):
                                                 checkpoint_path=checkpoint_path)
 
 class base_model(EzTransEstimator):
+    """
+    基础模型
+    """
     def __init__(self, **kwargs):
         user_defined_config = kwargs.get("user_defined_config", None)
+        # 当这个参数 user_defined_config 没有传时, 就要使用 FLAGS 取配置了
         if user_defined_config is None:
             assert FLAGS.mode is not None
+            # 从配置文件中读取
             with tf.gfile.Open(FLAGS.config, "r") as f:
                 tf.logging.info("config file is {}".format(FLAGS.config))
                 config_json = json.load(f)
             # enhance config_json
+            # 增加其他配置
             config_json["worker_hosts"] = FLAGS.worker_hosts
             config_json["task_index"] = FLAGS.task_index
             config_json["job_name"] = FLAGS.job_name
             config_json["num_gpus"] = FLAGS.workerGPU
             config_json["num_workers"] = FLAGS.workerCount
 
+            # 根据 tables 参数解析训练文件
             if FLAGS.tables is not None:
                 if FLAGS.mode.startswith("train_and_evaluate"):
                     config_json['train_config']['train_input_fp'] = FLAGS.tables.split(",")[0]
@@ -845,6 +872,7 @@ class base_model(EzTransEstimator):
                 else:
                     raise RuntimeError
 
+            # 根据 outputs 解析输出文件
             if FLAGS.outputs is not None:
                 if FLAGS.mode.startswith("predict"):
                     config_json['predict_config']['predict_output_fp'] = FLAGS.outputs.split(",")[0]
@@ -854,6 +882,7 @@ class base_model(EzTransEstimator):
                     raise RuntimeError
 
             if "predict" in FLAGS.mode:
+                # 尝试从 train_config.json 文件中读取配置, 添加为 config_json 的 model_config
                 if config_json['predict_config'].get('predict_checkpoint_path', None) is not None:
                     model_ckpt = config_json['predict_config']['predict_checkpoint_path'].split("/")[-1]
                     config_fp = config_json['predict_config']['predict_checkpoint_path'].replace(model_ckpt,
@@ -864,8 +893,10 @@ class base_model(EzTransEstimator):
                             model_config = saved_config.get("model_config", None)
                             config_json["model_config"] = model_config
 
+            # 初始化配置
             self.config = Config(mode=FLAGS.mode, config_json=config_json)
 
+            # 如果是训练模式, 需要保证 model_dir 存在, 且将配置写入到 train_config.json 文件中
             if "train" in FLAGS.mode:
                 assert self.config.model_dir is not None
                 if not tf.gfile.Exists(self.config.model_dir):
@@ -876,11 +907,13 @@ class base_model(EzTransEstimator):
                         json.dump(config_json, f)
 
         else:
+            # 这里就可以解释 EzTransEstimator 的 config 是从哪里来的了
             self.config = user_defined_config
 
         for key, val in self.config.__dict__.items():
             setattr(self, key, val)
 
+        # 获取 训练样本数 和 预测样本数
         num_train_examples = 0
         num_predict_examples = 0
         if "train" in self.config.mode:
@@ -906,7 +939,7 @@ class base_model(EzTransEstimator):
                             break
                         if i%10 ==0:
                             tf.logging.info("Reading {} files".format(i))
-                        fp = line.strip()
+                        fp = line.strip()  # 每一行都是一个文件路径
                         for record in tf.python_io.tf_record_iterator(fp):
                             num_train_examples += 1
             elif ".list_csv" in self.config.train_input_fp:
@@ -931,6 +964,7 @@ class base_model(EzTransEstimator):
             assert num_train_examples > 0
             tf.logging.info("total number of training examples {}".format(num_train_examples))
         elif "predict" in self.config.mode:
+            # 预测的也类似跑一遍, 获取预测样本数
             if "odps" in self.config.predict_input_fp:
                 reader = tf.python_io.TableReader(self.config.predict_input_fp,
                                                   selected_cols="",
@@ -967,15 +1001,22 @@ class base_model(EzTransEstimator):
             assert num_predict_examples > 0
             tf.logging.info("total number of predicting examples {}".format(num_predict_examples))
 
+        # 然后在这里才初始化父类
         super(base_model, self).__init__(num_train_examples=num_train_examples)
 
     def get_export_features(self):
+        """
+        获取导出的特征
+        """
+        # 导出的特征
         export_features = {}
 
+        # input_tensors_schema 是用逗号分隔的, 每个特征又用冒号分隔
+        # "input_ids:int:64,input_mask:int:64,segment_ids:int:64,label_id:int:1"
         for feat in self.config.input_tensors_schema.split(","):
-            feat_name = feat.split(":")[0]
-            feat_type = feat.split(":")[1]
-            seq_len = int(feat.split(":")[2])
+            feat_name = feat.split(":")[0]  # 名字
+            feat_type = feat.split(":")[1]  # 类型
+            seq_len = int(feat.split(":")[2])  # 序列长度
             feat = {}
             feat['name'] = feat_name
             feat['type'] = feat_type
@@ -988,15 +1029,23 @@ class base_model(EzTransEstimator):
             else:
                 ph = tf.placeholder(dtype=dtype, shape=[None, None], name=feat_name)
 
+            # key 是名字, value 是占位符 tf.placeholder
             export_features[feat_name] = ph
 
+        # 接收的特征
         receiver_tensors = {}
         feat_names = []
+        # 格式是一样的, 但只用到了名字
+        # "input_ids:int:64,input_mask:int:64,segment_ids:int:64"
         for feat in self.config.receiver_tensors_schema.split(","):
             feat_names.append(feat.split(":")[0])
         for feat_name in feat_names:
             receiver_tensors[feat_name] = export_features[feat_name]
         return export_features, receiver_tensors
+
+    """
+    下面是四个未实现的函数, 算是主要的函数了, 要构建一个模型, 就需要实现这些方法
+    """
 
     def build_logits(self, features, mode):
         """ Given features, this method take care of building graph for train/eval/predict
