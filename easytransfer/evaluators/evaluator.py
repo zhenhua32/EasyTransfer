@@ -20,6 +20,9 @@ import inspect
 from abc import ABCMeta
 
 class Evaluator(six.with_metaclass(ABCMeta, object)):
+    """
+    评估器的基类
+    """
     # metric_names 的默认值作为 [] 空数组有点风险, 一般不将可变类型作为默认值
     def __init__(self, metric_names=[]):
         self.clear()

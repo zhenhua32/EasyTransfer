@@ -1100,7 +1100,7 @@ class base_model(EzTransEstimator):
 
         raise NotImplementedError("must be implemented in descendants")
 
-    def build_eval_metrics(self, logits, labels):
+    def build_eval_metrics(self, logits, labels) -> dict:
         """Build evaluation metrics
 
         Args:

@@ -5,6 +5,7 @@ import whale as wh
 import os
 
 
+# 没看
 class WhaleEstimator(object):
     def __init__(self, model_fn, model_dir, num_model_replica,
                  num_accumulated_batches, keep_checkpoint_max, save_checkpoints_steps,
