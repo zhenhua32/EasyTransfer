@@ -75,6 +75,7 @@ class CSVReader(Reader):
     def _decode_csv(self, record):
         """
         解析 csv 文件
+        record 相当于表格中的一行数据
         """
         record_defaults = [] # 默认值
         tensor_names = [] # 列名

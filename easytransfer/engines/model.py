@@ -803,6 +803,7 @@ class EzTransEstimator(object):
 
             if batch_idx % 100 == 0:
                 tf.logging.info("Processing %d batches" % (batch_idx))
+            # 属实破防了, 原来是直接调用的, 还以为是通过 writer.run 调用的 writer.process
             writer.process(outputs)
 
         writer.close()
