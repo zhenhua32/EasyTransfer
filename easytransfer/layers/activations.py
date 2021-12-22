@@ -14,6 +14,11 @@
 # limitations under the License.
 
 
+"""
+定义多种激活函数
+"""
+
+
 import numpy as np
 import tensorflow as tf
 

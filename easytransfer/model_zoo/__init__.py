@@ -19,7 +19,13 @@ from tensorflow.python.platform import gfile
 from .modeling_adabert import AdaBERTStudent
 
 def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
+    """
+    获取预训练的模型
+    """
     if "/" not in pretrain_model_name_or_path:
+        """
+        如果 / 不在模型路径中, 说明不是本地文件, 而是一个预先定义的模型名称
+        """
         model_type = pretrain_model_name_or_path.split("-")[1]
         if model_type == 'bert':
             from .modeling_bert import BertPreTrainedModel
@@ -66,6 +72,7 @@ def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
             return VideoBertPreTrainedModel.get(pretrain_model_name_or_path, **kwargs)
         else:
             raise ValueError("model_type should be in bert, roberta, albert, imagebert, videobert")
+
 
 def get_config_path(model_type, pretrain_model_name_or_path):
     if model_type == 'bert':

@@ -40,6 +40,14 @@ class CSVWriter(Process):
         self.writer.close()
 
     def process(self, features):
+        """
+        features 看起来是个字典
+        因为从 Process 类的文档和代码上看, 如果 batch_size 参数被设置为 1, 那么会将 input_list 的第一个值作为参数
+        if self.batch_size == 1:
+            out = self.process(input_list[0])
+        else:
+            out = self.process(input_list)
+        """
         def str_format(element):
             # 格式化成字符串
             if isinstance(element, float) or isinstance(element, int) \

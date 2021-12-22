@@ -199,6 +199,9 @@ class AppPredictor(object):
 
 
 def run_app_predictor(config):
+    """
+    执行预测
+    """
     try:
         if config.model_name == "feat_ext_bert":
             predictor = AppPredictor(config,
