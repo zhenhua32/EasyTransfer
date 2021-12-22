@@ -18,6 +18,7 @@ import tensorflow as tf
 from easytransfer import layers
 from .modeling_utils import PretrainedConfig, PreTrainedModel
 
+# 名字和模型路径的映射
 BERT_PRETRAINED_MODEL_ARCHIVE_MAP = {
     'google-bert-tiny-en': "bert/google-bert-tiny-en/model.ckpt",
     'google-bert-small-en': "bert/google-bert-small-en/model.ckpt",
@@ -31,6 +32,7 @@ BERT_PRETRAINED_MODEL_ARCHIVE_MAP = {
     'pai-bert-large-zh': "bert/pai-bert-large-zh/model.ckpt",
 }
 
+# 名字和配置文件的映射
 BERT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
     'google-bert-tiny-en': "bert/google-bert-tiny-en/config.json",
     'google-bert-small-en': "bert/google-bert-small-en/config.json",

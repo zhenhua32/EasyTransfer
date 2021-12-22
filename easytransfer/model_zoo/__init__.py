@@ -45,6 +45,7 @@ def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
         else:
             raise NotImplementedError
     else:
+        # 读取模型路径下的 config.json 文件
         config_path = os.path.join(os.path.dirname(pretrain_model_name_or_path), "config.json")
         if "oss" in config_path:
             with gfile.GFile(config_path, mode='r') as reader:
@@ -53,6 +54,8 @@ def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
             with open(config_path, "r") as reader:
                 text = reader.read()
         json_config = json.loads(text)
+
+        # 同样的, 也是根据 model_type 来决定如何加载模型
         model_type = json_config["model_type"]
         assert model_type is not None, "you must specify model_type in config.json when pass pretrained_model_path"
         if model_type == 'bert':
