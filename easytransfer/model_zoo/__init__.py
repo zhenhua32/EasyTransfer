@@ -78,6 +78,9 @@ def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
 
 
 def get_config_path(model_type, pretrain_model_name_or_path):
+    """
+    获取配置路径
+    """
     if model_type == 'bert':
         from .modeling_bert import BertPreTrainedModel
         config_path = BertPreTrainedModel.pretrained_config_archive_map[

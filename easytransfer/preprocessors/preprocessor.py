@@ -102,8 +102,11 @@ def truncate_seq_pair(tokens_a, tokens_b, max_length):
         else:
             tokens_b.pop()
 
-class PreprocessorConfig(object):
 
+class PreprocessorConfig(object):
+    """
+    预处理器的配置
+    """
     def __init__(self, **kwargs):
 
         self.mode = kwargs.get("mode")
@@ -114,13 +117,17 @@ class PreprocessorConfig(object):
         # configurate tokenizer
         pretrain_model_name_or_path = kwargs['pretrain_model_name_or_path']
 
+        # 如果路径中没有 / 说明不是一个文件路径, 而是预定义的模型的名称
         if "/" not in pretrain_model_name_or_path:
+            # - 分隔的第二个位置是模型类型 model_type
             model_type = pretrain_model_name_or_path.split("-")[1]
+            # 检查配置文件是否存在, 如果存在, 就跳过. 否则就要下载模型
             if tf.gfile.Exists(os.path.join(FLAGS.modelZooBasePath, model_type,
                                                 pretrain_model_name_or_path, "config.json")):
                 # If exists directory, not download
                 pass
             else:
+                # python 2 版本? 没想到啊, 一开始居然是支持 python 2.7 的
                 if six.PY2:
                     import errno
                     def mkdir_p(path):
@@ -133,33 +140,43 @@ class PreprocessorConfig(object):
                                 raise
                     mkdir_p(os.path.join(FLAGS.modelZooBasePath, model_type))
                 else:
+                    # 创建完整的目录
                     os.makedirs(os.path.join(FLAGS.modelZooBasePath, model_type), exist_ok=True)
 
+                # 目标路径, 是 pretrain_model_name_or_path + .tgz 的文件
                 des_path = os.path.join(os.path.join(FLAGS.modelZooBasePath, model_type),
                                         pretrain_model_name_or_path + ".tgz")
                 if not os.path.exists(des_path):
                     tf.logging.info("********** Begin to download to {} **********".format(des_path))
+                    # 没想到是直接调用命令行工具下载和解压的
                     os.system(
                         'wget -O ' + des_path + ' https://atp-modelzoo-sh.oss-cn-shanghai.aliyuncs.com/eztransfer_modelzoo/' + model_type + '/' + pretrain_model_name_or_path + ".tgz")
                     os.system('tar -zxvf ' + des_path + ' --directory ' + FLAGS.modelZooBasePath + "/" + model_type)
 
+        # 如果是包含 train 的模式
         if "train" in self.mode:
             model_dir = kwargs['model_dir']
             assert model_dir is not None, "model_dir should be set in config"
+            # 同样的, 组合出模型所在的目录 dir_path
             if "/" not in pretrain_model_name_or_path:
                 model_type = pretrain_model_name_or_path.split("-")[1]
                 config_path = get_config_path(model_type, pretrain_model_name_or_path)
                 config_path = os.path.join(FLAGS.modelZooBasePath, config_path)
+                # 配置文件的目录就是 dir_path
                 dir_path = os.path.dirname(config_path)
             else:
                 dir_path = os.path.dirname(pretrain_model_name_or_path)
 
+            # 目录不存在, 就先创建剥
             if not tf.gfile.Exists(model_dir):
                 tf.gfile.MakeDirs(model_dir)
 
+            # 如果 model_dir 中配置文件 config.json 不存在, 就从 dir_path 中复制配置文件和词汇表
             if not tf.gfile.Exists(os.path.join(model_dir, "config.json")):
                 tf.gfile.Copy(os.path.join(dir_path, "config.json"),
                               os.path.join(model_dir, "config.json"))
+                # 上面的 config.json 是一定有的, 直接复制过去
+                # 而词汇表, 因为文件名不统一, 所以是用 Exists 试探下再复制过去
                 if tf.gfile.Exists(os.path.join(dir_path, "vocab.txt")):
                     tf.gfile.Copy(os.path.join(dir_path, "vocab.txt"),
                                   os.path.join(model_dir, "vocab.txt"))
@@ -168,8 +185,10 @@ class PreprocessorConfig(object):
                                   os.path.join(model_dir, "30k-clean.model"))
 
         albert_language = "zh"
+        # 当使用预定义的模型名称时, 该如何获取词汇表的路径
         if "/" not in pretrain_model_name_or_path:
             model_type = pretrain_model_name_or_path.split("-")[1]
+            # albert 用的是句子级别的词汇表 sentencepiece_model_name_vocab_path_map
             if model_type == "albert":
                 vocab_path = os.path.join(FLAGS.modelZooBasePath,
                                           sentencepiece_model_name_vocab_path_map[pretrain_model_name_or_path])
@@ -178,19 +197,23 @@ class PreprocessorConfig(object):
                 else:
                     albert_language = "zh"
             else:
+                # 反之就是单词级别的词汇表 wordpiece_model_name_vocab_path_map
                 vocab_path = os.path.join(FLAGS.modelZooBasePath,
                                           wordpiece_model_name_vocab_path_map[pretrain_model_name_or_path])
 
         else:
+            # 否则, 就需要从 config.json 中读取 model_type
             with tf.gfile.GFile(os.path.join(os.path.dirname(pretrain_model_name_or_path), "config.json")) as reader:
                 text = reader.read()
             json_config = json.loads(text)
             model_type = json_config["model_type"]
             if model_type == "albert":
+                # 如果 vocab.txt 存在, 就读取这个文件, 并将 albert_language 设置为 zh
                 if tf.gfile.Exists(os.path.join(os.path.dirname(pretrain_model_name_or_path), "vocab.txt")):
                     albert_language = "zh"
                     vocab_path = os.path.join(os.path.dirname(pretrain_model_name_or_path), "vocab.txt")
                 elif tf.gfile.Exists(os.path.join(os.path.dirname(pretrain_model_name_or_path), "30k-clean.model")):
+                    # 否则, 就是 en, 同时要读取 30k-clean.model
                     albert_language = "en"
                     vocab_path = os.path.join(os.path.dirname(pretrain_model_name_or_path), "30k-clean.model")
             else:
@@ -199,6 +222,7 @@ class PreprocessorConfig(object):
         assert model_type is not None, "you must specify model_type in pretrain_model_name_or_path"
 
         if model_type == "albert":
+            # albert 的 en 语言有点特殊的, 这个类的大部分 if else 都是它产生的
             if albert_language == "en":
                 self.tokenizer = FullTokenizer(spm_model_file=vocab_path)
             else:
@@ -207,6 +231,7 @@ class PreprocessorConfig(object):
             self.tokenizer = FullTokenizer(vocab_file=vocab_path)
 
         # Additional attributes without default values
+        # 将所有的关键字参数都添加到 self 上
         for key, value in kwargs.items():
             try:
                 setattr(self, key, value)
@@ -216,12 +241,18 @@ class PreprocessorConfig(object):
 
     @classmethod
     def from_json_file(cls, **kwargs):
+        """
+        这个类方法本质上也是初始化实例, 没啥特殊的, 不知道为什么要加这个
+        """
         config = cls(**kwargs)
         return config
 
 
+# 这个 easytransfer.layers.Layer 就是 from tensorflow.python.layers.base import Layer
 class Preprocessor(easytransfer.layers.Layer, Process):
-
+    """
+    预处理器
+    """
     def __init__(self,
                  config,
                  thread_num=1,
