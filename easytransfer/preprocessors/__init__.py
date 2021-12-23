@@ -25,6 +25,9 @@ def get_preprocessor(pretrain_model_name_or_path,
                      app_model_name="text_classify_bert",
                      is_paired=False,
                      **kwargs):
+    """
+    根据 app_model_name 选择不同的预处理器
+    """
     if app_model_name == "text_comprehension_bert":
         return ComprehensionPreprocessor.get_preprocessor(
             pretrain_model_name_or_path=pretrain_model_name_or_path, **kwargs)
@@ -38,6 +41,7 @@ def get_preprocessor(pretrain_model_name_or_path,
             pretrain_model_name_or_path=pretrain_model_name_or_path, **kwargs)
 
     elif app_model_name in ["text_classify_bert", "text_match_bert"]:
+        # 是否是成对的
         if is_paired:
             return PairedClassificationRegressionPreprocessor.get_preprocessor(
                 pretrain_model_name_or_path=pretrain_model_name_or_path, **kwargs)

@@ -27,6 +27,7 @@ from easytransfer.engines.model import FLAGS
 from .tokenization import FullTokenizer
 from easytransfer.model_zoo import get_config_path
 
+# 句子 的 vocab 路径
 sentencepiece_model_name_vocab_path_map = {
     'google-albert-base-zh': "albert/google-albert-base-zh/vocab.txt",
     'google-albert-large-zh': "albert/google-albert-large-zh/vocab.txt",
@@ -46,6 +47,7 @@ sentencepiece_model_name_vocab_path_map = {
     'pai-albert-xxlarge-en': "albert/pai-albert-xxlarge-en/30k-clean.model",
 }
 
+# 单词 的 vocab 路径
 wordpiece_model_name_vocab_path_map = {
     'google-bert-tiny-zh': "bert/google-bert-tiny-zh/vocab.txt",
     'google-bert-tiny-en': "bert/google-bert-tiny-en/vocab.txt",
@@ -80,9 +82,12 @@ wordpiece_model_name_vocab_path_map = {
     'pai-sentimentbert-base-zh': "sentimentbert/pai-sentimentbert-base-zh/vocab.txt"
 }
 
+
 def truncate_seq_pair(tokens_a, tokens_b, max_length):
     """Truncates a sequence pair in place to the maximum length."""
-
+    """
+    裁剪句子对
+    """
     # This is a simple heuristic which will always truncate the longer sequence
     # one token at a time. This makes more sense than truncating an equal percent
     # of tokens from each, since if one sequence is very short then each token
@@ -91,6 +96,7 @@ def truncate_seq_pair(tokens_a, tokens_b, max_length):
         total_length = len(tokens_a) + len(tokens_b)
         if total_length <= max_length:
             break
+        # 一个个单词去除, 先从长的开始去除, 每次从尾部删除一个单词
         if len(tokens_a) > len(tokens_b):
             tokens_a.pop()
         else:
