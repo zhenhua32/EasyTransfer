@@ -376,27 +376,43 @@ class Preprocessor(easytransfer.layers.Layer, Process):
 
     # Inputs from Reader's map_batch_prefetch method
     def call(self, inputs):
+        """
+        调用
+        """
         self.set_feature_schema()
 
+        # 按名字从 inputs 中取, 都添加进去
         items = []
+        # 这个 input_tensor_names 也是在子类中设置的
         for name in self.input_tensor_names:
             items.append(inputs[name])
 
+        # 对模式有要求, 非 on_the_fly 系列的和 preprocess 的都可以直接返回结果了
         if not ("on_the_fly" in self.mode or self.mode == "preprocess"):
             return items
 
+        # 这是定义了输出的结构, 数组的长度为 len(self.seq_lens), 类型都是 tf.string
+        # seq_lens 也不是在这个类, 或者它的父类中定义的, 又是给子类定义用的
         self.Tout = [tf.string] * len(self.seq_lens)
 
+        # partial 组装了一个新函数, 预先定义了 convert_example_to_features 参数
+        # py_func 定义了一个 python 函数, 然后将它封装为 tf op 操作
+        # 这个函数的输入是 items, 输出结构是 self.Tout
         batch_features = tf.py_func(functools.partial(self._convert,
                                                       self.convert_example_to_features),
                                     items, self.Tout)
 
         ret = []
+        # 循环 self._convert 的输出结果
         for idx, feature in enumerate(batch_features):
+            # 序列长度
             seq_len = self.seq_lens[idx]
+            # 特征类型
             feature_type = self.feature_value_types[idx]
+            # 按类型处理
             if feature_type == tf.int64:
                 input_tensor = tf.string_to_number(
+                    # 在最前面还添加了一个轴, 变成了 (1, )
                     tf.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
                     tf.int64)
             elif feature_type == tf.float32:
@@ -411,42 +427,61 @@ class Preprocessor(easytransfer.layers.Layer, Process):
             input_tensor = tf.reshape(input_tensor, [-1, seq_len])
             ret.append(input_tensor)
 
+        # 新增的几个
         for name in self.append_tensor_names:
             ret.append(inputs[name])
 
         return ret
 
     def process(self, inputs):
+        """
+        处理
+        """
         self.set_feature_schema()
 
+        # 如果类型是字典, 就先变成单元素的数组
         if isinstance(inputs, dict):
             inputs = [inputs]
 
+        # 构建批次需要的样本
         batch_features = []
         for input in inputs:
             items = []
+            # 又是取出了需要的特征
             for name in self.input_tensor_names:
                 items.append(input[name])
             features = self.convert_example_to_features(items)
             batch_features.append(features)
 
+        # 这个堆叠也是似曾相识. 每一行都是不同样本的同一个特征
         stacked_features = np.stack(batch_features, axis=1)
         concat_features = []
         for i in range(stacked_features.shape[0]):
+            # 每一行都是不同样本的同一个特征
             concat_features.append(np.asarray(" ".join(stacked_features[i])))
 
+        # 如果是预测或者预处理
         if self.mode.startswith("predict") or self.mode == "preprocess":
+            # 输出模式是按逗号分隔的名字
             for name in self.output_schema.split(","):
+                # 如果名字在 input_tensor_names 中, 就添加到 output_tensor_names 中
                 if name in self.input_tensor_names:
                     self.output_tensor_names.append(name)
 
         ret = {}
+        # 循环输出tensor的名字
         for idx, name in enumerate(self.output_tensor_names):
+            # 当索引小于特征数时
             if idx < len(concat_features):
+                # 特征
                 feature = concat_features[idx]
+                # 序列长度
                 seq_len = self.seq_lens[idx]
+                # 特征类型
                 feature_type = self.feature_value_types[idx]
+                # 变成数组
                 feature = feature.tolist()
+                # 将特征从按空格分隔的字符串转变成数组
                 if feature_type == tf.int64:
                     input_tensor = [int(x) for x in feature.split(" ")]
                 elif feature_type == tf.float32:
@@ -456,13 +491,17 @@ class Preprocessor(easytransfer.layers.Layer, Process):
                 else:
                     raise NotImplementedError
                 input_tensor = np.reshape(input_tensor, [-1, seq_len])
+                # 你确定不是在逗我, 这个 name 不就是前面的 idx, name 中的 name 吗?
                 name = self.output_tensor_names[idx]
                 ret[name] = input_tensor
             else:
                 left = []
+                # inputs 中的每个元素, 将对应名字的值加进去
                 for ele in inputs:
                     left.append(ele[name])
+                # 然后变成一个 np.array, 同时还要 reshape 变换形状 (n, 1), n 是 inputs 的数量
                 left_tensor = np.asarray(left)
                 ret[name] = np.reshape(left_tensor, [-1, 1])
 
+        # 返回一个字典, 字典里的 key 来自于 output_tensor_names
         return ret
