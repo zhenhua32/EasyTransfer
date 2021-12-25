@@ -264,6 +264,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         kwargs.clear()
         easytransfer.layers.Layer.__init__(self, **kwargs)
 
+        # 预测和预处理的 batch_size 从不同的配置项中获取
         if config.mode.startswith("predict"):
             Process.__init__(
                 self, job_name, thread_num, input_queue, output_queue, batch_size=config.predict_batch_size)
@@ -272,9 +273,12 @@ class Preprocessor(easytransfer.layers.Layer, Process):
             Process.__init__(
                 self, job_name, thread_num, input_queue, output_queue, batch_size=config.preprocess_batch_size)
 
+        # 如果有额外添加的列, 将这些名字添加进去
         self.append_tensor_names = []
         if hasattr(config, "append_feature_columns") and config.append_feature_columns is not None:
+            # 用逗号分隔的
             for schema in config.append_feature_columns.split(","):
+                # 名字是用冒号分隔的第一个
                 name = schema.split(":")[0]
                 self.append_tensor_names.append(name)
 
@@ -282,6 +286,11 @@ class Preprocessor(easytransfer.layers.Layer, Process):
 
     @classmethod
     def get_preprocessor(cls, **kwargs):
+        """
+        获取预处理器
+        """
+        # 如果有 user_defined_config, 就用这个当作配置
+        # 所有的配置都是为了添加到 kwargs 中
         if kwargs.get("user_defined_config", None) is not None:
             config = kwargs["user_defined_config"]
             for key, val in config.__dict__.items():
@@ -289,26 +298,33 @@ class Preprocessor(easytransfer.layers.Layer, Process):
             if kwargs["mode"] == "export":
                 kwargs["input_schema"] = config.input_tensors_schema
         else:
+            # 从 FLAGS.config 中获取配置文件的路径
             json_file = FLAGS.config
             with tf.gfile.GFile(json_file, mode='r') as reader:
                 text = reader.read()
 
             config_dict = json.loads(text)
             for values in config_dict.values():
+                # 跳过值为 str 类型的
                 if isinstance(values, str):
                     continue
+                # 这是要求值是个字典
                 for k, v in values.items():
+                    # 跳过 v 是个字典, 且 k 是 label_enumerate_values 的
                     if isinstance(v, dict) and k != "label_enumerate_values":
                         continue
                     else:
                         kwargs[k] = v
             kwargs["mode"] = FLAGS.mode
+            # export 也是和上面类似的处理, 是从 input_tensors_schema 中获取的
             if FLAGS.mode == "export":
                 kwargs["input_schema"] = config_dict['export_config']['input_tensors_schema']
 
+        # 然后就可以用 kwargs 重新构建 config 了
+        # 也不知道 config_class 是在哪里定义的l, Process 里是没这个东西的, Layer 也没有, 看起来又是给子类用的吗?
         config = cls.config_class.from_json_file(**kwargs)
 
-
+        # 调用自身, 初始化实例
         preprocessor = cls(config, **kwargs)
         return preprocessor
 
@@ -319,28 +335,42 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         raise NotImplementedError("must be implemented in descendants")
 
     def _convert(self, convert_example_to_features, *args):
-
+        """
+        转换
+        convert_example_to_features 是个函数
+        """
+        # 只有 on_the_fly 系列的模式和 preprocess 模式可以使用这个方法
         # mode check
         if not ("on_the_fly" in self.mode or self.mode == "preprocess"):
             raise ValueError("Please using on_the_fly or preprocess mode")
 
-        batch_features = []
-        batch_size = len(args[0])
+        batch_features = []  # 一个批次需要的数量
+        batch_size = len(args[0])  # 第一个 args 的长度是批次数量, args[0] 是
+        # 遍历每一个批次
         for i in range(batch_size):
+            # items 是一个样本
             items = []
+            # feat 是一个特征列, 这里是遍历所有的特征列, 合并成一个样本
             for feat in args:
+                # 如果 feat[i] 是 np.ndarray, 那么 feat[i][0] 就不能是 None
                 if isinstance(feat[i], np.ndarray):
                     assert feat[i][0] is not None, "In on the fly mode where object is ndarray, column has null value"
                     items.append(feat[i][0])
                 else:
                     assert feat[i] is not None, "In on the fly mode, column has null value"
                     items.append(feat[i])
+            # 然后调用 convert_example_to_features 将样本转换格式
             features = convert_example_to_features(items)
             batch_features.append(features)
 
+        # batch_features 里面有 n 个样本, 每个样本有 m 个特征
+        # 那么堆叠起来, axi=1 表示的形状就是 (m, n)
+        # 每一行是由不同的样本的同一个特征组成
         stacked_features = np.stack(batch_features, axis=1)
         concat_features = []
+        # 遍历不同的特征, shape[0] 就是 m
         for i in range(stacked_features.shape[0]):
+            # 将不同的样本的同一个特征, 用空格连接起来, 然后类型转换成 batch_features
             concat_features.append(np.asarray(" ".join(stacked_features[i])))
         return concat_features
 
