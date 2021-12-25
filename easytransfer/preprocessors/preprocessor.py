@@ -321,7 +321,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
                 kwargs["input_schema"] = config_dict['export_config']['input_tensors_schema']
 
         # 然后就可以用 kwargs 重新构建 config 了
-        # 也不知道 config_class 是在哪里定义的l, Process 里是没这个东西的, Layer 也没有, 看起来又是给子类用的吗?
+        # cls.config_class 果然是在子类里定义的, 基本上都是 PreprocessorConfig 的子类
         config = cls.config_class.from_json_file(**kwargs)
 
         # 调用自身, 初始化实例

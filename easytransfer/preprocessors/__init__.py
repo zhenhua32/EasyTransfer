@@ -40,6 +40,7 @@ def get_preprocessor(pretrain_model_name_or_path,
         return SequenceLabelingPreprocessor.get_preprocessor(
             pretrain_model_name_or_path=pretrain_model_name_or_path, **kwargs)
 
+    # 主要应该先看这个, 分类模型的
     elif app_model_name in ["text_classify_bert", "text_match_bert"]:
         # 是否是成对的
         if is_paired:

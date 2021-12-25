@@ -23,7 +23,9 @@ from .tokenization import convert_to_unicode
 class ClassificationRegressionPreprocessorConfig(PreprocessorConfig):
     def __init__(self, **kwargs):
         super(ClassificationRegressionPreprocessorConfig, self).__init__(**kwargs)
-
+        """
+        定义了需要这些配置
+        """
         self.input_schema = kwargs.get("input_schema")
         self.output_schema = kwargs.get("output_schema", None)
         self.sequence_length = kwargs.get("sequence_length")
@@ -35,7 +37,7 @@ class ClassificationRegressionPreprocessorConfig(PreprocessorConfig):
 
 class ClassificationRegressionPreprocessor(Preprocessor):
     """ Preprocessor for classification/regression task
-
+    对于分类和回归任务都适用的预处理器
     """
     config_class = ClassificationRegressionPreprocessorConfig
 
@@ -43,97 +45,135 @@ class ClassificationRegressionPreprocessor(Preprocessor):
         Preprocessor.__init__(self, config, **kwargs)
         self.config = config
 
+        # 定义输入 tensor 的名字, 从 input_schema 中解析
         self.input_tensor_names = []
         for schema in config.input_schema.split(","):
             name = schema.split(":")[0]
             self.input_tensor_names.append(name)
 
+        # 定义 label 到 idx 的映射, key 是 label, val 是 idx
         self.label_idx_map = OrderedDict()
         if self.config.label_enumerate_values is not None:
+            # label_enumerate_values 是用逗号分隔的
             for (i, label) in enumerate(self.config.label_enumerate_values.split(",")):
                 self.label_idx_map[convert_to_unicode(label)] = i
 
+        # 处理多标签分类
         if hasattr(self.config, "multi_label") and self.config.multi_label is True:
             self.multi_label = True
+            # 定义最大标签数, 默认值是 5
             self.max_num_labels = self.config.max_num_labels if hasattr(self.config, "max_num_labels") else 5
         else:
             self.multi_label = False
             self.max_num_labels = None
 
     def set_feature_schema(self):
+        """
+        设置特征的模式
+        """
+        # 如果是预测或者预处理, 需要设置输出格式 output_schema
         if self.mode.startswith("predict") or self.mode == "preprocess":
             self.output_schema = self.config.output_schema
+        # 输出的 tensor 名字
         self.output_tensor_names = ["input_ids", "input_mask", "segment_ids", "label_id"]
+        # 多标签处理
         if self.multi_label:
+            # 序列长度的列表是 sequence_length 重复三次加上最大标签数, 应该是对应 output_tensor_names 的长度都是 4
             self.seq_lens = [self.config.sequence_length] * 3 + [self.max_num_labels]
+            # 特征值的类型的列表
             self.feature_value_types = [tf.int64] * 3 + [tf.int64]
         else:
+            # 单标签分类, label_id 的长度就是 1
             self.seq_lens = [self.config.sequence_length] * 3 + [1]
+            # 如果标签总数大于等于2, label_id 的类型是int64
             if len(self.label_idx_map) >= 2:
                 self.feature_value_types = [tf.int64] * 4
             else:
+                # 为什么需要 label_id 的类型是 float32, 是因为有小数吗? 也就是是指回归吗?
                 self.feature_value_types = [tf.int64] * 3 + [tf.float32]
 
     def convert_example_to_features(self, items):
         """ Convert single example to classifcation/regression features
-
+        将字符串类型的样本转换成分类/回归需要的特征
         Args:
             items (`dict`): inputs from the reader
         Returns:
             features (`tuple`): (input_ids, input_mask, segment_ids, label_id)
         """
+        # 获取第一个序列的文本, first_sequence 是索引位置, input_tensor_names 是列名的列表
         text_a = items[self.input_tensor_names.index(self.config.first_sequence)]
+        # tokenizer 是在 PreprocessorConfig 中设置的
         tokens_a = self.config.tokenizer.tokenize(convert_to_unicode(text_a))
+        # 如果第二个序列存在
         if self.config.second_sequence in self.input_tensor_names:
             text_b = items[self.input_tensor_names.index(self.config.second_sequence)]
             tokens_b = self.config.tokenizer.tokenize(convert_to_unicode(text_b))
+            # 裁剪句子对, 直到长度满足要求
             truncate_seq_pair(tokens_a, tokens_b, self.config.sequence_length - 3)
         else:
+            # 同样的, 也要裁剪第一个序列的长度
             if len(tokens_a) > self.config.sequence_length - 2:
                 tokens_a = tokens_a[0:(self.config.sequence_length - 2)]
             tokens_b = None
 
         tokens = []
         segment_ids = []
+        # 添加 tokens 的开头
         tokens.append("[CLS]")
         segment_ids.append(0)
+        # 然后一个个放入 token
+        # 对于第一个序列, segment_ids 全是 0
         for token in tokens_a:
             tokens.append(token)
             segment_ids.append(0)
+        # 添加 tokens 的结尾
         tokens.append("[SEP]")
         segment_ids.append(0)
+        # 第一个序列到此结束了
 
+        # 如果有第二个序列
         if tokens_b:
+            # 那么 segment_ids 全是 1
             for token in tokens_b:
                 tokens.append(token)
                 segment_ids.append(1)
+            # 同样的, 添加结尾
             tokens.append("[SEP]")
             segment_ids.append(1)
 
+        # 将 tokens 转换成 id 形式
         input_ids = self.config.tokenizer.convert_tokens_to_ids(tokens)
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
+        # 真实 tokens 的 mask 都是 1
         input_mask = [1] * len(input_ids)
 
         # Zero-pad up to the sequence length.
+        # 如果长度不足, 就用 0 填充全部的 input_ids, input_mask, segment_ids
         while len(input_ids) < self.config.sequence_length:
             input_ids.append(0)
             input_mask.append(0)
             segment_ids.append(0)
 
+        # 验证数据长度
         assert len(input_ids) == self.config.sequence_length
         assert len(input_mask) == self.config.sequence_length
         assert len(segment_ids) == self.config.sequence_length
 
+        # 如果是有标签的
         if self.config.label_name is not None:
+            # 找出标签对应的值
             label_value = items[self.input_tensor_names.index(self.config.label_name)]
             if isinstance(label_value, str) or isinstance(label_value, bytes):
                 label = convert_to_unicode(label_value)
             else:
                 label = str(label_value)
 
+            # 处理多标签
             if self.multi_label:
+                # label 是用逗号分隔的, 然后转换成对应的 id 数组
                 label_ids = [self.label_idx_map[convert_to_unicode(x)] for x in label.split(",") if x]
+                # 只取最大数量的前
                 label_ids = label_ids[:self.max_num_labels]
                 label_ids = label_ids + [-1 for _ in range(self.max_num_labels - len(label_ids))]
                 label_ids = [str(t) for t in label_ids]
