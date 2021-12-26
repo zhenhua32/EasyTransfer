@@ -108,14 +108,24 @@ class BertConfig(PretrainedConfig):
 
 
 class BertBackbone(layers.Layer):
-    def __init__(self, config, **kwargs):
-
+    """
+    bert 的骨架, 也是一个层
+    """
+    def __init__(self, config: BertConfig, **kwargs):
+        """
+        config 是 BertConfig 的实例
+        """
+        # 嵌入层
         self.embeddings = layers.BertEmbeddings(config, name="embeddings")
+        # 编码器
         if not kwargs.pop('enable_whale', False):
+            # 不开启 whale
             self.encoder = layers.Encoder(config, name="encoder")
         else:
+            # 开启 whale
             self.encoder = layers.Encoder_whale(config, name="encoder")
 
+        # 池化器
         self.pooler = layers.Dense(
             units=config.hidden_size,
             activation='tanh',
@@ -128,41 +138,64 @@ class BertBackbone(layers.Layer):
              input_mask=None,
              segment_ids=None,
              training=False):
-
+        """
+        call 是给 Layer.__call__ 调用的, 可以直接将实例当作函数用
+        """
+        # 如果是元组或列表
         if isinstance(inputs, (tuple, list)):
             input_ids = inputs[0]
+            # 取出可能的 input_mask 和 segment_ids
             input_mask = inputs[1] if len(inputs) > 1 else input_mask
             segment_ids = inputs[2] if len(inputs) > 2 else segment_ids
         else:
+            # 不然输入就只有 input_ids
             input_ids = inputs
 
+        # 获取形状的数组
         input_shape = layers.get_shape_list(input_ids)
+        # 第一个是批次, 第二个是序列长度
         batch_size = input_shape[0]
         seq_length = input_shape[1]
 
+        # 如果不存在 input_mask, 就全部初始化成 1
         if input_mask is None:
             input_mask = tf.ones(shape=[batch_size, seq_length], dtype=tf.int32)
 
+        # 如果不存在 segment_ids, 就全部初始化成 0
         if segment_ids is None:
             segment_ids = tf.zeros(shape=[batch_size, seq_length], dtype=tf.int32)
 
+        # 嵌入层的输出
         embedding_output = self.embeddings([input_ids, segment_ids], training=training)
+        # 注意力的 mask
         attention_mask = layers.get_attn_mask_bert(input_ids, input_mask)
+        # 编码器的输出
         encoder_outputs = self.encoder([embedding_output, attention_mask], training=training)
+        # 池化层的输出, 参数是 编码器输出的第 0 个的最后一个, 然后第一维度取全部, 第二个维度取第一个
         pooled_output = self.pooler(encoder_outputs[0][-1][:, 0])
+        # 最后的输出, 是编码器输出的第 0 个的最后一个 和 池化层输出
         outputs = (encoder_outputs[0][-1], pooled_output)
         return outputs
 
 
 class BertPreTrainedModel(PreTrainedModel):
+    """
+    bert 的预训练模型
+    """
+    # 配置类
     config_class = BertConfig
+    # 模型名字和模型 ckpt 路径的映射
     pretrained_model_archive_map = BERT_PRETRAINED_MODEL_ARCHIVE_MAP
+    # 模型名字和 config.json 路径的映射
     pretrained_config_archive_map = BERT_PRETRAINED_CONFIG_ARCHIVE_MAP
 
     def __init__(self, config, **kwargs):
         super(BertPreTrainedModel, self).__init__(config, **kwargs)
+        # bert 骨架
         self.bert = BertBackbone(config, name="bert", enable_whale=kwargs.get("enable_whale", False))
+        # MLMHead, 预测
         self.mlm = layers.MLMHead(config, self.bert.embeddings, name="cls/predictions")
+        # NSPHead, 序列关系
         self.nsp = layers.NSPHead(config, name="cls/seq_relationship")
 
     def call(self, inputs,
@@ -217,25 +250,38 @@ class BertPreTrainedModel(PreTrainedModel):
             outputs = model([input_ids, input_mask, segment_ids], mode=mode)
 
         """
-
+        # 是否是训练模式
         training = kwargs['mode'] == tf.estimator.ModeKeys.TRAIN
 
+        # 是否需要输出特征
         if kwargs.get("output_features", True) == True:
+            # bert 的输出
             outputs = self.bert(inputs, training=training)
+            # 第一个是序列输出
             sequence_output = outputs[0]
+            # 第二个是池化输出
             pooled_output = outputs[1]
+            # 这个就是更明确点的, 变成了两个返回值, 原本的 outputs 是个元组
             return sequence_output, pooled_output
         else:
+            # 前三行同上
             outputs = self.bert(inputs, training=training)
             sequence_output = outputs[0]
             pooled_output = outputs[1]
+            # 获取输入的形状
             input_shape = layers.get_shape_list(sequence_output)
+            # 第一个维度是批次数量
             batch_size = input_shape[0]
+            # 第二个维度是序列长度
             seq_length = input_shape[1]
+            # 如果 masked_lm_positions 不存在, 初始化成 1
             if masked_lm_positions is None:
                 masked_lm_positions = tf.ones(shape=[batch_size, seq_length], dtype=tf.int64)
 
+            # mlm 的输出, 需要使用 sequence_output 和 masked_lm_positions
             mlm_logits = self.mlm(sequence_output, masked_lm_positions)
+            # nsp 的输出, 需要使用 pooled_output
             nsp_logits = self.nsp(pooled_output)
 
+            # 然后返回三个值
             return mlm_logits, nsp_logits, pooled_output
