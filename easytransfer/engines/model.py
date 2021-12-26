@@ -729,6 +729,7 @@ class EzTransEstimator(object):
                 # 这给我看晕了, 前面几个 if 都是一样的操作, 有必要区分吗?
                 if self.config.mode == 'predict' or self.config.mode == 'export':
                     output = self.build_logits(features, mode=mode)
+                    # 调用预测函数, 获取预测结果, predictions 应该是个字典
                     predictions = self.build_predictions(output)
 
                 elif self.config.mode == 'predict_on_the_fly':
@@ -743,6 +744,7 @@ class EzTransEstimator(object):
 
                 # predictions 是类似字典的结构? 可以用 update 方法
                 output = {'serving_default': tf.estimator.export.PredictOutput(predictions)}
+                # 在预测结果中, 再把原始特征加上去
                 predictions.update(features)
 
                 # 参数换成了 predict 和 export
