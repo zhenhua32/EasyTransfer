@@ -28,6 +28,7 @@ def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
         """
         model_type = pretrain_model_name_or_path.split("-")[1]
         if model_type == 'bert':
+            # 重点就看这个模型
             from .modeling_bert import BertPreTrainedModel
             return BertPreTrainedModel.get(pretrain_model_name_or_path, **kwargs)
         elif model_type == "roberta":
@@ -82,6 +83,7 @@ def get_config_path(model_type, pretrain_model_name_or_path):
     获取配置路径
     """
     if model_type == 'bert':
+        # 重点就看这个模型, config_path 就是类似于 bert/google-bert-base-zh/config.json
         from .modeling_bert import BertPreTrainedModel
         config_path = BertPreTrainedModel.pretrained_config_archive_map[
             pretrain_model_name_or_path]

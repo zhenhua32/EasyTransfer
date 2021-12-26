@@ -54,24 +54,32 @@ class BertConfig(PretrainedConfig):
     Args:
 
       vocab_size: Vocabulary size of `inputs_ids` in `BertModel`.
+      词汇表大小
       hidden_size: Size of the encoder layers and the pooler layer.
+      编码层和池化层的大小
       num_hidden_layers: Number of hidden layers in the Transformer encoder.
+      在 Transformer 编码器中隐藏层的数量
       num_attention_heads: Number of attention heads for each attention layer in
         the Transformer encoder.
+      在 Transformer 编码器中每个注意力层中注意头的数量
       intermediate_size: The size of the "intermediate" (i.e., feed-forward)
         layer in the Transformer encoder.
+      在 Transformer 编码器中中间层的大小
       hidden_dropout_prob: The dropout probability for all fully connected
         layers in the embeddings, encoder, and pooler.
       attention_probs_dropout_prob: The dropout ratio for the attention
         probabilities.
+      丢弃注意力的概率
       max_position_embeddings: The maximum sequence length that this model might
         ever be used with. Typically set this to something large just in case
         (e.g., 512 or 1024 or 2048).
+      模型可能会用到的最大的序列长度
       type_vocab_size: The vocabulary size of the `token_type_ids` passed into
         `BertModel`.
+      token_type_ids 的词汇表长度
       initializer_range: The stdev of the truncated_normal_initializer for
         initializing all weight matrices.
-
+      truncated_normal_initializer 的标准差, 用于初始化所有的权重矩阵
     """
 
     def __init__(self,

@@ -25,6 +25,9 @@ from easytransfer.engines.model import FLAGS
 from easytransfer import layers
 
 class PretrainedConfig(object):
+    """
+    预训练模型的配置
+    """
     def __init__(self, **kwargs):
         # Additional attributes without default values
         for key, value in kwargs.items():
@@ -36,12 +39,17 @@ class PretrainedConfig(object):
 
     @classmethod
     def get(cls, json_file, **kwargs):
-
+        """
+        从 json 文件中实例化
+        """
         config_dict = cls._dict_from_json_file(json_file)
         return cls.from_dict(config_dict, **kwargs)
 
     @classmethod
     def from_dict(cls, config_dict, **kwargs):
+        """
+        从字典中实例化
+        """
         config = cls(**config_dict)
         for key, value in kwargs.items():
             setattr(config, key, value)
@@ -49,9 +57,13 @@ class PretrainedConfig(object):
 
     @classmethod
     def _dict_from_json_file(cls, json_file):
+        """
+        从 json 文件中获取字典
+        """
         with gfile.GFile(json_file, mode='r') as reader:
             text = reader.read()
         return json.loads(text)
+
 
 class PreTrainedModel(layers.Layer):
     config_class = None
