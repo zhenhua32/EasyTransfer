@@ -67,6 +67,7 @@ def create_masked_lm_predictions(tokens, masked_lm_prob,
                                  max_predictions_per_seq, vocab_words, do_whole_word_mask, rng):
     """Creates the predictions for the masked LM objective.
     创建对掩码的 LM 对象的预测
+    全称是 Masked Language Models, 掩码语言模型
     """
     # candidate 候选索引的集合
     cand_indexes = []
@@ -179,8 +180,11 @@ def create_masked_lm_predictions(tokens, masked_lm_prob,
     # 最后返回一个元组, 包含三个项, 输出的 tokens, 掩码的位置, 掩码的标签
     return (output_tokens, masked_lm_positions, masked_lm_labels)
 
+
 class TrainingInstance(object):
-    """A single training instance (sentence pair)."""
+    """A single training instance (sentence pair).
+    训练实例
+    """
 
     def __init__(self, tokens, segment_ids, masked_lm_positions, masked_lm_labels,
                  is_random_next):
@@ -190,7 +194,11 @@ class TrainingInstance(object):
         self.masked_lm_positions = masked_lm_positions
         self.masked_lm_labels = masked_lm_labels
 
+
 class PretrainPreprocessorConfig(PreprocessorConfig):
+    """
+    预训练的配置
+    """
 
     def __init__(self, **kwargs):
         super(PretrainPreprocessorConfig, self).__init__(**kwargs)
@@ -202,10 +210,15 @@ class PretrainPreprocessorConfig(PreprocessorConfig):
         self.label_name = kwargs.get("label_name")
         self.label_enumerate_values = kwargs.get("label_enumerate_values")
         self.max_predictions_per_seq = kwargs.get("max_predictions_per_seq")
+        # 掩码概率默认值是 0.15
         self.masked_lm_prob = kwargs.get("masked_lm_prob", 0.15)
         self.do_whole_word_mask = kwargs.get("do_whole_word_mask", True)
 
+
 class PretrainPreprocessor(Preprocessor):
+    """
+    预训练的预处理器
+    """
 
     config_class = PretrainPreprocessorConfig
 
@@ -213,51 +226,72 @@ class PretrainPreprocessor(Preprocessor):
         Preprocessor.__init__(self, config, **kwargs)
         self.config = config
 
+        # 从 input_schema 中解析输入列的名字
         self.input_tensor_names = []
         for schema in config.input_schema.split(","):
             name = schema.split(":")[0]
             self.input_tensor_names.append(name)
 
+        # 词汇表
         self.vocab_words = list(self.config.tokenizer.vocab.keys())
 
+        # 随机数生成器
         self.rng = random.Random(12345)
 
-
+        # label => idx 的映射
         self.label_idx_map = OrderedDict()
         if self.config.label_enumerate_values is not None:
+            # 逗号分隔的
             for (i, label) in enumerate(self.config.label_enumerate_values.split(",")):
                 self.label_idx_map[convert_to_unicode(label)] = i
 
+        # 特征类型
         self.feature_type = kwargs.get('feature_type', "pretrain_lm")
 
 
     def set_feature_schema(self):
+        """
+        设置特征模式
+        """
+        # 预测或者预处理, 需要设置 output_schema
         if self.mode.startswith("predict") or self.mode == "preprocess":
             self.output_schema = self.config.output_schema
+        # 输出的 tensor 名字
         self.output_tensor_names = ["input_ids", "input_mask", "segment_ids",
                                     "masked_lm_positions", "masked_lm_ids", "masked_lm_weights"]
 
+        # 如果是预训练语言模型
         if self.feature_type == "pretrain_lm":
+            # 输出的类型都是 tf.string
             self.Tout = [tf.string] * 6
+            # 长度分别是 3 个序列长度, 3 个 每个序列的最大预测数
             self.seq_lens = [self.config.sequence_length] * 3 + [self.config.max_predictions_per_seq] * 3
+            # 特征类型是 5 个 int64, 一个 float32
             self.feature_value_types = [tf.int64] * 5 + [tf.float32]
         elif self.feature_type == "pretrain_multimodel":
+            # 如果是预训练多模型
+            # 需要 7 个输出
             self.Tout = [tf.string] * 7
+            # 最后一个的序列长度是 4
             self.seq_lens = [self.config.sequence_length] * 3 + [self.config.max_predictions_per_seq] * 3 + [4]
+            # 最后一个的类型是 int64
             self.feature_value_types = [tf.int64] * 5 + [tf.float32] + [tf.int64]
 
-
-
-
     def convert_example_to_features(self, items):
-
+        """
+        将样本转换成特征
+        """
+        # 第一个序列文本
         text_a = items[self.input_tensor_names.index(self.config.first_sequence)]
+        # 转换成 tokens
         tokens_a = self.config.tokenizer.tokenize(convert_to_unicode(text_a))
         if self.config.second_sequence in self.input_tensor_names:
+            # 如果第二个序列文本存在
             text_b = items[self.input_tensor_names.index(self.config.second_sequence)]
             tokens_b = self.config.tokenizer.tokenize(convert_to_unicode(text_b))
             truncate_seq_pair(tokens_a, tokens_b, self.config.sequence_length - 3)
         else:
+            # 否则只裁剪第一个序列文本
             if len(tokens_a) > self.config.sequence_length - 2:
                 tokens_a = tokens_a[0:(self.config.sequence_length - 2)]
             tokens_b = None
@@ -266,38 +300,52 @@ class PretrainPreprocessor(Preprocessor):
         segment_ids = []
         tokens.append("[CLS]")
         segment_ids.append(0)
+        # 添加第一个文本
         for token in tokens_a:
             tokens.append(token)
+            # 第一个文本的 segment_ids 全是 0
             segment_ids.append(0)
         tokens.append("[SEP]")
         segment_ids.append(0)
 
+        # 有第二个文本, 就添加
         if tokens_b:
             for token in tokens_b:
                 tokens.append(token)
+                # 第二个文本的 segment_ids 全是 1
                 segment_ids.append(1)
             tokens.append("[SEP]")
             segment_ids.append(1)
 
+        # 转换成 id
         input_ids = self.config.tokenizer.convert_tokens_to_ids(tokens)
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
+        # 输入 mask 都是 1, 长度是 input_ids 的长度
         input_mask = [1] * len(input_ids)
 
         # Zero-pad up to the sequence length.
+        # 长度不足, 全部是用 0 填充
         while len(input_ids) < self.config.sequence_length:
             input_ids.append(0)
             input_mask.append(0)
             segment_ids.append(0)
 
+        # 验证长度满足要求
         assert len(input_ids) == self.config.sequence_length
         assert len(input_mask) == self.config.sequence_length
         assert len(segment_ids) == self.config.sequence_length
 
+        # 创建掩码语言模型的预测
+        # 分别是
+        # tokens 单词列表
+        # masked_lm_positions 掩码的位置
+        # masked_lm_labels 掩码的标签
         tokens, masked_lm_positions, masked_lm_labels = \
             create_masked_lm_predictions(tokens, self.config.masked_lm_prob,
                                      self.config.max_predictions_per_seq, self.vocab_words, self.config.do_whole_word_mask, self.rng)
 
+        # 又转换了一次?
         input_ids = self.config.tokenizer.convert_tokens_to_ids(tokens)
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
@@ -312,21 +360,27 @@ class PretrainPreprocessor(Preprocessor):
         assert len(input_mask) == self.config.sequence_length
         assert len(segment_ids) == self.config.sequence_length
 
+        # 位置变成数组, labels 变成 id 格式
         masked_lm_positions = list(masked_lm_positions)
         masked_lm_ids = self.config.tokenizer.convert_tokens_to_ids(masked_lm_labels)
 
+        # 权重初始化成 1.0
         masked_lm_weights = [1.0] * len(masked_lm_ids)
 
+        # 如果数量超出了, 只取前面的部分
         if len(masked_lm_positions) >= self.config.max_predictions_per_seq:
             masked_lm_positions = masked_lm_positions[0:self.config.max_predictions_per_seq]
             masked_lm_ids = masked_lm_ids[0:self.config.max_predictions_per_seq]
             masked_lm_weights = masked_lm_weights[0:self.config.max_predictions_per_seq]
 
+        # 数量不足, 就用 0 补充
         while len(masked_lm_positions) < self.config.max_predictions_per_seq:
             masked_lm_positions.append(0)
             masked_lm_ids.append(0)
             masked_lm_weights.append(0.0)
+        # 总之, 数量要刚好和 max_predictions_per_seq 相等
 
+        # 根据 特征类型 返回不同的结果
         if self.feature_type == "pretrain_lm":
             return ' '.join([str(t) for t in input_ids]), \
                    ' '.join([str(t) for t in input_mask]), \
@@ -336,6 +390,7 @@ class PretrainPreprocessor(Preprocessor):
                    ' '.join([str(t) for t in masked_lm_weights])
 
         elif self.feature_type == "pretrain_multimodel":
+            # 前面 6 个是一样的, 最后一个是 长度为 4 的数组, 数组里的元素是从 0-9 中随机取出的, 然后变成空格分隔的字符串
             return ' '.join([str(t) for t in input_ids]), \
                    ' '.join([str(t) for t in input_mask]), \
                    ' '.join([str(t) for t in segment_ids]), \
