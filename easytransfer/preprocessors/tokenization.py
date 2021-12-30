@@ -23,32 +23,49 @@ import tensorflow as tf
 import unicodedata
 from six.moves import range
 
+# 下划线
 SPIECE_UNDERLINE = u"▁".encode("utf-8")
 
+
 def encode_pieces(sp_model, text, return_unicode=True, sample=False):
-    """turn sentences into word pieces."""
+    """turn sentences into word pieces.
+    将句子变成 word pieces(子词)
+    """
 
     if six.PY2 and isinstance(text, six.text_type):
+        # 变成 bytes 类型
         text = six.ensure_binary(text, "utf-8")
 
+    # 是否进行简单处理
     if not sample:
         pieces = sp_model.EncodeAsPieces(text)
     else:
         pieces = sp_model.SampleEncodeAsPieces(text, 64, 0.1)
+    # 新的子词
     new_pieces = []
     for piece in pieces:
+        # 对于每一个子词
         piece = printable_text(piece)
+        # 如果长度大于 1, 且最后一个字符是逗号, 且最后第二个字符是整数, 比如 12,
         if len(piece) > 1 and piece[-1] == "," and piece[-2].isdigit():
+            # 去掉最后一个字符, 然后将 _ 删除掉
             cur_pieces = sp_model.EncodeAsPieces(
                 six.ensure_binary(piece[:-1]).replace(SPIECE_UNDERLINE, b""))
+            # 如果第一个字符不是 _ , 且 cur_pieces 的第一个元素的第一个元素是 _
             if piece[0] != SPIECE_UNDERLINE and cur_pieces[0][0] == SPIECE_UNDERLINE:
+                # 如果 cur_pieces[0] 长度等于 1, 相当于 cur_pieces[0] 是 [_]
                 if len(cur_pieces[0]) == 1:
+                    # 就从第一个元素以后开始取, 抛弃 cur_pieces 的第一个元素
                     cur_pieces = cur_pieces[1:]
                 else:
+                    # 否则将第一个元素替换成 第一个元素的 [1:] 以后的元素, 就是对第一个元素删除它的第一个元素
                     cur_pieces[0] = cur_pieces[0][1:]
+            # 将 piece 的最后一个元素添加进去
             cur_pieces.append(piece[-1])
+            # 直接扩展数组
             new_pieces.extend(cur_pieces)
         else:
+            # 直接添加, 不做处理
             new_pieces.append(piece)
 
     # note(zhiliny): convert back to unicode for py2
@@ -64,13 +81,19 @@ def encode_pieces(sp_model, text, return_unicode=True, sample=False):
 
 
 def encode_ids(sp_model, text, sample=False):
+    """
+    编码 ids
+    """
     pieces = encode_pieces(sp_model, text, return_unicode=False, sample=sample)
+    # 转换成 id
     ids = [sp_model.PieceToId(piece) for piece in pieces]
     return ids
 
 
 def convert_to_unicode(text):
-    """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
+    """Converts `text` to Unicode (if it's not already), assuming utf-8 input
+    转换成 unicode
+    """
     if six.PY3:
         if isinstance(text, str):
             return text
@@ -88,8 +111,11 @@ def convert_to_unicode(text):
     else:
         raise ValueError("Not running on Python2 or Python 3?")
 
+
 def printable_text(text):
-    """Returns text encoded in a way suitable for print or `tf.logging`."""
+    """Returns text encoded in a way suitable for print or `tf.logging`.
+    将文本编码成适合打印或 tf.logging 记录的
+    """
 
     # These functions want `str` for both Python2 and Python3, but in one case
     # it's a Unicode string and in the other it's a byte string.
@@ -101,6 +127,7 @@ def printable_text(text):
         else:
             raise ValueError("Unsupported string type: %s" % (type(text)))
     elif six.PY2:
+        # 对于 python2, 转换成 str 类型
         if isinstance(text, str):
             return text
         elif isinstance(text, six.text_type):
@@ -110,14 +137,18 @@ def printable_text(text):
     else:
         raise ValueError("Not running on Python2 or Python 3?")
 
+
 def load_vocab(vocab_file):
-    """Loads a vocabulary file into a dictionary."""
+    """Loads a vocabulary file into a dictionary.
+    将词汇表文件加载到字典中
+    """
     vocab = collections.OrderedDict()
     with tf.gfile.GFile(vocab_file, "r") as reader:
         while True:
             token = convert_to_unicode(reader.readline())
             if not token:
                 break
+            # 每一行都是一个词汇
             token = token.strip().split()[0] if token.strip() else " "
             if token not in vocab:
                 vocab[token] = len(vocab)
