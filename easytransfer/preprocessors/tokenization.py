@@ -138,7 +138,7 @@ def printable_text(text):
         raise ValueError("Not running on Python2 or Python 3?")
 
 
-def load_vocab(vocab_file):
+def load_vocab(vocab_file: str) -> collections.OrderedDict:
     """Loads a vocabulary file into a dictionary.
     将词汇表文件加载到字典中
     """
@@ -151,22 +151,29 @@ def load_vocab(vocab_file):
             # 每一行都是一个词汇
             token = token.strip().split()[0] if token.strip() else " "
             if token not in vocab:
+                # key 是词汇, value 是当前 vocab 的长度, 就是从 0 开始的
                 vocab[token] = len(vocab)
     return vocab
 
 
-def convert_by_vocab(vocab, items):
-    """Converts a sequence of [tokens|ids] using the vocab."""
+def convert_by_vocab(vocab: dict, items: list) -> list:
+    """Converts a sequence of [tokens|ids] using the vocab.
+    使用词汇表转换序列
+    """
     output = []
     for item in items:
         output.append(vocab[item])
     return output
 
+
 def convert_tokens_to_ids(vocab, tokens):
     return convert_by_vocab(vocab, tokens)
 
-def whitespace_tokenize(text):
-    """Runs basic whitespace cleaning and splitting on a piece of text."""
+
+def whitespace_tokenize(text: str) -> list:
+    """Runs basic whitespace cleaning and splitting on a piece of text.
+    清理前后空格, 然后用空白符分割
+    """
     text = text.strip()
     if not text:
         return []
@@ -174,12 +181,17 @@ def whitespace_tokenize(text):
     return tokens
 
 class FullTokenizer(object):
-    """Runs end-to-end tokenziation."""
+    """Runs end-to-end tokenziation.
+    运行一个端到端的分词器
+    """
 
     def __init__(self, vocab_file=None, do_lower_case=True, spm_model_file=None):
         self.vocab = None
         self.sp_model = None
         if spm_model_file:
+            # https://github.com/google/sentencepiece
+            # https://pypi.org/project/sentencepiece/
+            # sentencepiece 是个分词器
             self.sp_model = spm.SentencePieceProcessor()
             tf.logging.info("loading sentence piece model")
             # Handle cases where SP can't load the file, but gfile can.
@@ -187,12 +199,17 @@ class FullTokenizer(object):
             self.sp_model.LoadFromSerializedProto(sp_model_)
             # Note(mingdachen): For the purpose of consisent API, we are
             # generating a vocabulary for the sentence piece tokenizer.
+            # 生成词汇字典
             self.vocab = {self.sp_model.IdToPiece(i): i for i
                           in range(self.sp_model.GetPieceSize())}
         else:
+            # 从文件中加载词汇表
             self.vocab = load_vocab(vocab_file)
+            # 使用一个基础的分词器
             self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
+            # 一个 wordpiece 分词器
             self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
+        # 词汇表的逆转, 从 id 到词汇
         self.inv_vocab = {v: k for k, v in self.vocab.items()}
 
     def __len__(self):
