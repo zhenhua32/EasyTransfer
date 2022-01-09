@@ -20,7 +20,7 @@ from easytransfer.engines.distribution import Process
 
 class ClassificationPostprocessor(Process):
     """ Postprocessor for text classification, convert label_id to the label_name
-
+    Postprocessor, 用于文本分类, 将 label_id 转换成 label_name
     """
     def __init__(self,
                  label_enumerate_values,
@@ -33,9 +33,11 @@ class ClassificationPostprocessor(Process):
 
         super(ClassificationPostprocessor, self).__init__(
             job_name, thread_num, input_queue, output_queue, batch_size=1)
+        # 预测列的名字
         self.prediction_colname = prediction_colname
         self.label_enumerate_values = label_enumerate_values
         self.output_schema = output_schema
+        # 如果标签的枚举值不是空的, 那么就构建 idx 到 label 的字典
         if label_enumerate_values is not None:
             self.idx_label_map = dict()
             for (i, label) in enumerate(label_enumerate_values.split(",")):
@@ -54,22 +56,29 @@ class ClassificationPostprocessor(Process):
         """
         if self.label_enumerate_values is None:
             return in_data
+        # 转换成字典, 感觉像是复制了一遍
         tmp = {key: val for key, val in in_data.items()}
         if self.prediction_colname in tmp:
+            # 最初的预测值
             raw_preds = tmp[self.prediction_colname]
             new_preds = []
+            # 对于其中的每个值, 因为是批次预测, 所以是个列表
             for raw_pred in raw_preds:
+                # 如果还是个列表, 就变成用 逗号分隔 的字符串
                 if isinstance(raw_pred, list) or isinstance(raw_pred, np.ndarray):
                     pred = ",".join(
                         [self.idx_label_map[idx] for idx, val
                          in enumerate(raw_pred) if val == 1])
                 else:
+                    # 替换成字符串
                     pred = self.idx_label_map[int(raw_pred)]
                 new_preds.append(pred)
 
+            # 替换原先的值
             tmp[self.prediction_colname] = np.array(new_preds)
 
         ret = dict()
+        # 然后根据 output_schema 选择需要返回的字段
         for output_col_name in self.output_schema.split(","):
             if output_col_name in tmp:
                 ret[output_col_name] = tmp[output_col_name]
