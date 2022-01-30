@@ -1,0 +1,1596 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 81 files
+Detected 76 issues that require attention
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+File: .\easytransfer\app_zoo\conversion.py
+--------------------------------------------------------------------------------
+.\easytransfer\app_zoo\conversion.py:65:31: ERROR: Using member tf.contrib.framework.list_variables in deprecated module tf.contrib. tf.contrib.framework.list_variables cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\app_zoo\conversion.py:87:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+.\easytransfer\app_zoo\conversion.py:114:31: ERROR: Using member tf.contrib.framework.list_variables in deprecated module tf.contrib. tf.contrib.framework.list_variables cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\app_zoo\conversion.py:134:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: .\easytransfer\app_zoo\text_classify.py
+--------------------------------------------------------------------------------
+.\easytransfer\app_zoo\text_classify.py:247:22: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_classify.py:277:30: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+--------------------------------------------------------------------------------
+File: .\easytransfer\app_zoo\text_comprehension.py
+--------------------------------------------------------------------------------
+.\easytransfer\app_zoo\text_comprehension.py:136:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\app_zoo\text_comprehension.py:140:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\app_zoo\text_comprehension.py:226:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\app_zoo\text_comprehension.py:230:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+--------------------------------------------------------------------------------
+File: .\easytransfer\app_zoo\text_match.py
+--------------------------------------------------------------------------------
+.\easytransfer\app_zoo\text_match.py:101:30: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\app_zoo\text_match.py:338:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:339:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:426:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:427:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:524:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:525:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:612:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\app_zoo\text_match.py:613:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+--------------------------------------------------------------------------------
+File: .\easytransfer\engines\model.py
+--------------------------------------------------------------------------------
+.\easytransfer\engines\model.py:437:40: ERROR: tf.contrib.distribute.CollectiveAllReduceStrategy requires manual check. (Manual edit required) tf.contrib.distribute.CollectiveAllReduceStrategy has been migrated to tf.distribute.experimental.MultiWorkerMirroredStrategy. Note the changes in constructor. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+.\easytransfer\engines\model.py:437:40: WARNING: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+.\easytransfer\engines\model.py:437:40: ERROR: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib. tf.contrib.distribute.CollectiveAllReduceStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\engines\model.py:443:40: ERROR: tf.contrib.distribute.CollectiveAllReduceStrategy requires manual check. (Manual edit required) tf.contrib.distribute.CollectiveAllReduceStrategy has been migrated to tf.distribute.experimental.MultiWorkerMirroredStrategy. Note the changes in constructor. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+.\easytransfer\engines\model.py:443:40: WARNING: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+.\easytransfer\engines\model.py:443:40: ERROR: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib. tf.contrib.distribute.CollectiveAllReduceStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\engines\model.py:466:36: ERROR: tf.contrib.distribute.MirroredStrategy requires manual check. (Manual edit required) tf.contrib.distribute.MirroredStrategy has been migrated to tf.distribute.MirroredStrategy. Things to note: Constructor arguments have changed. If you are using MirroredStrategy with Keras training framework, the input provided to `model.fit` will be assumed to have global batch size and split across the replicas. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+.\easytransfer\engines\model.py:466:36: WARNING: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+.\easytransfer\engines\model.py:466:36: ERROR: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib. tf.contrib.distribute.MirroredStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\engines\model.py:472:36: ERROR: tf.contrib.distribute.MirroredStrategy requires manual check. (Manual edit required) tf.contrib.distribute.MirroredStrategy has been migrated to tf.distribute.MirroredStrategy. Things to note: Constructor arguments have changed. If you are using MirroredStrategy with Keras training framework, the input provided to `model.fit` will be assumed to have global batch size and split across the replicas. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+.\easytransfer\engines\model.py:472:36: WARNING: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+.\easytransfer\engines\model.py:472:36: ERROR: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib. tf.contrib.distribute.MirroredStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\engines\model.py:838:15: ERROR: *.export_savedmodel requires manual check. (Manual edit required) Please rename the method export_savedmodel() to export_saved_model(). Two things to note:
+	(1) The argument strip_default_attributes has been removed. The function will always strip the default attributes from ops. If this breaks your code, please switch to tf.compat.v1.estimator.Estimator.
+	(2) This change only effects core estimator. If you are using tf.contrib.learn.Estimator, please switch to using core estimator.
+--------------------------------------------------------------------------------
+File: .\easytransfer\engines\whale_estimator.py
+--------------------------------------------------------------------------------
+.\easytransfer\engines\whale_estimator.py:78:35: WARNING: Changing dataset.make_initializable_iterator() to tf.compat.v1.data.make_initializable_iterator(dataset). Please check this transformation.
+
+.\easytransfer\engines\whale_estimator.py:126:20: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: .\easytransfer\layers\cnn.py
+--------------------------------------------------------------------------------
+.\easytransfer\layers\cnn.py:33:20: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\layers\cnn.py:34:20: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\layers\cnn.py:152:19: ERROR: Using member tf.contrib.layers.conv2d in deprecated module tf.contrib. tf.contrib.layers.conv2d cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\layers\cnn.py:184:19: ERROR: Using member tf.contrib.layers.conv2d in deprecated module tf.contrib. tf.contrib.layers.conv2d cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\layers\cnn.py:303:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\layers\cnn.py:309:20: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+--------------------------------------------------------------------------------
+File: .\easytransfer\layers\core.py
+--------------------------------------------------------------------------------
+.\easytransfer\layers\core.py:29:11: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+.\easytransfer\layers\core.py:29:11: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+--------------------------------------------------------------------------------
+File: .\easytransfer\model_zoo\modeling_adabert.py
+--------------------------------------------------------------------------------
+.\easytransfer\model_zoo\modeling_adabert.py:166:55: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:170:54: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:174:30: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_adabert.py:175:29: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_adabert.py:178:27: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:183:27: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:188:30: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_adabert.py:189:29: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_adabert.py:192:23: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:197:23: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:202:26: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_adabert.py:203:25: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_adabert.py:206:38: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:225:23: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+.\easytransfer\model_zoo\modeling_adabert.py:225:23: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\model_zoo\modeling_adabert.py:233:24: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+.\easytransfer\model_zoo\modeling_adabert.py:233:24: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\model_zoo\modeling_adabert.py:247:32: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:282:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:302:31: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:472:31: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:562:16: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:581:16: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:600:16: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:619:21: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:637:21: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_adabert.py:655:21: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+--------------------------------------------------------------------------------
+File: .\easytransfer\model_zoo\modeling_hae.py
+--------------------------------------------------------------------------------
+.\easytransfer\model_zoo\modeling_hae.py:111:9: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+.\easytransfer\model_zoo\modeling_hae.py:111:9: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+.\easytransfer\model_zoo\modeling_hae.py:157:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_hae.py:167:17: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+.\easytransfer\model_zoo\modeling_hae.py:228:27: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_hae.py:245:38: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+.\easytransfer\model_zoo\modeling_hae.py:258:35: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+================================================================================
+Detailed log follows:
+
+================================================================================
+================================================================================
+Input tree: '.\\easytransfer\\'
+================================================================================
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo_cli.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo_cli.py'
+--------------------------------------------------------------------------------
+
+30:13: INFO: Renamed 'tf.app.flags' to 'tf.compat.v1.app.flags'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\feat_ext_cli.py'
+ outputting to '.\\easytransfer_tf2\\feat_ext_cli.py'
+--------------------------------------------------------------------------------
+
+31:13: INFO: Renamed 'tf.app.flags' to 'tf.compat.v1.app.flags'
+70:11: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+71:17: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+107:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+155:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+160:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\app_config.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\app_config.py'
+--------------------------------------------------------------------------------
+
+58:15: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+59:12: INFO: Renamed 'tf.gfile.MakeDirs' to 'tf.io.gfile.makedirs'
+60:13: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+66:17: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+127:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+266:11: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+271:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+272:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+304:38: INFO: Renamed 'tf.gfile.IsDirectory' to 'tf.io.gfile.isdir'
+307:11: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+312:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+313:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+371:15: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+372:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+421:17: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\app_utils.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\app_utils.py'
+--------------------------------------------------------------------------------
+
+36:7: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+36:43: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+37:8: INFO: Renamed 'tf.gfile.Copy' to 'tf.io.gfile.copy'
+40:7: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+40:44: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+41:8: INFO: Renamed 'tf.gfile.Copy' to 'tf.io.gfile.copy'
+48:7: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+48:41: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+49:8: INFO: Renamed 'tf.gfile.Copy' to 'tf.io.gfile.copy'
+152:7: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+153:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+162:7: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+163:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+175:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\base.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\base.py'
+--------------------------------------------------------------------------------
+
+76:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+81:17: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+107:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+112:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+114:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+116:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+118:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+133:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+141:12: INFO: Renamed 'tf.reset_default_graph' to 'tf.compat.v1.reset_default_graph'
+148:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+194:8: INFO: Renamed 'tf.gfile.Rename' to 'tf.io.gfile.rename'
+197:15: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+198:12: INFO: Renamed 'tf.gfile.MkDir' to 'tf.io.gfile.mkdir'
+200:21: INFO: Renamed 'tf.gfile.ListDirectory' to 'tf.io.gfile.listdir'
+203:12: INFO: Renamed 'tf.gfile.Rename' to 'tf.io.gfile.rename'
+211:11: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+212:12: INFO: Renamed 'tf.gfile.DeleteRecursively' to 'tf.io.gfile.rmtree'
+215:11: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+216:12: INFO: Renamed 'tf.gfile.DeleteRecursively' to 'tf.io.gfile.rmtree'
+228:50: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\conversion.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\conversion.py'
+--------------------------------------------------------------------------------
+
+63:13: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+65:31: ERROR: Using member tf.contrib.framework.list_variables in deprecated module tf.contrib. tf.contrib.framework.list_variables cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+73:22: INFO: Renamed 'tf.contrib.framework.load_variable' to 'tf.train.load_variable'
+84:20: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+86:21: INFO: Renamed 'tf.global_variables_initializer' to 'tf.compat.v1.global_variables_initializer'
+87:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+113:13: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+114:31: ERROR: Using member tf.contrib.framework.list_variables in deprecated module tf.contrib. tf.contrib.framework.list_variables cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+116:22: INFO: Renamed 'tf.contrib.framework.load_variable' to 'tf.train.load_variable'
+124:26: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+132:20: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+133:21: INFO: Renamed 'tf.global_variables_initializer' to 'tf.compat.v1.global_variables_initializer'
+134:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+137:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+149:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\feature_extractor.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\feature_extractor.py'
+--------------------------------------------------------------------------------
+
+47:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+47:70: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+55:36: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\predictors.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\predictors.py'
+--------------------------------------------------------------------------------
+
+46:20: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+47:25: INFO: Renamed 'tf.saved_model.loader.load' to 'tf.compat.v1.saved_model.loader.load'
+48:53: INFO: Renamed 'tf.saved_model.tag_constants.SERVING' to 'tf.saved_model.SERVING'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\sequence_labeling.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\sequence_labeling.py'
+--------------------------------------------------------------------------------
+
+66:22: INFO: Added keywords to args of function 'tf.argmax'
+131:26: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+134:29: INFO: tf.glorot_uniform_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+134:29: INFO: Renamed 'tf.glorot_uniform_initializer' to 'tf.compat.v1.glorot_uniform_initializer'
+135:27: INFO: tf.zeros_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+135:27: INFO: Renamed 'tf.zeros_initializer' to 'tf.compat.v1.zeros_initializer'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\serialization.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\serialization.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\text_classify.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\text_classify.py'
+--------------------------------------------------------------------------------
+
+92:22: INFO: Added keywords to args of function 'tf.argmax'
+182:22: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+247:22: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+247:22: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+256:26: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+268:13: INFO: `name` passed to `name_scope`. Because you may be re-entering an existing scope, it is not safe to convert automatically,  the v2 name_scope does not support re-entering scopes by name.
+
+268:13: INFO: Renamed 'tf.name_scope' to 'tf.compat.v1.name_scope'
+271:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+273:45: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+273:45: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+277:30: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+277:30: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\text_comprehension.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\text_comprehension.py'
+--------------------------------------------------------------------------------
+
+136:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+136:25: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+138:24: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+138:24: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+140:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+140:22: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+141:48: INFO: tf.zeros_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+141:48: INFO: Renamed 'tf.zeros_initializer' to 'tf.compat.v1.zeros_initializer'
+149:17: INFO: Added keywords to args of function 'tf.transpose'
+226:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+226:25: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+228:24: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+228:24: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+230:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+230:22: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+231:48: INFO: tf.zeros_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+231:48: INFO: Renamed 'tf.zeros_initializer' to 'tf.compat.v1.zeros_initializer'
+239:17: INFO: Added keywords to args of function 'tf.transpose'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\text_match.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\text_match.py'
+--------------------------------------------------------------------------------
+
+81:26: INFO: Added keywords to args of function 'tf.argmax'
+95:13: INFO: `name` passed to `name_scope`. Because you may be re-entering an existing scope, it is not safe to convert automatically,  the v2 name_scope does not support re-entering scopes by name.
+
+95:13: INFO: Renamed 'tf.name_scope' to 'tf.compat.v1.name_scope'
+97:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+98:45: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+98:45: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+101:30: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+101:30: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+163:22: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+230:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+230:66: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+243:32: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+245:32: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+255:31: INFO: Added keywords to args of function 'tf.reduce_sum'
+256:31: INFO: Added keywords to args of function 'tf.reduce_sum'
+257:24: INFO: Added keywords to args of function 'tf.reduce_sum'
+258:16: INFO: Renamed 'tf.div' to 'tf.compat.v1.div'
+338:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+338:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+339:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+339:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+344:30: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+426:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+426:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+427:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+427:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+434:30: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+441:31: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+524:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+524:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+525:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+525:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+530:31: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+612:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+612:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+613:19: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+613:19: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+620:31: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\app_zoo\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\app_zoo\\__init__.py'
+--------------------------------------------------------------------------------
+
+61:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+63:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\csv_reader.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\csv_reader.py'
+--------------------------------------------------------------------------------
+
+52:17: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+55:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+57:17: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+60:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+63:26: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+105:16: INFO: Added keywords to args of function 'tf.decode_csv'
+105:16: INFO: Renamed 'tf.decode_csv' to 'tf.io.decode_csv'
+127:33: INFO: Renamed 'tf.string_to_number' to 'tf.strings.to_number'
+130:28: INFO: Renamed 'tf.string_split' to 'tf.compat.v1.string_split'
+181:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\csv_writer.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\csv_writer.py'
+--------------------------------------------------------------------------------
+
+34:22: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+39:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\odps_table_reader.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\odps_table_reader.py'
+--------------------------------------------------------------------------------
+
+67:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+71:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+118:33: INFO: Renamed 'tf.string_to_number' to 'tf.strings.to_number'
+119:28: INFO: Renamed 'tf.string_split' to 'tf.compat.v1.string_split'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\odps_table_writer.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\odps_table_writer.py'
+--------------------------------------------------------------------------------
+
+51:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\reader.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\reader.py'
+--------------------------------------------------------------------------------
+
+99:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+100:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+101:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+102:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+103:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+104:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+105:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+115:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\tfrecord_reader.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\tfrecord_reader.py'
+--------------------------------------------------------------------------------
+
+54:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+61:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+64:38: INFO: Renamed 'tf.python_io.tf_record_iterator' to 'tf.compat.v1.python_io.tf_record_iterator'
+66:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+70:30: INFO: Renamed 'tf.python_io.tf_record_iterator' to 'tf.compat.v1.python_io.tf_record_iterator'
+72:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+75:30: INFO: Renamed 'tf.python_io.tf_record_iterator' to 'tf.compat.v1.python_io.tf_record_iterator'
+77:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+92:18: INFO: Added keywords to args of function 'tf.parse_single_example'
+92:18: INFO: Renamed 'tf.parse_single_example' to 'tf.io.parse_single_example'
+104:13: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+113:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+114:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+115:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\tfrecord_writer.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\tfrecord_writer.py'
+--------------------------------------------------------------------------------
+
+35:22: INFO: Renamed 'tf.python_io.TFRecordWriter' to 'tf.io.TFRecordWriter'
+39:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\datasets\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\datasets\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\engines\\distribution.py'
+ outputting to '.\\easytransfer_tf2\\engines\\distribution.py'
+--------------------------------------------------------------------------------
+
+54:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+58:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+99:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+110:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+115:16: INFO: Renamed 'tf.logging.error' to 'tf.compat.v1.logging.error'
+191:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+243:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+311:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\engines\\model.py'
+ outputting to '.\\easytransfer_tf2\\engines\\model.py'
+--------------------------------------------------------------------------------
+
+22:0: INFO: Renamed 'tf.logging.set_verbosity' to 'tf.compat.v1.logging.set_verbosity'
+22:25: INFO: Renamed 'tf.logging.INFO' to 'tf.compat.v1.logging.INFO'
+23:0: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+30:0: INFO: Renamed 'tf.reset_default_graph' to 'tf.compat.v1.reset_default_graph'
+31:0: INFO: Renamed 'tf.set_random_seed' to 'tf.compat.v1.set_random_seed'
+34:8: INFO: Renamed 'tf.app.flags' to 'tf.compat.v1.app.flags'
+132:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+351:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+355:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+361:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+384:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+385:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+386:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+387:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+388:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+389:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+390:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+391:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+406:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+407:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+408:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+416:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+418:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+420:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+432:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+435:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+437:40: ERROR: tf.contrib.distribute.CollectiveAllReduceStrategy requires manual check. (Manual edit required) tf.contrib.distribute.CollectiveAllReduceStrategy has been migrated to tf.distribute.experimental.MultiWorkerMirroredStrategy. Note the changes in constructor. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+437:40: WARNING: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+437:40: ERROR: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib. tf.contrib.distribute.CollectiveAllReduceStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+443:40: ERROR: tf.contrib.distribute.CollectiveAllReduceStrategy requires manual check. (Manual edit required) tf.contrib.distribute.CollectiveAllReduceStrategy has been migrated to tf.distribute.experimental.MultiWorkerMirroredStrategy. Note the changes in constructor. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+443:40: WARNING: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+443:40: ERROR: Using member tf.contrib.distribute.CollectiveAllReduceStrategy in deprecated module tf.contrib. tf.contrib.distribute.CollectiveAllReduceStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+459:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+461:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+466:36: ERROR: tf.contrib.distribute.MirroredStrategy requires manual check. (Manual edit required) tf.contrib.distribute.MirroredStrategy has been migrated to tf.distribute.MirroredStrategy. Things to note: Constructor arguments have changed. If you are using MirroredStrategy with Keras training framework, the input provided to `model.fit` will be assumed to have global batch size and split across the replicas. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+466:36: WARNING: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+466:36: ERROR: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib. tf.contrib.distribute.MirroredStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+472:36: ERROR: tf.contrib.distribute.MirroredStrategy requires manual check. (Manual edit required) tf.contrib.distribute.MirroredStrategy has been migrated to tf.distribute.MirroredStrategy. Things to note: Constructor arguments have changed. If you are using MirroredStrategy with Keras training framework, the input provided to `model.fit` will be assumed to have global batch size and split across the replicas. If you're using the strategy with a custom training loop, note the following changes in methods: make_dataset_iterator->experimental_distribute_dataset, experimental_make_numpy_iterator->experimental_make_numpy_dataset, extended.call_for_each_replica->run, reduce requires an axis argument, unwrap->experimental_local_results experimental_initialize and experimental_finalize no longer needed 
+472:36: WARNING: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib.distribute. (Manual edit required) tf.contrib.distribute.* have been migrated to tf.distribute.*. Please check out the new module for updated APIs.
+472:36: ERROR: Using member tf.contrib.distribute.MirroredStrategy in deprecated module tf.contrib. tf.contrib.distribute.MirroredStrategy cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+480:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+481:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+482:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+484:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+491:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+492:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+493:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+494:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+502:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+507:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+538:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+539:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+540:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+541:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+542:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+543:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+544:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+545:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+546:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+547:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+548:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+549:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+550:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+551:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+552:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+553:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+554:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+555:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+564:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+584:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+589:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+590:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+598:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+605:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+612:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+627:25: INFO: Renamed 'tf.ConfigProto' to 'tf.compat.v1.ConfigProto'
+632:24: INFO: Renamed 'tf.GPUOptions' to 'tf.compat.v1.GPUOptions'
+650:25: INFO: Renamed 'tf.ConfigProto' to 'tf.compat.v1.ConfigProto'
+655:24: INFO: Renamed 'tf.GPUOptions' to 'tf.compat.v1.GPUOptions'
+703:31: INFO: Renamed 'tf.train.SummarySaverHook' to 'tf.estimator.SummarySaverHook'
+703:84: INFO: tf.summary.merge_all requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+703:84: INFO: Renamed 'tf.summary.merge_all' to 'tf.compat.v1.summary.merge_all'
+715:16: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+715:16: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+719:31: INFO: Renamed 'tf.train.SummarySaverHook' to 'tf.estimator.SummarySaverHook'
+720:68: INFO: tf.summary.merge_all requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+720:68: INFO: Renamed 'tf.summary.merge_all' to 'tf.compat.v1.summary.merge_all'
+770:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+807:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+821:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+838:15: ERROR: *.export_savedmodel requires manual check. (Manual edit required) Please rename the method export_savedmodel() to export_saved_model(). Two things to note:
+	(1) The argument strip_default_attributes has been removed. The function will always strip the default attributes from ops. If this breaks your code, please switch to tf.compat.v1.estimator.Estimator.
+	(2) This change only effects core estimator. If you are using tf.contrib.learn.Estimator, please switch to using core estimator.
+851:17: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+852:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+893:23: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+894:29: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+905:23: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+906:20: INFO: Renamed 'tf.gfile.MakeDirs' to 'tf.io.gfile.makedirs'
+908:23: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+909:25: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+933:30: INFO: Renamed 'tf.python_io.tf_record_iterator' to 'tf.compat.v1.python_io.tf_record_iterator'
+937:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+941:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+944:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+946:38: INFO: Renamed 'tf.python_io.tf_record_iterator' to 'tf.compat.v1.python_io.tf_record_iterator'
+949:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+953:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+956:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+958:29: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+963:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+968:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+982:30: INFO: Renamed 'tf.python_io.tf_record_iterator' to 'tf.compat.v1.python_io.tf_record_iterator'
+986:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+990:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+993:28: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+995:29: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+1000:21: INFO: Renamed 'tf.gfile.Open' to 'tf.io.gfile.GFile'
+1005:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+1031:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+1033:21: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\engines\\whale_estimator.py'
+ outputting to '.\\easytransfer_tf2\\engines\\whale_estimator.py'
+--------------------------------------------------------------------------------
+
+72:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+78:35: WARNING: Changing dataset.make_initializable_iterator() to tf.compat.v1.data.make_initializable_iterator(dataset). Please check this transformation.
+
+79:24: INFO: Renamed 'tf.add_to_collection' to 'tf.compat.v1.add_to_collection'
+79:45: INFO: Renamed 'tf.GraphKeys' to 'tf.compat.v1.GraphKeys'
+84:20: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+84:20: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+87:17: INFO: tf.summary.merge_all requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+87:17: INFO: Renamed 'tf.summary.merge_all' to 'tf.compat.v1.summary.merge_all'
+90:29: INFO: tf.summary.FileWriter requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+90:29: INFO: Renamed 'tf.summary.FileWriter' to 'tf.compat.v1.summary.FileWriter'
+92:16: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+92:78: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+93:25: INFO: Renamed 'tf.ConfigProto' to 'tf.compat.v1.ConfigProto'
+98:24: INFO: Renamed 'tf.GPUOptions' to 'tf.compat.v1.GPUOptions'
+108:17: INFO: Renamed 'tf.train.StopAtStepHook' to 'tf.estimator.StopAtStepHook'
+109:13: INFO: Renamed 'tf.train.MonitoredTrainingSession' to 'tf.compat.v1.train.MonitoredTrainingSession'
+115:52: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+118:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+125:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+126:20: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\engines\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\engines\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\classification_regression_evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\classification_regression_evaluator.py'
+--------------------------------------------------------------------------------
+
+55:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+120:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+121:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+156:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+167:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+184:18: INFO: Added keywords to args of function 'tf.argmax'
+197:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+197:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+198:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+198:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+199:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+199:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+200:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+200:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+204:18: INFO: Added keywords to args of function 'tf.argmax'
+206:16: INFO: tf.metrics.true_positives requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+206:16: INFO: Renamed 'tf.metrics.true_positives' to 'tf.compat.v1.metrics.true_positives'
+208:16: INFO: tf.metrics.true_negatives requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+208:16: INFO: Renamed 'tf.metrics.true_negatives' to 'tf.compat.v1.metrics.true_negatives'
+210:16: INFO: tf.metrics.false_positives requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+210:16: INFO: Renamed 'tf.metrics.false_positives' to 'tf.compat.v1.metrics.false_positives'
+212:16: INFO: tf.metrics.false_negatives requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+212:16: INFO: Renamed 'tf.metrics.false_negatives' to 'tf.compat.v1.metrics.false_negatives'
+216:10: INFO: Renamed 'tf.div_no_nan' to 'tf.math.divide_no_nan'
+224:17: INFO: tf.metrics.mean_squared_error requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+224:17: INFO: Renamed 'tf.metrics.mean_squared_error' to 'tf.compat.v1.metrics.mean_squared_error'
+239:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+239:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+240:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+240:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+241:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+241:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\comprehension_evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\comprehension_evaluator.py'
+--------------------------------------------------------------------------------
+
+85:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+114:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+114:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+115:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+115:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+116:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+116:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\evaluator.py'
+--------------------------------------------------------------------------------
+
+72:20: INFO: Renamed 'tf.py_func' to 'tf.compat.v1.py_func'
+87:25: INFO: Renamed 'tf.py_func' to 'tf.compat.v1.py_func'
+94:48: INFO: Renamed 'tf.py_func' to 'tf.compat.v1.py_func'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\kd_evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\kd_evaluator.py'
+--------------------------------------------------------------------------------
+
+63:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+83:8: INFO: Added keywords to args of function 'tf.argmax'
+93:8: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+93:8: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\labeling_evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\labeling_evaluator.py'
+--------------------------------------------------------------------------------
+
+54:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+77:22: INFO: Added keywords to args of function 'tf.argmax'
+85:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+87:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+89:12: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+89:12: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\match_evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\match_evaluator.py'
+--------------------------------------------------------------------------------
+
+71:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+98:22: INFO: Added keywords to args of function 'tf.argmax'
+109:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+111:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+113:8: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+113:8: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\pretrain_evaluator.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\pretrain_evaluator.py'
+--------------------------------------------------------------------------------
+
+28:30: INFO: Added keywords to args of function 'tf.reduce_sum'
+30:28: INFO: Added keywords to args of function 'tf.argmax'
+35:25: INFO: tf.metrics.accuracy requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+35:25: INFO: Renamed 'tf.metrics.accuracy' to 'tf.compat.v1.metrics.accuracy'
+40:26: INFO: tf.metrics.mean requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+40:26: INFO: Renamed 'tf.metrics.mean' to 'tf.compat.v1.metrics.mean'
+54:32: INFO: Added keywords to args of function 'tf.argmax'
+57:29: INFO: tf.metrics.accuracy requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+57:29: INFO: Renamed 'tf.metrics.accuracy' to 'tf.compat.v1.metrics.accuracy'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\evaluators\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\evaluators\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\activations.py'
+ outputting to '.\\easytransfer_tf2\\layers\\activations.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\attention.py'
+ outputting to '.\\easytransfer_tf2\\layers\\attention.py'
+--------------------------------------------------------------------------------
+
+99:21: INFO: Added keywords to args of function 'tf.shape'
+100:21: INFO: Added keywords to args of function 'tf.shape'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\cnn.py'
+ outputting to '.\\easytransfer_tf2\\layers\\cnn.py'
+--------------------------------------------------------------------------------
+
+28:13: INFO: `name` passed to `name_scope`. Because you may be re-entering an existing scope, it is not safe to convert automatically,  the v2 name_scope does not support re-entering scopes by name.
+
+28:13: INFO: Renamed 'tf.name_scope' to 'tf.compat.v1.name_scope'
+31:19: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+32:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+33:20: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+33:20: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+34:20: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+34:20: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+36:19: INFO: Added keywords to args of function 'tf.nn.conv2d'
+36:19: INFO: Renamed keyword argument for tf.nn.conv2d from filter to filters
+47:21: INFO: Added keywords to args of function 'tf.nn.max_pool'
+47:21: INFO: Renamed keyword argument for tf.nn.max_pool from value to input
+47:21: INFO: Renamed 'tf.nn.max_pool' to 'tf.nn.max_pool2d'
+101:19: INFO: Added keywords to args of function 'tf.reduce_sum'
+101:54: INFO: Added keywords to args of function 'tf.reduce_sum'
+102:19: INFO: Added keywords to args of function 'tf.reduce_sum'
+102:54: INFO: Added keywords to args of function 'tf.reduce_sum'
+131:14: INFO: Added keywords to args of function 'tf.reduce_sum'
+131:42: INFO: Renamed 'tf.matrix_transpose' to 'tf.linalg.matrix_transpose'
+147:19: INFO: Added keywords to args of function 'tf.pad'
+149:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+152:19: ERROR: Using member tf.contrib.layers.conv2d in deprecated module tf.contrib. tf.contrib.layers.conv2d cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+159:36: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+160:36: INFO: Multiplying scale arg of tf.contrib.layers.l2_regularizer by half to what tf.keras.regularizers.l2 expects.
+
+161:35: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+161:35: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+168:25: INFO: Added keywords to args of function 'tf.transpose'
+182:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+184:19: ERROR: Using member tf.contrib.layers.conv2d in deprecated module tf.contrib. tf.contrib.layers.conv2d cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+191:36: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+192:36: INFO: Multiplying scale arg of tf.contrib.layers.l2_regularizer by half to what tf.keras.regularizers.l2 expects.
+
+193:35: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+193:35: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+209:19: INFO: Added keywords to args of function 'tf.transpose'
+210:19: INFO: Added keywords to args of function 'tf.transpose'
+214:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+222:34: INFO: Renamed 'tf.layers.max_pooling2d' to 'tf.compat.v1.layers.max_pooling2d'
+235:35: INFO: Renamed 'tf.layers.max_pooling2d' to 'tf.compat.v1.layers.max_pooling2d'
+242:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+243:41: INFO: Added keywords to args of function 'tf.transpose'
+246:47: INFO: Added keywords to args of function 'tf.transpose'
+257:32: INFO: Renamed 'tf.layers.max_pooling2d' to 'tf.compat.v1.layers.max_pooling2d'
+269:32: INFO: Renamed 'tf.layers.max_pooling2d' to 'tf.compat.v1.layers.max_pooling2d'
+302:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+303:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+303:25: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+306:23: INFO: Added keywords to args of function 'tf.nn.conv2d'
+306:23: INFO: Renamed keyword argument for tf.nn.conv2d from filter to filters
+309:20: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+309:20: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+311:25: INFO: Added keywords to args of function 'tf.nn.max_pool'
+311:25: INFO: Renamed keyword argument for tf.nn.max_pool from value to input
+311:25: INFO: Renamed 'tf.nn.max_pool' to 'tf.nn.max_pool2d'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\core.py'
+ outputting to '.\\easytransfer_tf2\\layers\\core.py'
+--------------------------------------------------------------------------------
+
+29:11: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+29:11: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\dam.py'
+ outputting to '.\\easytransfer_tf2\\layers\\dam.py'
+--------------------------------------------------------------------------------
+
+35:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+35:61: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+44:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+44:57: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+45:16: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+46:16: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+55:46: INFO: Added keywords to args of function 'tf.transpose'
+56:43: INFO: Added keywords to args of function 'tf.transpose'
+58:33: INFO: Added keywords to args of function 'tf.reduce_max'
+58:75: INFO: Renamed keyword argument for tf.reduce_max from keep_dims to keepdims
+60:33: INFO: Added keywords to args of function 'tf.reduce_max'
+60:86: INFO: Renamed keyword argument for tf.reduce_max from keep_dims to keepdims
+62:47: INFO: Added keywords to args of function 'tf.transpose'
+65:20: INFO: Added keywords to args of function 'tf.reduce_sum'
+65:67: INFO: Renamed keyword argument for tf.reduce_sum from keep_dims to keepdims
+67:66: INFO: Added keywords to args of function 'tf.transpose'
+69:20: INFO: Added keywords to args of function 'tf.reduce_sum'
+69:67: INFO: Renamed keyword argument for tf.reduce_sum from keep_dims to keepdims
+74:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+74:58: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+77:21: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+78:22: INFO: Renamed 'tf.layers.dropout' to 'tf.compat.v1.layers.dropout'
+86:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+86:60: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+87:17: INFO: Added keywords to args of function 'tf.reduce_sum'
+88:17: INFO: Added keywords to args of function 'tf.reduce_sum'
+89:21: INFO: Added keywords to args of function 'tf.reduce_max'
+90:21: INFO: Added keywords to args of function 'tf.reduce_max'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\embedding.py'
+ outputting to '.\\easytransfer_tf2\\layers\\embedding.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\encoder_decoder.py'
+ outputting to '.\\easytransfer_tf2\\layers\\encoder_decoder.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\encoder_decoder_whale.py'
+ outputting to '.\\easytransfer_tf2\\layers\\encoder_decoder_whale.py'
+--------------------------------------------------------------------------------
+
+44:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\header.py'
+ outputting to '.\\easytransfer_tf2\\layers\\header.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\kd.py'
+ outputting to '.\\easytransfer_tf2\\layers\\kd.py'
+--------------------------------------------------------------------------------
+
+51:40: INFO: Added keywords to args of function 'tf.math.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\mask.py'
+ outputting to '.\\easytransfer_tf2\\layers\\mask.py'
+--------------------------------------------------------------------------------
+
+23:17: INFO: Added keywords to args of function 'tf.shape'
+24:17: INFO: Added keywords to args of function 'tf.shape'
+26:23: INFO: Added keywords to args of function 'tf.transpose'
+29:26: INFO: Added keywords to args of function 'tf.shape'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\utils.py'
+ outputting to '.\\easytransfer_tf2\\layers\\utils.py'
+--------------------------------------------------------------------------------
+
+44:21: INFO: Renamed 'tf.get_variable_scope' to 'tf.compat.v1.get_variable_scope'
+82:16: INFO: Added keywords to args of function 'tf.shape'
+91:14: INFO: Added keywords to args of function 'tf.shape'
+102:11: INFO: Renamed 'tf.keras.initializers.TruncatedNormal' to 'tf.compat.v1.keras.initializers.TruncatedNormal'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\layers\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\layers\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\classification_regression_loss.py'
+ outputting to '.\\easytransfer_tf2\\losses\\classification_regression_loss.py'
+--------------------------------------------------------------------------------
+
+25:11: INFO: tf.losses.softmax_cross_entropy requires manual check. tf.losses have been replaced with object oriented versions in TF 2.0 and after. The loss function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+25:11: INFO: Renamed 'tf.losses.softmax_cross_entropy' to 'tf.compat.v1.losses.softmax_cross_entropy'
+31:11: INFO: tf.losses.mean_squared_error requires manual check. tf.losses have been replaced with object oriented versions in TF 2.0 and after. The loss function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+31:11: INFO: Renamed 'tf.losses.mean_squared_error' to 'tf.compat.v1.losses.mean_squared_error'
+37:17: INFO: Added keywords to args of function 'tf.reduce_max'
+40:11: INFO: tf.losses.sigmoid_cross_entropy requires manual check. tf.losses have been replaced with object oriented versions in TF 2.0 and after. The loss function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+40:11: INFO: Renamed 'tf.losses.sigmoid_cross_entropy' to 'tf.compat.v1.losses.sigmoid_cross_entropy'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\comprehension_loss.py'
+ outputting to '.\\easytransfer_tf2\\losses\\comprehension_loss.py'
+--------------------------------------------------------------------------------
+
+24:16: INFO: Added keywords to args of function 'tf.reduce_mean'
+25:12: INFO: Added keywords to args of function 'tf.reduce_sum'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\kd_loss.py'
+ outputting to '.\\easytransfer_tf2\\losses\\kd_loss.py'
+--------------------------------------------------------------------------------
+
+40:11: INFO: Added keywords to args of function 'tf.reduce_mean'
+46:24: INFO: Added keywords to args of function 'tf.reduce_mean'
+50:27: INFO: Added keywords to args of function 'tf.reduce_mean'
+62:22: INFO: Added keywords to args of function 'tf.reduce_sum'
+63:8: INFO: Renamed 'tf.log' to 'tf.math.log'
+64:8: INFO: Renamed 'tf.log' to 'tf.math.log'
+65:28: INFO: Added keywords to args of function 'tf.reduce_mean'
+66:35: INFO: Added keywords to args of function 'tf.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\labeling_loss.py'
+ outputting to '.\\easytransfer_tf2\\losses\\labeling_loss.py'
+--------------------------------------------------------------------------------
+
+23:12: INFO: Added keywords to args of function 'tf.reduce_mean'
+24:8: INFO: Added keywords to args of function 'tf.reduce_sum'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\matching_loss.py'
+ outputting to '.\\easytransfer_tf2\\losses\\matching_loss.py'
+--------------------------------------------------------------------------------
+
+24:34: INFO: Added keywords to args of function 'tf.norm'
+25:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+25:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+25:40: INFO: Added keywords to args of function 'tf.reduce_mean'
+26:15: INFO: Renamed 'tf.div' to 'tf.compat.v1.div'
+26:22: INFO: Added keywords to args of function 'tf.transpose'
+27:34: INFO: Added keywords to args of function 'tf.norm'
+28:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+28:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+28:40: INFO: Added keywords to args of function 'tf.reduce_mean'
+29:15: INFO: Renamed 'tf.div' to 'tf.compat.v1.div'
+29:22: INFO: Added keywords to args of function 'tf.transpose'
+31:20: INFO: Added keywords to args of function 'tf.transpose'
+32:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+32:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+32:34: INFO: Added keywords to args of function 'tf.reduce_mean'
+34:35: INFO: Renamed 'tf.diag_part' to 'tf.linalg.tensor_diag_part'
+35:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+35:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+35:48: INFO: Added keywords to args of function 'tf.reduce_mean'
+37:12: INFO: Added keywords to args of function 'tf.reduce_mean'
+40:11: INFO: Added keywords to args of function 'tf.reduce_mean'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\pretrain_loss.py'
+ outputting to '.\\easytransfer_tf2\\losses\\pretrain_loss.py'
+--------------------------------------------------------------------------------
+
+26:24: INFO: Added keywords to args of function 'tf.reduce_sum'
+27:16: INFO: Added keywords to args of function 'tf.reduce_sum'
+28:18: INFO: Added keywords to args of function 'tf.reduce_sum'
+31:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+31:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+40:24: INFO: Added keywords to args of function 'tf.reduce_sum'
+41:36: INFO: Added keywords to args of function 'tf.reduce_mean'
+42:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+42:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+58:17: INFO: Added keywords to args of function 'tf.reduce_mean'
+59:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+59:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+74:17: INFO: Added keywords to args of function 'tf.reduce_mean'
+75:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+75:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\losses\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\losses\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_adabert.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_adabert.py'
+--------------------------------------------------------------------------------
+
+29:12: INFO: Renamed 'tf.log' to 'tf.math.log'
+29:20: INFO: Renamed 'tf.log' to 'tf.math.log'
+33:20: INFO: Added keywords to args of function 'tf.reduce_max'
+34:16: INFO: Renamed 'tf.log' to 'tf.math.log'
+34:23: INFO: Added keywords to args of function 'tf.reduce_sum'
+133:27: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+138:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+139:26: INFO: tf.train.exponential_decay requires manual check. To use learning rate decay schedules with TensorFlow 2.0, switch to the schedules in `tf.keras.optimizers.schedules`.
+
+139:26: INFO: Renamed 'tf.train.exponential_decay' to 'tf.compat.v1.train.exponential_decay'
+146:24: INFO: Added keywords to args of function 'tf.shape'
+148:24: INFO: Added keywords to args of function 'tf.reduce_sum'
+149:29: INFO: Added keywords to args of function 'tf.reduce_sum'
+166:55: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+166:55: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+169:36: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+169:36: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+170:54: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+170:54: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+173:36: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+173:36: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+174:30: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+174:30: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+175:29: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+175:29: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+178:27: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+178:27: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+182:36: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+182:36: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+183:27: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+183:27: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+187:36: INFO: tf.constant_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+187:36: INFO: Renamed 'tf.constant_initializer' to 'tf.compat.v1.constant_initializer'
+188:30: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+188:30: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+189:29: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+189:29: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+192:23: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+192:23: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+196:32: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+197:23: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+197:23: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+201:32: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+202:26: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+202:26: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+203:25: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+203:25: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+206:38: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+206:38: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+210:28: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+224:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+224:54: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+225:23: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+225:23: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+230:23: INFO: Changing keep_prob arg of tf.nn.dropout to rate
+
+232:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+232:54: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+233:24: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+233:24: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+238:24: INFO: Changing keep_prob arg of tf.nn.dropout to rate
+
+244:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+244:56: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+247:32: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+247:32: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+251:40: INFO: tf.random_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+251:40: INFO: Renamed 'tf.random_normal_initializer' to 'tf.compat.v1.random_normal_initializer'
+256:55: INFO: Added keywords to args of function 'tf.reduce_max'
+256:77: INFO: Renamed keyword argument for tf.reduce_max from keep_dims to keepdims
+266:27: INFO: Added keywords to args of function 'tf.reduce_mean'
+276:31: INFO: Added keywords to args of function 'tf.reduce_mean'
+281:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+281:56: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+282:25: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+282:25: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+286:32: INFO: tf.random_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+286:32: INFO: Renamed 'tf.random_normal_initializer' to 'tf.compat.v1.random_normal_initializer'
+291:42: INFO: Added keywords to args of function 'tf.reduce_max'
+291:64: INFO: Renamed keyword argument for tf.reduce_max from keep_dims to keepdims
+296:28: INFO: Added keywords to args of function 'tf.reduce_sum'
+302:31: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+302:31: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+306:28: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+311:35: INFO: Added keywords to args of function 'tf.reduce_sum'
+315:35: INFO: Changing keep_prob arg of tf.nn.dropout to rate
+
+317:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+317:57: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+318:25: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+324:21: INFO: Changing labels arg of tf.nn.softmax_cross_entropy_with_logits to tf.stop_gradient(labels). Please check this transformation.
+
+326:36: INFO: Added keywords to args of function 'tf.reduce_mean'
+329:26: INFO: Added keywords to args of function 'tf.reduce_sum'
+332:19: INFO: Added keywords to args of function 'tf.reduce_sum'
+343:34: INFO: Added keywords to args of function 'tf.transpose'
+352:31: INFO: Changing labels arg of tf.nn.softmax_cross_entropy_with_logits to tf.stop_gradient(labels). Please check this transformation.
+
+354:45: INFO: Added keywords to args of function 'tf.reduce_mean'
+357:19: INFO: Added keywords to args of function 'tf.reduce_sum'
+362:36: INFO: Added keywords to args of function 'tf.reduce_sum'
+371:44: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+374:43: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+378:19: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+387:21: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+387:39: INFO: Renamed 'tf.GraphKeys' to 'tf.compat.v1.GraphKeys'
+407:20: INFO: Renamed 'tf.train.AdamOptimizer' to 'tf.compat.v1.train.AdamOptimizer'
+410:23: INFO: Renamed 'tf.train.AdamOptimizer' to 'tf.compat.v1.train.AdamOptimizer'
+454:27: INFO: Added keywords to args of function 'tf.argmax'
+455:19: INFO: tf.metrics.accuracy requires manual check. tf.metrics have been replaced with object oriented versions in TF 2.0 and after. The metric function calls have been converted to compat.v1 for backward compatibility. Please update these calls to the TF 2.0 versions.
+455:19: INFO: Renamed 'tf.metrics.accuracy' to 'tf.compat.v1.metrics.accuracy'
+468:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+472:31: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+472:31: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+476:28: INFO: tf.random_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+476:28: INFO: Renamed 'tf.random_normal_initializer' to 'tf.compat.v1.random_normal_initializer'
+482:21: INFO: Added keywords to args of function 'tf.reduce_sum'
+494:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+497:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+512:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+558:16: INFO: Added keywords to args of function 'tf.reduce_sum'
+562:16: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+562:16: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+566:24: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+567:18: INFO: Added keywords to args of function 'tf.nn.conv1d'
+567:18: INFO: Renamed keyword argument for tf.nn.conv1d from value to input
+572:12: INFO: Renamed 'tf.layers.batch_normalization' to 'tf.compat.v1.layers.batch_normalization'
+581:16: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+581:16: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+585:24: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+586:18: INFO: Added keywords to args of function 'tf.nn.conv1d'
+586:18: INFO: Renamed keyword argument for tf.nn.conv1d from value to input
+591:12: INFO: Renamed 'tf.layers.batch_normalization' to 'tf.compat.v1.layers.batch_normalization'
+600:16: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+600:16: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+604:24: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+605:18: INFO: Added keywords to args of function 'tf.nn.conv1d'
+605:18: INFO: Renamed keyword argument for tf.nn.conv1d from value to input
+610:12: INFO: Renamed 'tf.layers.batch_normalization' to 'tf.compat.v1.layers.batch_normalization'
+619:21: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+619:21: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+623:24: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+626:12: INFO: Renamed keyword argument for tf.nn.dilation2d from filter to filters
+628:12: INFO: Renamed keyword argument for tf.nn.dilation2d from rates to dilations
+624:23: INFO: Adding argument 'data_format='NHWC'' to call to tf.nn.dilation2d.
+631:12: INFO: Renamed 'tf.layers.batch_normalization' to 'tf.compat.v1.layers.batch_normalization'
+637:21: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+637:21: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+641:24: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+644:12: INFO: Renamed keyword argument for tf.nn.dilation2d from filter to filters
+646:12: INFO: Renamed keyword argument for tf.nn.dilation2d from rates to dilations
+642:23: INFO: Adding argument 'data_format='NHWC'' to call to tf.nn.dilation2d.
+649:12: INFO: Renamed 'tf.layers.batch_normalization' to 'tf.compat.v1.layers.batch_normalization'
+655:21: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+655:21: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+659:24: INFO: Changing tf.contrib.layers xavier initializer to a tf.compat.v1.keras.initializers.VarianceScaling and converting arguments.
+
+662:12: INFO: Renamed keyword argument for tf.nn.dilation2d from filter to filters
+664:12: INFO: Renamed keyword argument for tf.nn.dilation2d from rates to dilations
+660:23: INFO: Adding argument 'data_format='NHWC'' to call to tf.nn.dilation2d.
+667:12: INFO: Renamed 'tf.layers.batch_normalization' to 'tf.compat.v1.layers.batch_normalization'
+673:22: INFO: Added keywords to args of function 'tf.nn.max_pool'
+673:22: INFO: Renamed keyword argument for tf.nn.max_pool from value to input
+673:22: INFO: Renamed 'tf.nn.max_pool' to 'tf.nn.max_pool2d'
+681:23: INFO: Added keywords to args of function 'tf.nn.avg_pool'
+681:23: INFO: Renamed keyword argument for tf.nn.avg_pool from value to input
+681:23: INFO: Renamed 'tf.nn.avg_pool' to 'tf.nn.avg_pool2d'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_albert.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_albert.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_bert.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_bert.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_hae.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_hae.py'
+--------------------------------------------------------------------------------
+
+47:17: INFO: Renamed 'tf.get_variable_scope' to 'tf.compat.v1.get_variable_scope'
+85:14: INFO: Added keywords to args of function 'tf.shape'
+105:11: INFO: Changing keep_prob arg of tf.nn.dropout to rate, and recomputing value.
+
+111:9: WARNING: tf.contrib.layers.layer_norm requires manual check. (Manual edit required) `tf.contrib.layers.layer_norm` has been deprecated, and its implementation has been integrated with `tf.keras.layers.LayerNormalization` in TensorFlow 2.0. Note that, the default value of `epsilon` is changed to `1e-3` in the new API from `1e-12`, and this may introduce numerical differences. Please check the new API and use that instead.
+111:9: ERROR: Using member tf.contrib.layers.layer_norm in deprecated module tf.contrib. tf.contrib.layers.layer_norm cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+124:9: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+124:9: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+157:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+157:22: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+167:17: INFO: Added keywords to args of function 'tf.nn.embedding_lookup'
+167:17: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+228:27: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+228:27: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+245:38: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+245:38: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+258:35: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+258:35: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+329:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_imagebert.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_imagebert.py'
+--------------------------------------------------------------------------------
+
+239:28: INFO: Added keywords to args of function 'tf.reduce_sum'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_roberta.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_roberta.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_utils.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_utils.py'
+--------------------------------------------------------------------------------
+
+37:16: INFO: Renamed 'tf.logging.error' to 'tf.compat.v1.logging.error'
+138:11: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+141:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+142:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+151:16: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+203:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+205:8: INFO: Renamed 'tf.train.init_from_checkpoint' to 'tf.compat.v1.train.init_from_checkpoint'
+212:12: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+251:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+252:4: INFO: Renamed 'tf.train.init_from_checkpoint' to 'tf.compat.v1.train.init_from_checkpoint'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\modeling_videobert.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\modeling_videobert.py'
+--------------------------------------------------------------------------------
+
+232:28: INFO: Added keywords to args of function 'tf.reduce_sum'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\model_zoo\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\model_zoo\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\optimizers\\adam_weight_decay_optimizer.py'
+ outputting to '.\\easytransfer_tf2\\optimizers\\adam_weight_decay_optimizer.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\optimizers\\lamb_weight_decay_optimizer.py'
+ outputting to '.\\easytransfer_tf2\\optimizers\\lamb_weight_decay_optimizer.py'
+--------------------------------------------------------------------------------
+
+148:21: INFO: Added keywords to args of function 'tf.norm'
+149:21: INFO: Added keywords to args of function 'tf.norm'
+150:20: INFO: Renamed 'tf.where' to 'tf.compat.v1.where'
+152:16: INFO: Renamed 'tf.where' to 'tf.compat.v1.where'
+197:21: INFO: Added keywords to args of function 'tf.norm'
+198:21: INFO: Added keywords to args of function 'tf.norm'
+199:20: INFO: Renamed 'tf.where' to 'tf.compat.v1.where'
+201:16: INFO: Renamed 'tf.where' to 'tf.compat.v1.where'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\optimizers\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\optimizers\\__init__.py'
+--------------------------------------------------------------------------------
+
+56:18: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+61:24: INFO: tf.train.polynomial_decay requires manual check. To use learning rate decay schedules with TensorFlow 2.0, switch to the schedules in `tf.keras.optimizers.schedules`.
+
+61:24: INFO: Renamed 'tf.train.polynomial_decay' to 'tf.compat.v1.train.polynomial_decay'
+73:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+94:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+100:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+111:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+112:24: INFO: Renamed 'tf.train.AdamOptimizer' to 'tf.compat.v1.train.AdamOptimizer'
+119:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+125:20: INFO: Renamed 'tf.train.AdagradOptimizer' to 'tf.compat.v1.train.AdagradOptimizer'
+127:20: INFO: Renamed 'tf.train.AdadeltaOptimizer' to 'tf.compat.v1.train.AdadeltaOptimizer'
+133:16: INFO: Renamed 'tf.trainable_variables' to 'tf.compat.v1.trainable_variables'
+136:12: INFO: Added keywords to args of function 'tf.gradients'
+139:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+144:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+145:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+149:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+151:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+165:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+177:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+183:4: INFO: tf.summary.scalar requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+183:4: INFO: Renamed 'tf.summary.scalar' to 'tf.compat.v1.summary.scalar'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\postprocessors\\classification_postprocessors.py'
+ outputting to '.\\easytransfer_tf2\\postprocessors\\classification_postprocessors.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\postprocessors\\comprehension_postprocessors.py'
+ outputting to '.\\easytransfer_tf2\\postprocessors\\comprehension_postprocessors.py'
+--------------------------------------------------------------------------------
+
+111:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+120:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+137:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+147:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\postprocessors\\labeling_postprocessors.py'
+ outputting to '.\\easytransfer_tf2\\postprocessors\\labeling_postprocessors.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\postprocessors\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\postprocessors\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\classification_regression_preprocessor.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\classification_regression_preprocessor.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\comprehension_preprocessor.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\comprehension_preprocessor.py'
+--------------------------------------------------------------------------------
+
+293:24: INFO: Renamed 'tf.logging.warning' to 'tf.compat.v1.logging.warning'
+428:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+429:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+430:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+431:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+432:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+434:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+436:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+439:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+440:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+442:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+445:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+448:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+449:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+450:24: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+709:16: INFO: Renamed 'tf.logging.warning' to 'tf.compat.v1.logging.warning'
+737:20: INFO: Renamed 'tf.logging.warning' to 'tf.compat.v1.logging.warning'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\deeptext_preprocessor.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\deeptext_preprocessor.py'
+--------------------------------------------------------------------------------
+
+37:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+40:9: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+51:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+60:8: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+61:4: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+129:13: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+138:13: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+154:19: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\labeling_preprocessor.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\labeling_preprocessor.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\preprocessor.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\preprocessor.py'
+--------------------------------------------------------------------------------
+
+125:15: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+150:20: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+171:19: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+172:16: INFO: Renamed 'tf.gfile.MakeDirs' to 'tf.io.gfile.makedirs'
+175:19: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+176:16: INFO: Renamed 'tf.gfile.Copy' to 'tf.io.gfile.copy'
+180:19: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+181:20: INFO: Renamed 'tf.gfile.Copy' to 'tf.io.gfile.copy'
+183:19: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+184:20: INFO: Renamed 'tf.gfile.Copy' to 'tf.io.gfile.copy'
+206:17: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+212:19: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+215:21: INFO: Renamed 'tf.gfile.Exists' to 'tf.io.gfile.exists'
+239:16: INFO: Renamed 'tf.logging.error' to 'tf.compat.v1.logging.error'
+303:17: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+401:25: INFO: Renamed 'tf.py_func' to 'tf.compat.v1.py_func'
+414:31: INFO: Renamed 'tf.string_to_number' to 'tf.strings.to_number'
+416:20: INFO: Renamed 'tf.string_split' to 'tf.compat.v1.string_split'
+419:31: INFO: Renamed 'tf.string_to_number' to 'tf.strings.to_number'
+420:20: INFO: Renamed 'tf.string_split' to 'tf.compat.v1.string_split'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\pretrain_preprocessor.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\pretrain_preprocessor.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\tokenization.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\tokenization.py'
+--------------------------------------------------------------------------------
+
+146:9: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+196:12: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+198:24: INFO: Renamed 'tf.gfile.GFile' to 'tf.io.gfile.GFile'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\preprocessors\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\preprocessors\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\utils\\hooks.py'
+ outputting to '.\\easytransfer_tf2\\utils\\hooks.py'
+--------------------------------------------------------------------------------
+
+23:22: INFO: Renamed 'tf.train.SessionRunHook' to 'tf.estimator.SessionRunHook'
+34:26: INFO: tf.summary.FileWriter requires manual check. The TF 1.x summary API cannot be automatically migrated to TF 2.0, so symbols have been converted to tf.compat.v1.summary.* and must be migrated manually. Typical usage will only require changes to the summary writing logic, not to individual calls like scalar(). For examples of the new summary API, see the Effective TF 2.0 migration document or check the TF 2.0 TensorBoard tutorials.
+34:26: INFO: Renamed 'tf.summary.FileWriter' to 'tf.compat.v1.summary.FileWriter'
+53:19: INFO: Renamed 'tf.train.SessionRunArgs' to 'tf.estimator.SessionRunArgs'
+73:26: INFO: Renamed 'tf.Summary' to 'tf.compat.v1.Summary'
+79:16: INFO: Renamed 'tf.logging.info' to 'tf.compat.v1.logging.info'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file '.\\easytransfer\\utils\\__init__.py'
+ outputting to '.\\easytransfer_tf2\\utils\\__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
