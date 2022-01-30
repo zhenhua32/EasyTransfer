@@ -21,12 +21,12 @@ from __future__ import print_function
 from tensorflow.python.keras import layers as keras_layers
 from tensorflow.python.layers import base
 from tensorflow.python.ops import init_ops
-import tensorflow as tf
+import tf_slim as slim
 from .utils import get_initializer
 
 def LayerNormalization(input_tensor, name=None):
     """Run layer normalization on the last dimension of the tensor."""
-    return tf.contrib.layers.layer_norm(
+    return slim.layers.layer_norm(
         inputs=input_tensor, begin_norm_axis=-1, begin_params_axis=-1, scope=name)
 
 class Embedding(keras_layers.Embedding, base.Layer):

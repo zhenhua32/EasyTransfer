@@ -164,7 +164,7 @@ class PreTrainedModel(layers.Layer):
 
         try:
             # 检查点读取器
-            reader = pywrap_tensorflow.NewCheckpointReader(pretrained_model_path)
+            reader = tf.compat.v1.train.NewCheckpointReader(pretrained_model_path)
             # 获取变量名到形状的映射
             var_to_shape_map = reader.get_variable_to_shape_map()
         except errors_impl.DataLossError:
@@ -219,7 +219,7 @@ def init_from_checkpoint_without_training_ops(pretrained_model_path):
         network_name_to_variable[name] = var
 
     try:
-        reader = pywrap_tensorflow.NewCheckpointReader(pretrained_model_path)
+        reader = tf.compat.v1.train.NewCheckpointReader(pretrained_model_path)
         var_to_shape_map = reader.get_variable_to_shape_map()
     except errors_impl.DataLossError:
         raise ImportError(

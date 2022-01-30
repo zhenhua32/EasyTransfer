@@ -1,0 +1,4 @@
+tensorflow
+python-dotenv
+sentencepiece
+sklearn

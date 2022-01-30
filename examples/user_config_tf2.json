@@ -21,7 +21,7 @@
         "train_input_fp": "D:/code/py_nlp_classify/data/small/train.csv",
         "train_batch_size": 32,
         "num_epochs": 5,
-        "model_dir": "model_dir",
+        "model_dir": "model_dir_tf2",
         "keep_checkpoint_max": 1,
         "optimizer_config": {
             "learning_rate": 1e-5
@@ -33,10 +33,10 @@
     "evaluate_config": {
         "eval_input_fp": "D:/code/py_nlp_classify/data/small/dev.csv",
         "eval_batch_size": 8,
-        "eval_checkpoint_path": "model_dir/model.ckpt-{}"
+        "eval_checkpoint_path": "model_dir_tf2/model.ckpt-{}"
     },
     "predict_config": {
-        "predict_checkpoint_path": "model_dir/model.ckpt-{}",
+        "predict_checkpoint_path": "model_dir_tf2/model.ckpt-{}",
         "predict_input_fp": "D:/code/py_nlp_classify/data/test.csv",
         "predict_output_fp": "D:/code/py_nlp_classify/data/predict.csv",
         "predict_batch_size": 10

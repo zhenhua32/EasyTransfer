@@ -1,4 +1,4 @@
 .DS_Store
 __pycache__
-examples/model_dir
+examples/model_dir*
 examples/eztransfer_modelzoo
