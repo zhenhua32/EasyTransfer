@@ -236,7 +236,7 @@ class ImageBertPreTrainedModel(PreTrainedModel):
         self.mpm = ImageBertMPMHead(config, name="cls/img_predictions")
 
     def mask_patch_features(self, patch_features, masked_patch_positions):
-        onehot_image_mask = tf.reduce_sum(tf.one_hot(masked_patch_positions, self.config.max_patch_position_embeddings, dtype=tf.float32),
+        onehot_image_mask = tf.reduce_sum(input_tensor=tf.one_hot(masked_patch_positions, self.config.max_patch_position_embeddings, dtype=tf.float32),
                                           axis=1)
         reverse_onehot_image_mask = 1 - (onehot_image_mask[:, :, tf.newaxis])
         masked_patch = tf.multiply(patch_features, reverse_onehot_image_mask)

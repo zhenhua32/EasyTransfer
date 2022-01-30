@@ -64,11 +64,11 @@ class OdpsTableReader(Reader):
 
         if is_training:
             self.num_train_examples = self.table_reader.get_row_count()
-            tf.logging.info("{}, total number of training examples {} in slice id {} of slice count {}"
+            tf.compat.v1.logging.info("{}, total number of training examples {} in slice id {} of slice count {}"
                             .format(input_glob, self.num_train_examples, slice_id, slice_count))
         else:
             self.num_eval_examples = self.table_reader.get_row_count()
-            tf.logging.info(
+            tf.compat.v1.logging.info(
                 "{}, total number of eval or predict examples {}".format(input_glob, self.num_eval_examples))
 
         self.record_defaults = []
@@ -115,8 +115,8 @@ class OdpsTableReader(Reader):
                 if sum(feature.shape) > 1:
                     default_value = self.record_defaults[idx]
                     if default_value[0] == '':
-                        output = tf.string_to_number(
-                            tf.string_split(tf.expand_dims(input_tensor, axis=0), delimiter=",").values,
+                        output = tf.strings.to_number(
+                            tf.compat.v1.string_split(tf.expand_dims(input_tensor, axis=0), delimiter=",").values,
                             feature.dtype)
                         output = tf.reshape(output, [feature.shape[0], ])
                     elif default_value[0] == 'base64':

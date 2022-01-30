@@ -96,8 +96,8 @@ class SelfAttention(Layer):
         else:
             k_input = v_input = kv
 
-        batch_size = tf.shape(attention_mask)[0]
-        seq_length = tf.shape(attention_mask)[1]
+        batch_size = tf.shape(input=attention_mask)[0]
+        seq_length = tf.shape(input=attention_mask)[1]
 
         q_head_h = tf.einsum('bih,hx->bix', q_input, self.q_head_weight)
         q_head_h = tf.nn.bias_add(q_head_h, self.q_head_bias)

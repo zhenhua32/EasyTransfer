@@ -22,19 +22,19 @@ def softmax_cross_entropy(labels, depth, logits):
     # 独热编码
     one_hot_labels = tf.one_hot(labels, depth=depth, dtype=tf.float32)
     # 交叉熵
-    loss = tf.losses.softmax_cross_entropy(onehot_labels=one_hot_labels,
+    loss = tf.compat.v1.losses.softmax_cross_entropy(onehot_labels=one_hot_labels,
                                            logits=logits)
     return loss
 
 def mean_square_error(labels, logits):
     # 均方损失
-    return tf.losses.mean_squared_error(labels, logits)
+    return tf.compat.v1.losses.mean_squared_error(labels, logits)
 
 def multi_label_sigmoid_cross_entropy(labels, depth, logits):
     # 多标签的数据格式与单标签类似，只是labelName一列改成用英文逗号分隔的标签
     one_hots = tf.one_hot(labels, depth)
     # 计算在轴 1 上的最大值
-    multi_hots = tf.reduce_max(one_hots, axis=1)
+    multi_hots = tf.reduce_max(input_tensor=one_hots, axis=1)
     multi_hots = tf.cast(multi_hots, logits.dtype)
     # 多标签
-    return tf.losses.sigmoid_cross_entropy(multi_class_labels=multi_hots, logits=logits)
+    return tf.compat.v1.losses.sigmoid_cross_entropy(multi_class_labels=multi_hots, logits=logits)

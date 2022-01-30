@@ -55,15 +55,15 @@ class AppConfig(Config):
             self.build_train_resource_files(flags)
 
     def build_train_resource_files(self, flags):
-        if not tf.gfile.Exists(flags.checkpointDir):
-            tf.gfile.MakeDirs(flags.checkpointDir)
-        with tf.gfile.GFile(os.path.join(flags.checkpointDir, "train_config.json"), mode='w') as f:
+        if not tf.io.gfile.exists(flags.checkpointDir):
+            tf.io.gfile.makedirs(flags.checkpointDir)
+        with tf.io.gfile.GFile(os.path.join(flags.checkpointDir, "train_config.json"), mode='w') as f:
             json.dump(self.__dict__, f)
         if hasattr(self, "pretrain_model_name_or_path"):
             copy_pretrain_model_files_to_dir(self.pretrain_model_name_or_path, flags.checkpointDir)
         if self.label_enumerate_values and "," in self.label_enumerate_values:
             label_dict = {label: idx for idx, label in enumerate(self.label_enumerate_values.split(","))}
-            with tf.gfile.GFile(os.path.join(flags.checkpointDir, "label_mapping.json"), mode='w') as f:
+            with tf.io.gfile.GFile(os.path.join(flags.checkpointDir, "label_mapping.json"), mode='w') as f:
                 json.dump(label_dict, f)
 
     def build_preprocess_config(self, flags):
@@ -124,7 +124,7 @@ class AppConfig(Config):
         label_enumerate_values = get_label_enumerate_values(flags.labelEnumerateValues)
 
         user_param_dict = get_user_defined_prams_dict(flags.advancedParameters)
-        tf.logging.info(user_param_dict)
+        tf.compat.v1.logging.info(user_param_dict)
 
         train_input_fp, eval_input_fp = FLAGS.inputTable.split(",")
         train_input_fp, eval_input_fp = train_input_fp.strip(), eval_input_fp.strip()
@@ -263,13 +263,13 @@ class AppConfig(Config):
 
         ckp_dir = os.path.dirname(checkpoint_path)
         train_config_path = os.path.join(ckp_dir, "train_config.json")
-        if tf.gfile.Exists(train_config_path):
+        if tf.io.gfile.exists(train_config_path):
             predict_checkpoint_path = checkpoint_path
         else:
             raise RuntimeError("Checkpoint in {} not found".format(ckp_dir))
 
-        with tf.gfile.Open(train_config_path, "r") as f:
-            tf.logging.info("config file is {}".format(train_config_path))
+        with tf.io.gfile.GFile(train_config_path, "r") as f:
+            tf.compat.v1.logging.info("config file is {}".format(train_config_path))
             train_config_dict = json.load(f)
 
         config_json = {
@@ -301,16 +301,16 @@ class AppConfig(Config):
         else:
             checkpoint_path = flags.checkpointPath
 
-        ckp_dir =  checkpoint_path if tf.gfile.IsDirectory(checkpoint_path) \
+        ckp_dir =  checkpoint_path if tf.io.gfile.isdir(checkpoint_path) \
             else os.path.dirname(checkpoint_path)
         train_config_path = os.path.join(ckp_dir, "train_config.json")
-        if tf.gfile.Exists(train_config_path):
+        if tf.io.gfile.exists(train_config_path):
             predict_checkpoint_path = checkpoint_path
         else:
             raise RuntimeError("Checkpoint in {} not found".format(ckp_dir))
 
-        with tf.gfile.Open(train_config_path, "r") as f:
-            tf.logging.info("config file is {}".format(train_config_path))
+        with tf.io.gfile.GFile(train_config_path, "r") as f:
+            tf.compat.v1.logging.info("config file is {}".format(train_config_path))
             train_config_dict = json.load(f)
 
         first_sequence = flags.firstSequence
@@ -368,8 +368,8 @@ class AppConfig(Config):
         if export_type == "ez_bert_feat":
             checkpoint_dir = os.path.dirname(checkpoint_path)
             train_config_path = os.path.join(checkpoint_dir, "train_config.json")
-            if tf.gfile.Exists(train_config_path):
-                with tf.gfile.Open(train_config_path) as f:
+            if tf.io.gfile.exists(train_config_path):
+                with tf.io.gfile.GFile(train_config_path) as f:
                     train_config_json = json.load(f)
                 if "model_name" in train_config_json:
                     finetune_model_name = train_config_json["model_name"]
@@ -418,7 +418,7 @@ class AppConfig(Config):
         else:
             checkpoint_dir = os.path.dirname(checkpoint_path)
             train_config_path = os.path.join(checkpoint_dir, "train_config.json")
-            with tf.gfile.Open(train_config_path) as f:
+            with tf.io.gfile.GFile(train_config_path) as f:
                 train_config_json = json.load(f)
             model_config = train_config_json["_config_json"]["model_config"]
 

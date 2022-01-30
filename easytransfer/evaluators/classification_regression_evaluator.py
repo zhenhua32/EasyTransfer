@@ -52,7 +52,7 @@ class ClassificationEvaluator(Evaluator):
         """
         # 结果是空的, 表示哪里出现了问题
         if len(self.predictions) == 0 or len(self.labels) == 0:
-            tf.logging.info('empty data to evaluate')
+            tf.compat.v1.logging.info('empty data to evaluate')
             return {'py_accuracy': 0.0, 'py_micro_f1': 0.0,
                     'py_macro_f1': 0.0, 'py_weighted_f1': 0.0}
 
@@ -117,8 +117,8 @@ class MultiLabelEvaluator(Evaluator):
         # print(f1_score(grt_array, pred_array, average="macro"))
         precs = [precision_score(grt_array[:, i], pred_array[:, i]) for i in range(n_class)]
         recalls = [recall_score(grt_array[:, i], pred_array[:, i]) for i in range(n_class)]
-        tf.logging.info("ALL precision scores: {}".format(' | '.join(["{:.4f}".format(t) for t in precs])))
-        tf.logging.info("ALL recall scores: {}".format(' | '.join(["{:.4f}".format(t) for t in recalls])))
+        tf.compat.v1.logging.info("ALL precision scores: {}".format(' | '.join(["{:.4f}".format(t) for t in precs])))
+        tf.compat.v1.logging.info("ALL recall scores: {}".format(' | '.join(["{:.4f}".format(t) for t in recalls])))
         prec_ma = np.mean(precs)
         recall_ma = np.mean(recalls)
         if prec_ma == 0 and recall_ma == 0:
@@ -153,7 +153,7 @@ class MultiLabelEvaluator(Evaluator):
         fpr["micro"], tpr["micro"], _ = roc_curve(grt_array.ravel(), prob_array.ravel())
         roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
-        tf.logging.info("ALL auc scores: {}".format(
+        tf.compat.v1.logging.info("ALL auc scores: {}".format(
             ' | '.join(["{:.4f}".format(roc_auc[i]) for i in range(n_class)])))
         return roc_auc["micro"]
 
@@ -164,7 +164,7 @@ class MultiLabelEvaluator(Evaluator):
         '''
         # 结构同 ClassificationEvaluator 的 evaluate
         if len(self.predictions) == 0 or len(self.labels) == 0:
-            tf.logging.info('empty data to evaluate')
+            tf.compat.v1.logging.info('empty data to evaluate')
             return {'py_micro_f1': 0.0, 'py_macro_f1': 0.0, 'py_mean_auc': 0.0}
 
         grt_array = np.array(self.labels)
@@ -181,7 +181,7 @@ def classification_eval_metrics(logits, labels, num_labels):
     labels 的内部类型实际上是整数, 是个整数的数组
     """
     # 求出概率最大的索引
-    predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+    predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
 
     info_dict = {
         "predictions": predictions,
@@ -194,26 +194,26 @@ def classification_eval_metrics(logits, labels, num_labels):
     metric_dict = evaluator.get_metric_ops(info_dict, label_idxs)
     ret_metrics = evaluator.evaluate(label_idxs)
 
-    tf.summary.scalar("accuracy", ret_metrics['py_accuracy'])
-    tf.summary.scalar("micro_f1", ret_metrics['py_micro_f1'])
-    tf.summary.scalar("macro_f1", ret_metrics['py_macro_f1'])
-    tf.summary.scalar("weighted_f1", ret_metrics['py_weighted_f1'])
+    tf.compat.v1.summary.scalar("accuracy", ret_metrics['py_accuracy'])
+    tf.compat.v1.summary.scalar("micro_f1", ret_metrics['py_micro_f1'])
+    tf.compat.v1.summary.scalar("macro_f1", ret_metrics['py_macro_f1'])
+    tf.compat.v1.summary.scalar("weighted_f1", ret_metrics['py_weighted_f1'])
     return metric_dict
 
 def matthew_corr_metrics(logits, labels):
-    predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+    predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
     # https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
-    tp, tp_op = tf.metrics.true_positives(
+    tp, tp_op = tf.compat.v1.metrics.true_positives(
         labels=labels, predictions=predictions)
-    tn, tn_op = tf.metrics.true_negatives(
+    tn, tn_op = tf.compat.v1.metrics.true_negatives(
         labels=labels, predictions=predictions)
-    fp, fp_op = tf.metrics.false_positives(
+    fp, fp_op = tf.compat.v1.metrics.false_positives(
         labels=labels, predictions=predictions)
-    fn, fn_op = tf.metrics.false_negatives(
+    fn, fn_op = tf.compat.v1.metrics.false_negatives(
         labels=labels, predictions=predictions)
 
     # Compute Matthew's correlation
-    mcc = tf.div_no_nan(
+    mcc = tf.math.divide_no_nan(
         tp * tn - fp * fn,
         tf.pow((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn), 0.5))
 
@@ -221,7 +221,7 @@ def matthew_corr_metrics(logits, labels):
 
 
 def regression_eval_metrics(logits, labels):
-    mse_metric = tf.metrics.mean_squared_error(labels, logits)
+    mse_metric = tf.compat.v1.metrics.mean_squared_error(labels, logits)
     return {"MSE": mse_metric}
 
 
@@ -236,7 +236,7 @@ def multi_label_eval_metrics(logits, labels, num_labels):
     metric_dict = evaluator.get_metric_ops(info_dict, label_ids)
     ret_metrics = evaluator.evaluate(label_ids)
 
-    tf.summary.scalar("micro_f1", ret_metrics['py_micro_f1'])
-    tf.summary.scalar("macro_f1", ret_metrics['py_macro_f1'])
-    tf.summary.scalar("mean_auc", ret_metrics['py_mean_auc'])
+    tf.compat.v1.summary.scalar("micro_f1", ret_metrics['py_micro_f1'])
+    tf.compat.v1.summary.scalar("macro_f1", ret_metrics['py_macro_f1'])
+    tf.compat.v1.summary.scalar("mean_auc", ret_metrics['py_mean_auc'])
     return metric_dict

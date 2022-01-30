@@ -48,7 +48,7 @@ class OdpsTableWriter(Process):
         self.counter = Counter()
 
     def close(self):
-        tf.logging.info('close table writer')
+        tf.compat.v1.logging.info('close table writer')
         self.table_writer.close()
 
     def process(self, features):

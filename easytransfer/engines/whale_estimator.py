@@ -69,33 +69,33 @@ class WhaleEstimator(object):
 
         """
         cluster = wh.cluster(layout={"row": 2})
-        tf.logging.info('cluster {}'.format(cluster))
+        tf.compat.v1.logging.info('cluster {}'.format(cluster))
         with cluster:
             with wh.replica():
                 with wh.pipeline(num_micro_batch=self.num_accumulated_batches):
                     with wh.stage():
                         dataset = input_fn()
-                        iterator = dataset.make_initializable_iterator()
-                        tf.add_to_collection(tf.GraphKeys.TABLE_INITIALIZERS, iterator.initializer)
+                        iterator = tf.compat.v1.data.make_initializable_iterator(dataset)
+                        tf.compat.v1.add_to_collection(tf.compat.v1.GraphKeys.TABLE_INITIALIZERS, iterator.initializer)
                         results = iterator.get_next()
                         wh.current_scope_as_default()
                     total_loss, train_op = self._build_model_fn(results, None, "train", None)
                     wh.add_to_collection(total_loss, wh.GraphKeys.GLOBAL_MEAN_OBJECTS)
-                    tf.summary.scalar('loss', total_loss)
+                    tf.compat.v1.summary.scalar('loss', total_loss)
 
 
-        merged = tf.summary.merge_all()
+        merged = tf.compat.v1.summary.merge_all()
 
         if self.task_index == 0:
-            summary_writer = tf.summary.FileWriter(os.path.join(self.model_dir, "train_suammary_output"))
+            summary_writer = tf.compat.v1.summary.FileWriter(os.path.join(self.model_dir, "train_suammary_output"))
 
-        saver = tf.train.Saver(max_to_keep=self.keep_checkpoint_max, var_list=tf.trainable_variables())
-        session_config = tf.ConfigProto(
+        saver = tf.compat.v1.train.Saver(max_to_keep=self.keep_checkpoint_max, var_list=tf.compat.v1.trainable_variables())
+        session_config = tf.compat.v1.ConfigProto(
             allow_soft_placement=True,
             log_device_placement=False,
             intra_op_parallelism_threads=1024,
             inter_op_parallelism_threads=1024,
-            gpu_options=tf.GPUOptions(allow_growth=True,
+            gpu_options=tf.compat.v1.GPUOptions(allow_growth=True,
                                       force_gpu_compatible=True,
                                       per_process_gpu_memory_fraction=1.0))
 
@@ -105,24 +105,24 @@ class WhaleEstimator(object):
                                            100,
                                            self.task_index)
 
-        hooks = [tf.train.StopAtStepHook(last_step=max_steps), avgloss_hook]
-        with tf.train.MonitoredTrainingSession(
+        hooks = [tf.estimator.StopAtStepHook(last_step=max_steps), avgloss_hook]
+        with tf.compat.v1.train.MonitoredTrainingSession(
                 hooks=hooks,
                 config=session_config) as sess:
             starttime = time.time()
             while not sess.should_stop():
                 train_loss, _, step, train_loss_summary = \
-                    sess.run([total_loss, train_op, tf.train.get_or_create_global_step(), merged])
+                    sess.run([total_loss, train_op, tf.compat.v1.train.get_or_create_global_step(), merged])
                 if step % 100 == 0:
                     endtime = time.time()
-                    tf.logging.info("loss = {}, step = {} ({} sec)".format(train_loss, step, endtime - starttime))
+                    tf.compat.v1.logging.info("loss = {}, step = {} ({} sec)".format(train_loss, step, endtime - starttime))
                     starttime = time.time()
 
                 if step % 100 == 0 and self.task_index == 0:
                     summary_writer.add_summary(train_loss_summary, step)
 
                 if step % self.save_checkpoints_steps == 0 and self.task_index == 0:
-                    tf.logging.info("Saving checkpoints for {} into {}".format(step, os.path.join(self.model_dir, 'model.ckpt')))
+                    tf.compat.v1.logging.info("Saving checkpoints for {} into {}".format(step, os.path.join(self.model_dir, 'model.ckpt')))
                     saver.save(self.get_session(sess), os.path.join(self.model_dir, 'model.ckpt'), global_step=step)
 
         if self.task_index == 0:

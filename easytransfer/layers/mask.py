@@ -20,13 +20,13 @@ from .utils import get_shape_list, get_shape_list_imagebert
 
 def get_attn_mask_xlnet(inputs):
     input_mask = inputs
-    batch_size = tf.shape(input_mask)[0]
-    target_len = tf.shape(input_mask)[1]
+    batch_size = tf.shape(input=input_mask)[0]
+    target_len = tf.shape(input=input_mask)[1]
 
-    input_mask_trans = tf.transpose(input_mask)
+    input_mask_trans = tf.transpose(a=input_mask)
 
     data_mask = input_mask_trans[None]
-    mems_mask = tf.zeros([tf.shape(data_mask)[0], 0, batch_size], dtype=tf.float32)
+    mems_mask = tf.zeros([tf.shape(input=data_mask)[0], 0, batch_size], dtype=tf.float32)
     data_mask = tf.concat([mems_mask, data_mask], 1)
     attn_mask = data_mask[:, :, :, None]
     attn_mask = tf.cast(attn_mask > 0, dtype=tf.float32)

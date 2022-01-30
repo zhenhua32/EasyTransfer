@@ -41,7 +41,7 @@ def assert_rank(tensor, expected_rank, name=None):
 
     actual_rank = tensor.shape.ndims
     if actual_rank not in expected_rank_dict:
-        scope_name = tf.get_variable_scope().name
+        scope_name = tf.compat.v1.get_variable_scope().name
         raise ValueError(
             "For the tensor `%s` in scope `%s`, the actual rank "
             "`%d` (shape = %s) is not equal to the expected rank `%s`" %
@@ -79,7 +79,7 @@ def get_shape_list_imagebert(tensor, expected_rank=None, name=None):
     if not non_static_indexes:
         return shape
 
-    dyn_shape = tf.shape(tensor)
+    dyn_shape = tf.shape(input=tensor)
     for index in non_static_indexes:
         shape[index] = dyn_shape[index]
     return shape
@@ -88,7 +88,7 @@ def get_shape_list_imagebert(tensor, expected_rank=None, name=None):
 def get_shape_list(x):
     """Deal with dynamic shape in tensorflow cleanly."""
     static = x.shape.as_list()
-    dynamic = tf.shape(x)
+    dynamic = tf.shape(input=x)
     return [dynamic[i] if s is None else s for i, s in enumerate(static)]
 
 
@@ -99,7 +99,7 @@ def get_initializer(initializer_range=0.02):
     Returns:
         TruncatedNormal initializer with stddev = `initializer_range`.
     """
-    return tf.keras.initializers.TruncatedNormal(stddev=initializer_range)
+    return tf.compat.v1.keras.initializers.TruncatedNormal(stddev=initializer_range)
 
 
 def gather_indexes(sequence_tensor, positions):

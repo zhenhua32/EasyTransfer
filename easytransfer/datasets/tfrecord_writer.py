@@ -32,11 +32,11 @@ class TFRecordWriter(Process):
         job_name = 'DistTFRecordWriter'
         super(TFRecordWriter, self).__init__(job_name, 1, input_queue)
 
-        self.writer = tf.python_io.TFRecordWriter(output_glob)
+        self.writer = tf.io.TFRecordWriter(output_glob)
         self.output_schema = output_schema
 
     def close(self):
-        tf.logging.info('Finished writing')
+        tf.compat.v1.logging.info('Finished writing')
         self.writer.close()
 
     def create_int_feature(self, values):

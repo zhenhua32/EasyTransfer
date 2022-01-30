@@ -21,5 +21,5 @@ def sequence_labeling_loss(logits, labels, num_labels):
         labels, depth=num_labels, dtype=tf.float32)
     log_probs = tf.nn.log_softmax(logits, axis=-1)
     loss = -tf.reduce_mean(
-        tf.reduce_sum(one_hot_labels * log_probs, axis=-1))
+        input_tensor=tf.reduce_sum(input_tensor=one_hot_labels * log_probs, axis=-1))
     return loss

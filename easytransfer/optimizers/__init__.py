@@ -53,12 +53,12 @@ def get_train_op(learning_rate: float,
     # warm up 的步数. 总的训练步长 * 预热百分比
     warmup_steps = int(train_steps * warmup_ratio)
     # 全局步骤, 也就是当前步长
-    global_step = tf.train.get_or_create_global_step()
+    global_step = tf.compat.v1.train.get_or_create_global_step()
     # 支持这种学习策略
     if lr_decay == "polynomial":
         # 原来都是这个需要的参数
         # global_step, train_steps
-        learning_rate = tf.train.polynomial_decay(
+        learning_rate = tf.compat.v1.train.polynomial_decay(
             learning_rate,
             global_step,
             train_steps,
@@ -70,7 +70,7 @@ def get_train_op(learning_rate: float,
 
     # 不等于 0 时
     if warmup_steps != 0:
-        tf.logging.info("*******Warmup {} steps***********".format(warmup_steps))
+        tf.compat.v1.logging.info("*******Warmup {} steps***********".format(warmup_steps))
         # 转换类型
         global_steps_int = tf.cast(global_step, tf.int32)
         # 定义常量
@@ -91,13 +91,13 @@ def get_train_op(learning_rate: float,
         learning_rate = (
                 (1.0 - is_warmup) * learning_rate + is_warmup * warmup_learning_rate)
     else:
-        tf.logging.info("*******Don't warm up, then lr will polynomial_decay only************")
+        tf.compat.v1.logging.info("*******Don't warm up, then lr will polynomial_decay only************")
 
     # 当优化器名字是 adam 时
     if optimizer_name == "adam":
         # 如果有权重衰减系数, 则使用 AdamWeightDecayOptimizer
         if weight_decay_ratio > 0:
-            tf.logging.info("*******Using adamW optimizer************")
+            tf.compat.v1.logging.info("*******Using adamW optimizer************")
             optimizer = AdamWeightDecayOptimizer(
                 learning_rate=learning_rate,
                 weight_decay_rate=weight_decay_ratio,
@@ -108,47 +108,47 @@ def get_train_op(learning_rate: float,
                 exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"])
         else:
             # 没有就使用普通的 AdamOptimizer
-            tf.logging.info("*******Using adam optimizer************")
-            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate,
+            tf.compat.v1.logging.info("*******Using adam optimizer************")
+            optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate,
                                                beta1=0.9,
                                                beta2=0.98,
                                                epsilon=1e-6)
 
     # 当优化器名字是 lamb 时, 使用 LambWeightDecayOptimizer
     elif optimizer_name == "lamb":
-        tf.logging.info("*******Using lamb optimizer************")
+        tf.compat.v1.logging.info("*******Using lamb optimizer************")
         optimizer = LambWeightDecayOptimizer(learning_rate=learning_rate,
                                              weight_decay_rate=weight_decay_ratio,
                                              exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"])
     # 另外两个优化器, 不需要使用权重衰减系数, 只需要学习率
     elif optimizer_name == "adagrad":
-        optimizer = tf.train.AdagradOptimizer(learning_rate)
+        optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate)
     elif optimizer_name == "adadelta":
-        optimizer = tf.train.AdadeltaOptimizer(learning_rate)
+        optimizer = tf.compat.v1.train.AdadeltaOptimizer(learning_rate)
     else:
         raise ValueError("Set train op optimizer adam or lamb")
 
     # 如果没有传入 tvars, 就初始化成所有可学习的变量
     if tvars is None:
-        tvars = tf.trainable_variables()
+        tvars = tf.compat.v1.trainable_variables()
 
     # 计算梯度
-    grads = tf.gradients(loss, tvars)
+    grads = tf.gradients(ys=loss, xs=tvars)
 
     # np.prod 计算元素的乘积, 然后用 np.sum 求和
-    tf.logging.info("*******Num of trainable variables {}************".format(
+    tf.compat.v1.logging.info("*******Num of trainable variables {}************".format(
         np.sum([np.prod(v.get_shape().as_list()) for v in tvars])))
 
     # 如果需要裁剪标准化
     if clip_norm:
-        tf.logging.info("*******Clip Gradients************")
-        tf.logging.info("*******Clip Norm Value {}*********".format(clip_norm_value))
+        tf.compat.v1.logging.info("*******Clip Gradients************")
+        tf.compat.v1.logging.info("*******Clip Norm Value {}*********".format(clip_norm_value))
         # 新的梯度
         (grads, _) = tf.clip_by_global_norm(grads, clip_norm=clip_norm_value)
     else:
-        tf.logging.info("*******Don't Clip Gradients************")
+        tf.compat.v1.logging.info("*******Don't Clip Gradients************")
 
-    tf.logging.info("*********Num towers is {} *********".format(num_towers))
+    tf.compat.v1.logging.info("*********Num towers is {} *********".format(num_towers))
     # 对每一个梯度
     for i in range(len(grads)):
         # 如果不是 None
@@ -162,7 +162,7 @@ def get_train_op(learning_rate: float,
 
     # 如果冻结的层数大于 0
     if num_freezed_layers > 0:
-        tf.logging.info("*******Num Freezed Layers is {} ************".format(num_freezed_layers))
+        tf.compat.v1.logging.info("*******Num Freezed Layers is {} ************".format(num_freezed_layers))
         for i in range(len(grads)):
             # 对于每一个梯度
             freeze = False
@@ -174,12 +174,12 @@ def get_train_op(learning_rate: float,
             if freeze:
                 # 如果冻结, 这个梯度就要设置为 0
                 grads[i] *= 0
-                tf.logging.info("Freezing var name is {}".format(tvars[i].name))
+                tf.compat.v1.logging.info("Freezing var name is {}".format(tvars[i].name))
 
     # 在优化器上使用梯度
     train_op = optimizer.apply_gradients(
         # 并行梯度和变量
         zip(grads, tvars), global_step=global_step)
-    tf.summary.scalar("learning_rate", learning_rate)
+    tf.compat.v1.summary.scalar("learning_rate", learning_rate)
 
     return train_op

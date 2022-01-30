@@ -21,21 +21,21 @@ import easytransfer.layers as layers
 def matching_embedding_margin_loss(emb1, emb2):
     margin = 0.3
     batch_size = layers.get_shape_list(emb1)[0]
-    emb1_norm = tf.maximum(1e-12, tf.norm(emb1, axis=1))
-    tf.summary.scalar('emb1_norm_mean', tf.reduce_mean(emb1_norm))
-    emb1_rep = tf.div(tf.transpose(emb1), emb1_norm)
-    emb2_norm = tf.maximum(1e-12, tf.norm(emb2, axis=1))
-    tf.summary.scalar('emb2_norm_mean', tf.reduce_mean(emb2_norm))
-    emb2_rep = tf.div(tf.transpose(emb2), emb2_norm)
+    emb1_norm = tf.maximum(1e-12, tf.norm(tensor=emb1, axis=1))
+    tf.compat.v1.summary.scalar('emb1_norm_mean', tf.reduce_mean(input_tensor=emb1_norm))
+    emb1_rep = tf.compat.v1.div(tf.transpose(a=emb1), emb1_norm)
+    emb2_norm = tf.maximum(1e-12, tf.norm(tensor=emb2, axis=1))
+    tf.compat.v1.summary.scalar('emb2_norm_mean', tf.reduce_mean(input_tensor=emb2_norm))
+    emb2_rep = tf.compat.v1.div(tf.transpose(a=emb2), emb2_norm)
 
-    dis = tf.matmul(tf.transpose(emb1_rep), emb2_rep)
-    tf.summary.scalar('dis_mean', tf.reduce_mean(dis))
+    dis = tf.matmul(tf.transpose(a=emb1_rep), emb2_rep)
+    tf.compat.v1.summary.scalar('dis_mean', tf.reduce_mean(input_tensor=dis))
 
-    positive_distance = tf.reshape(tf.diag_part(dis), [batch_size, 1])
-    tf.summary.scalar('positive_distance_mean', tf.reduce_mean(positive_distance))
+    positive_distance = tf.reshape(tf.linalg.tensor_diag_part(dis), [batch_size, 1])
+    tf.compat.v1.summary.scalar('positive_distance_mean', tf.reduce_mean(input_tensor=positive_distance))
 
-    term1 = tf.reduce_mean(tf.maximum(0., - positive_distance + (
+    term1 = tf.reduce_mean(input_tensor=tf.maximum(0., - positive_distance + (
             dis - margin * tf.eye(batch_size)) + margin), axis=1)
 
-    loss = tf.reduce_mean(term1)
+    loss = tf.reduce_mean(input_tensor=term1)
     return loss

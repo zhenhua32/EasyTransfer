@@ -122,7 +122,7 @@ class PreprocessorConfig(object):
             # - 分隔的第二个位置是模型类型 model_type
             model_type = pretrain_model_name_or_path.split("-")[1]
             # 检查配置文件是否存在, 如果存在, 就跳过. 否则就要下载模型
-            if tf.gfile.Exists(os.path.join(FLAGS.modelZooBasePath, model_type,
+            if tf.io.gfile.exists(os.path.join(FLAGS.modelZooBasePath, model_type,
                                                 pretrain_model_name_or_path, "config.json")):
                 # If exists directory, not download
                 pass
@@ -147,7 +147,7 @@ class PreprocessorConfig(object):
                 des_path = os.path.join(os.path.join(FLAGS.modelZooBasePath, model_type),
                                         pretrain_model_name_or_path + ".tgz")
                 if not os.path.exists(des_path):
-                    tf.logging.info("********** Begin to download to {} **********".format(des_path))
+                    tf.compat.v1.logging.info("********** Begin to download to {} **********".format(des_path))
                     # 没想到是直接调用命令行工具下载和解压的
                     os.system(
                         'wget -O ' + des_path + ' https://atp-modelzoo-sh.oss-cn-shanghai.aliyuncs.com/eztransfer_modelzoo/' + model_type + '/' + pretrain_model_name_or_path + ".tgz")
@@ -168,20 +168,20 @@ class PreprocessorConfig(object):
                 dir_path = os.path.dirname(pretrain_model_name_or_path)
 
             # 目录不存在, 就先创建剥
-            if not tf.gfile.Exists(model_dir):
-                tf.gfile.MakeDirs(model_dir)
+            if not tf.io.gfile.exists(model_dir):
+                tf.io.gfile.makedirs(model_dir)
 
             # 如果 model_dir 中配置文件 config.json 不存在, 就从 dir_path 中复制配置文件和词汇表
-            if not tf.gfile.Exists(os.path.join(model_dir, "config.json")):
-                tf.gfile.Copy(os.path.join(dir_path, "config.json"),
+            if not tf.io.gfile.exists(os.path.join(model_dir, "config.json")):
+                tf.io.gfile.copy(os.path.join(dir_path, "config.json"),
                               os.path.join(model_dir, "config.json"))
                 # 上面的 config.json 是一定有的, 直接复制过去
                 # 而词汇表, 因为文件名不统一, 所以是用 Exists 试探下再复制过去
-                if tf.gfile.Exists(os.path.join(dir_path, "vocab.txt")):
-                    tf.gfile.Copy(os.path.join(dir_path, "vocab.txt"),
+                if tf.io.gfile.exists(os.path.join(dir_path, "vocab.txt")):
+                    tf.io.gfile.copy(os.path.join(dir_path, "vocab.txt"),
                                   os.path.join(model_dir, "vocab.txt"))
-                if tf.gfile.Exists(os.path.join(dir_path, "30k-clean.model")):
-                    tf.gfile.Copy(os.path.join(dir_path, "30k-clean.model"),
+                if tf.io.gfile.exists(os.path.join(dir_path, "30k-clean.model")):
+                    tf.io.gfile.copy(os.path.join(dir_path, "30k-clean.model"),
                                   os.path.join(model_dir, "30k-clean.model"))
 
         albert_language = "zh"
@@ -203,16 +203,16 @@ class PreprocessorConfig(object):
 
         else:
             # 否则, 就需要从 config.json 中读取 model_type
-            with tf.gfile.GFile(os.path.join(os.path.dirname(pretrain_model_name_or_path), "config.json")) as reader:
+            with tf.io.gfile.GFile(os.path.join(os.path.dirname(pretrain_model_name_or_path), "config.json")) as reader:
                 text = reader.read()
             json_config = json.loads(text)
             model_type = json_config["model_type"]
             if model_type == "albert":
                 # 如果 vocab.txt 存在, 就读取这个文件, 并将 albert_language 设置为 zh
-                if tf.gfile.Exists(os.path.join(os.path.dirname(pretrain_model_name_or_path), "vocab.txt")):
+                if tf.io.gfile.exists(os.path.join(os.path.dirname(pretrain_model_name_or_path), "vocab.txt")):
                     albert_language = "zh"
                     vocab_path = os.path.join(os.path.dirname(pretrain_model_name_or_path), "vocab.txt")
-                elif tf.gfile.Exists(os.path.join(os.path.dirname(pretrain_model_name_or_path), "30k-clean.model")):
+                elif tf.io.gfile.exists(os.path.join(os.path.dirname(pretrain_model_name_or_path), "30k-clean.model")):
                     # 否则, 就是 en, 同时要读取 30k-clean.model
                     albert_language = "en"
                     vocab_path = os.path.join(os.path.dirname(pretrain_model_name_or_path), "30k-clean.model")
@@ -236,7 +236,7 @@ class PreprocessorConfig(object):
             try:
                 setattr(self, key, value)
             except AttributeError as err:
-                tf.logging.error("Can't set {} with value {} for {}".format(key, value, self))
+                tf.compat.v1.logging.error("Can't set {} with value {} for {}".format(key, value, self))
                 raise err
 
     @classmethod
@@ -300,7 +300,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         else:
             # 从 FLAGS.config 中获取配置文件的路径
             json_file = FLAGS.config
-            with tf.gfile.GFile(json_file, mode='r') as reader:
+            with tf.io.gfile.GFile(json_file, mode='r') as reader:
                 text = reader.read()
 
             config_dict = json.loads(text)
@@ -398,7 +398,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         # partial 组装了一个新函数, 预先定义了 convert_example_to_features 参数
         # py_func 定义了一个 python 函数, 然后将它封装为 tf op 操作
         # 这个函数的输入是 items, 输出结构是 self.Tout
-        batch_features = tf.py_func(functools.partial(self._convert,
+        batch_features = tf.compat.v1.py_func(functools.partial(self._convert,
                                                       self.convert_example_to_features),
                                     items, self.Tout)
 
@@ -411,13 +411,13 @@ class Preprocessor(easytransfer.layers.Layer, Process):
             feature_type = self.feature_value_types[idx]
             # 按类型处理
             if feature_type == tf.int64:
-                input_tensor = tf.string_to_number(
+                input_tensor = tf.strings.to_number(
                     # 在最前面还添加了一个轴, 变成了 (1, )
-                    tf.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
+                    tf.compat.v1.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
                     tf.int64)
             elif feature_type == tf.float32:
-                input_tensor = tf.string_to_number(
-                    tf.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
+                input_tensor = tf.strings.to_number(
+                    tf.compat.v1.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
                     tf.float32)
             elif feature_type == tf.string:
                 input_tensor = feature

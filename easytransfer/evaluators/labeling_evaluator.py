@@ -51,7 +51,7 @@ class SequenceLablingEvaluator(Evaluator):
         all test batched data are predicted
         '''
         if len(self.predictions) == 0 or len(self.labels) == 0:
-            tf.logging.info('empty data to evaluate')
+            tf.compat.v1.logging.info('empty data to evaluate')
             return {'accuracy': 0.0}
 
         cnt = 0
@@ -74,7 +74,7 @@ def sequence_labeling_eval_metrics(logits, labels, num_labels):
         Returns:
             ret_dict (`dict`): A dict with (`py_accuracy`, `py_micro_f1`, `py_macro_f1`) tf.metrics op
         """
-        predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+        predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
         evaluator = SequenceLablingEvaluator()
         info_dict = {
             "predictions": predictions,
@@ -82,9 +82,9 @@ def sequence_labeling_eval_metrics(logits, labels, num_labels):
         }
         label_ids = [i for i in range(num_labels)]
         metric_dict = evaluator.get_metric_ops(info_dict, label_ids)
-        tf.logging.info(metric_dict)
+        tf.compat.v1.logging.info(metric_dict)
         ret_metrics = evaluator.evaluate(label_ids)
-        tf.logging.info(ret_metrics)
+        tf.compat.v1.logging.info(ret_metrics)
         for key, val in ret_metrics.items():
-            tf.summary.scalar("eval_" + key, val)
+            tf.compat.v1.summary.scalar("eval_" + key, val)
         return metric_dict

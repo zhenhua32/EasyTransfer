@@ -133,12 +133,12 @@ class BERTTextComprehension(BaseTextComprehension):
         seq_length = self.config.sequence_length
         hidden_size = int(sequence_output.shape[2])
 
-        output_weights = tf.get_variable(
+        output_weights = tf.compat.v1.get_variable(
             "app/output_weights", [2, hidden_size],
-            initializer=tf.truncated_normal_initializer(stddev=0.02))
+            initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.02))
 
-        output_bias = tf.get_variable(
-            "app/output_bias", [2], initializer=tf.zeros_initializer())
+        output_bias = tf.compat.v1.get_variable(
+            "app/output_bias", [2], initializer=tf.compat.v1.zeros_initializer())
 
         final_hidden_matrix = tf.reshape(sequence_output,
                                          [-1, hidden_size])
@@ -146,7 +146,7 @@ class BERTTextComprehension(BaseTextComprehension):
         logits = tf.nn.bias_add(logits, output_bias)
 
         logits = tf.reshape(logits, [-1, seq_length, 2])
-        logits = tf.transpose(logits, [2, 0, 1])
+        logits = tf.transpose(a=logits, perm=[2, 0, 1])
 
         unstacked_logits = tf.unstack(logits, axis=0)
 
@@ -223,12 +223,12 @@ class BERTTextHAEComprehension(BaseTextComprehension):
         seq_length = self.config.sequence_length
         hidden_size = int(sequence_output.shape[2])
 
-        output_weights = tf.get_variable(
+        output_weights = tf.compat.v1.get_variable(
             "app/output_weights", [2, hidden_size],
-            initializer=tf.truncated_normal_initializer(stddev=0.02))
+            initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.02))
 
-        output_bias = tf.get_variable(
-            "app/output_bias", [2], initializer=tf.zeros_initializer())
+        output_bias = tf.compat.v1.get_variable(
+            "app/output_bias", [2], initializer=tf.compat.v1.zeros_initializer())
 
         final_hidden_matrix = tf.reshape(sequence_output,
                                          [-1, hidden_size])
@@ -236,7 +236,7 @@ class BERTTextHAEComprehension(BaseTextComprehension):
         logits = tf.nn.bias_add(logits, output_bias)
 
         logits = tf.reshape(logits, [-1, seq_length, 2])
-        logits = tf.transpose(logits, [2, 0, 1])
+        logits = tf.transpose(a=logits, perm=[2, 0, 1])
 
         unstacked_logits = tf.unstack(logits, axis=0)
 

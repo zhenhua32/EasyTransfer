@@ -44,7 +44,7 @@ def assert_rank(tensor, expected_rank, name=None):
 
   actual_rank = tensor.shape.ndims
   if actual_rank not in expected_rank_dict:
-    scope_name = tf.get_variable_scope().name
+    scope_name = tf.compat.v1.get_variable_scope().name
     raise ValueError(
         "For the tensor `%s` in scope `%s`, the actual rank "
         "`%d` (shape = %s) is not equal to the expected rank `%s`" %
@@ -82,7 +82,7 @@ def get_shape_list(tensor, expected_rank=None, name=None):
   if not non_static_indexes:
     return shape
 
-  dyn_shape = tf.shape(tensor)
+  dyn_shape = tf.shape(input=tensor)
   for index in non_static_indexes:
     shape[index] = dyn_shape[index]
   return shape
@@ -102,7 +102,7 @@ def dropout(input_tensor, dropout_prob):
   if dropout_prob is None or dropout_prob == 0.0:
     return input_tensor
 
-  output = tf.nn.dropout(input_tensor, 1.0 - dropout_prob)
+  output = tf.nn.dropout(input_tensor, rate=1 - (1.0 - dropout_prob))
   return output
 
 
@@ -121,7 +121,7 @@ def layer_norm_and_dropout(input_tensor, dropout_prob, name=None):
 
 def create_initializer(initializer_range=0.02):
   """Creates a `truncated_normal_initializer` with the given range."""
-  return tf.truncated_normal_initializer(stddev=initializer_range)
+  return tf.compat.v1.truncated_normal_initializer(stddev=initializer_range)
 
 
 def embedding_lookup(input_ids,
@@ -154,7 +154,7 @@ def embedding_lookup(input_ids,
     if input_ids.shape.ndims == 2:
         input_ids = tf.expand_dims(input_ids, axis=[-1])
 
-    embedding_table = tf.get_variable(
+    embedding_table = tf.compat.v1.get_variable(
         name=word_embedding_name,
         shape=[vocab_size, embedding_size],
         initializer=create_initializer(initializer_range))
@@ -164,7 +164,7 @@ def embedding_lookup(input_ids,
         one_hot_input_ids = tf.one_hot(flat_input_ids, depth=vocab_size)
         output = tf.matmul(one_hot_input_ids, embedding_table)
     else:
-        output = tf.nn.embedding_lookup(embedding_table, input_ids)
+        output = tf.nn.embedding_lookup(params=embedding_table, ids=input_ids)
 
     input_shape = get_shape_list(input_ids)
 
@@ -225,7 +225,7 @@ def embedding_postprocessor(input_tensor,
         if token_type_ids is None:
             raise ValueError("`token_type_ids` must be specified if"
                              "`use_token_type` is True.")
-        token_type_table = tf.get_variable(
+        token_type_table = tf.compat.v1.get_variable(
             name=token_type_embedding_name,
             shape=[token_type_vocab_size, width],
             initializer=create_initializer(initializer_range))
@@ -242,7 +242,7 @@ def embedding_postprocessor(input_tensor,
         if history_answer_marker is None:
             raise ValueError("`history_answer_marker` must be specified if"
                              "`use_history_answer_embedding` is True.")
-        history_answer_marker_table = tf.get_variable(
+        history_answer_marker_table = tf.compat.v1.get_variable(
             name=history_answer_embedding_name,
             shape=[history_answer_embedding_vocab_size, width],
             initializer=create_initializer(initializer_range))
@@ -255,7 +255,7 @@ def embedding_postprocessor(input_tensor,
         output += history_answer_embedding
 
     if use_position_embeddings:
-        full_position_embeddings = tf.get_variable(
+        full_position_embeddings = tf.compat.v1.get_variable(
             name=position_embedding_name,
             shape=[max_position_embeddings, width],
             initializer=create_initializer(initializer_range))
@@ -326,7 +326,7 @@ class BertHAEBackbone(layers.Layer):
         if history_answer_marker is None:
             history_answer_marker = tf.zeros(shape=[batch_size, seq_length], dtype=tf.int32)
 
-        with tf.variable_scope("embeddings"):
+        with tf.compat.v1.variable_scope("embeddings"):
             # Perform embedding lookup on the word ids.
             (embedding_output, embedding_table) = embedding_lookup(
                 input_ids=input_ids,

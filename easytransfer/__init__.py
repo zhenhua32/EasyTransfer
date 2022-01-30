@@ -16,4 +16,4 @@
 from easytransfer import layers
 from easytransfer.engines.model import base_model, Config, FLAGS
 
-__version__ = '0.1.4'
+__version__ = '1.0.0'

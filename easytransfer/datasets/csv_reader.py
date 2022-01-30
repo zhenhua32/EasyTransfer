@@ -49,18 +49,18 @@ class CSVReader(Reader):
         self.input_glob = input_glob
         # 都是读取下最大行数
         if is_training:
-            with tf.gfile.Open(input_glob, 'r') as f:
+            with tf.io.gfile.GFile(input_glob, 'r') as f:
                 for record in f:
                     self.num_train_examples += 1
-            tf.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
+            tf.compat.v1.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
         else:
-            with tf.gfile.Open(input_glob, 'r') as f:
+            with tf.io.gfile.GFile(input_glob, 'r') as f:
                 for record in f:
                     self.num_eval_examples += 1
-            tf.logging.info("{}, total number of eval examples {}".format(input_glob, self.num_eval_examples))
+            tf.compat.v1.logging.info("{}, total number of eval examples {}".format(input_glob, self.num_eval_examples))
 
         # 然后再次打开文件
-        self.csv_reader = tf.gfile.Open(input_glob)
+        self.csv_reader = tf.io.gfile.GFile(input_glob)
 
     def get_input_fn(self):
         """
@@ -102,7 +102,7 @@ class CSVReader(Reader):
         num_tensors = len(tensor_names)
 
         # 解析 csv 成 tensor, 分隔符是 \t
-        items = tf.decode_csv(record, field_delim='\t', record_defaults=record_defaults, use_quote_delim=False)
+        items = tf.io.decode_csv(records=record, field_delim='\t', record_defaults=record_defaults, use_quote_delim=False)
         outputs = dict()
         total_shape = 0
         for shape in shapes:
@@ -124,10 +124,10 @@ class CSVReader(Reader):
                         # 将字符串类型的数字, 转换成对应的数字类型
                         # 但是这个 feature.dtype 可能是 tf.string, 会导致报错的. TODO: 这是怎么在哪里避免的?
                         # 难不成是因为 shape 大于 1 的这种情况下, 不允许 str 类型吗?
-                        output = tf.string_to_number(
+                        output = tf.strings.to_number(
                             # string_split 将字符串用逗号分隔
                             # expand_dims 添加一个维度, axis 指定位置, 在最前面
-                            tf.string_split(tf.expand_dims(input_tensor, axis=0), delimiter=",").values,
+                            tf.compat.v1.string_split(tf.expand_dims(input_tensor, axis=0), delimiter=",").values,
                             feature.dtype)
                         # 重新塑造形状, 就是保留第一个维度, 后面那个维度自行推导出来
                         output = tf.reshape(output, [feature.shape[0], ])
@@ -178,7 +178,7 @@ class BundleCSVReader(CSVReader):
         super(BundleCSVReader, self).__init__(input_glob, batch_size, is_training, **kwargs)
 
         self.input_fps = []
-        with tf.gfile.Open(input_glob, 'r') as f:
+        with tf.io.gfile.GFile(input_glob, 'r') as f:
             for line in f:
                 line = line.strip()
                 # 空的和全数字的都不要

@@ -82,7 +82,7 @@ class PyComprehensionEvaluator(Evaluator):
         all test batched data are predicted
         '''
         if len(self.predictions) == 0 or len(self.labels) == 0:
-            tf.logging.info('empty data to evaluate')
+            tf.compat.v1.logging.info('empty data to evaluate')
             return {'start_accuracy': 0.0, 'end_accuracy': 0.0, 'accuracy': 0.0}
 
         predictions = [self.get_best_start_end(logits) for logits in self.predictions]
@@ -111,7 +111,7 @@ def comprehension_eval_metrics(logits, labels):
     label_ids = [i for i in range(2)]
     metric_dict = evaluator.get_metric_ops(info_dict, label_ids)
     ret_metrics = evaluator.evaluate(label_ids)
-    tf.summary.scalar("start_accuracy", ret_metrics['start_accuracy'])
-    tf.summary.scalar("end_accuracy", ret_metrics['end_accuracy'])
-    tf.summary.scalar("accuracy", ret_metrics['accuracy'])
+    tf.compat.v1.summary.scalar("start_accuracy", ret_metrics['start_accuracy'])
+    tf.compat.v1.summary.scalar("end_accuracy", ret_metrics['end_accuracy'])
+    tf.compat.v1.summary.scalar("accuracy", ret_metrics['accuracy'])
     return metric_dict

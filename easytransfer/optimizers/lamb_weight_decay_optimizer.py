@@ -145,11 +145,11 @@ class LambWeightDecayOptimizer(adam.AdamOptimizer):
 
         ratio = 1.0
         if self._do_layer_adaptation(var_name):
-            w_norm = tf.norm(var, ord=2)
-            g_norm = tf.norm(update, ord=2)
-            ratio = tf.where(
+            w_norm = tf.norm(tensor=var, ord=2)
+            g_norm = tf.norm(tensor=update, ord=2)
+            ratio = tf.compat.v1.where(
                 tf.greater(w_norm, 0),
-                tf.where(tf.greater(g_norm, 0), (w_norm / g_norm), 1.0), 1.0)
+                tf.compat.v1.where(tf.greater(g_norm, 0), (w_norm / g_norm), 1.0), 1.0)
 
         var_update = var - ratio * self._lr_t * update
         return var.assign(var_update, use_locking=self._use_locking).op
@@ -194,11 +194,11 @@ class LambWeightDecayOptimizer(adam.AdamOptimizer):
 
         ratio = 1.0
         if self._do_layer_adaptation(var_name):
-            w_norm = tf.norm(var, ord=2)
-            g_norm = tf.norm(update, ord=2)
-            ratio = tf.where(
+            w_norm = tf.norm(tensor=var, ord=2)
+            g_norm = tf.norm(tensor=update, ord=2)
+            ratio = tf.compat.v1.where(
                 tf.greater(w_norm, 0),
-                tf.where(tf.greater(g_norm, 0), (w_norm / g_norm), 1.0), 1.0)
+                tf.compat.v1.where(tf.greater(g_norm, 0), (w_norm / g_norm), 1.0), 1.0)
 
         var_update = var.assign_sub(
             ratio * self._lr_t * update,

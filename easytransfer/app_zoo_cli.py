@@ -27,7 +27,7 @@ from easytransfer.app_zoo.app_config import AppConfig
 
 
 # 定义命令行参数
-_app_flags = tf.app.flags
+_app_flags = tf.compat.v1.app.flags
 _app_flags.DEFINE_string("inputTable", default=None, help='Input table/path,'
                                                           'train_path,eval_path for `train` mode'
                                                           'test_path for `predict` mode')

@@ -25,17 +25,17 @@ def conv_maxpool(x, filter_sizes=[3, 4, 5], embedding_size=100,
     # Create a convolution + maxpool layer for each filter size
     pooled_outputs = []
     for i, filter_size in enumerate(filter_sizes):
-        with tf.name_scope("%s-maxpool-%s" % (name, filter_size)):
+        with tf.compat.v1.name_scope("%s-maxpool-%s" % (name, filter_size)):
             # Convolution Layer
             filter_shape = [filter_size, embedding_size, 1, num_filters]
-            init = tf.contrib.layers.xavier_initializer(uniform=False, seed=None, dtype=tf.float32)
-            with tf.variable_scope("foo", reuse=reuse):
-                W = tf.get_variable('%s_Wconv%d' % (name, i), filter_shape, initializer=init)
-                b = tf.get_variable('%s_bconv%d' % (name, i), [num_filters], initializer=init)
+            init = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution=("uniform" if False else "truncated_normal"), seed=None, dtype=tf.float32)
+            with tf.compat.v1.variable_scope("foo", reuse=reuse):
+                W = tf.compat.v1.get_variable('%s_Wconv%d' % (name, i), filter_shape, initializer=init)
+                b = tf.compat.v1.get_variable('%s_bconv%d' % (name, i), [num_filters], initializer=init)
 
             conv = tf.nn.conv2d(
-                x,
-                W,
+                input=x,
+                filters=W,
                 strides=[1, 1, 1, 1],
                 padding="VALID",
                 name="%s-conv" % name)
@@ -44,8 +44,8 @@ def conv_maxpool(x, filter_sizes=[3, 4, 5], embedding_size=100,
             h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
 
             # Maxpooling over the outputs
-            pooled = tf.nn.max_pool(
-                h,
+            pooled = tf.nn.max_pool2d(
+                input=h,
                 ksize=[1, sequence_length - filter_size + 1, 1, 1],
                 strides=[1, 1, 1, 1],
                 padding='VALID',
@@ -98,8 +98,8 @@ class BiCNNEncoder(Layer):
                                reuse=True,
                                print_layer=True)
 
-        a_pooled = tf.reduce_sum(a_embeds, axis=2) / (tf.reduce_sum(a_mask, axis=1) + 1)
-        b_pooled = tf.reduce_sum(b_embeds, axis=2) / (tf.reduce_sum(b_mask, axis=1) + 1)
+        a_pooled = tf.reduce_sum(input_tensor=a_embeds, axis=2) / (tf.reduce_sum(input_tensor=a_mask, axis=1) + 1)
+        b_pooled = tf.reduce_sum(input_tensor=b_embeds, axis=2) / (tf.reduce_sum(input_tensor=b_mask, axis=1) + 1)
 
         LO_0 = tf.concat([LO_0, a_pooled], axis=1)
         RO_0 = tf.concat([RO_0, b_pooled], axis=1)
@@ -128,7 +128,7 @@ class HybridCNNEncoder(Layer):
         # x1, x2 = [batch, height, width, 1] = [batch, d, s, 1]
         # x2 => [batch, height, 1, width]
         # [batch, width, wdith] = [batch, s, s])
-        dot = tf.reduce_sum(tf.matmul(x1, tf.matrix_transpose(x2)), axis=1, name="att_sim")
+        dot = tf.reduce_sum(input_tensor=tf.matmul(x1, tf.linalg.matrix_transpose(x2)), axis=1, name="att_sim")
         return dot
 
     @staticmethod
@@ -144,9 +144,9 @@ class HybridCNNEncoder(Layer):
         """
 
         def pad_for_wide_conv(x, w):
-            return tf.pad(x, np.array([[0, 0], [0, 0], [w - 1, w - 1], [0, 0]]), "CONSTANT", name="pad_wide_conv")
+            return tf.pad(tensor=x, paddings=np.array([[0, 0], [0, 0], [w - 1, w - 1], [0, 0]]), mode="CONSTANT", name="pad_wide_conv")
 
-        with tf.variable_scope(name_scope) as scope:
+        with tf.compat.v1.variable_scope(name_scope) as scope:
             padded_x = pad_for_wide_conv(x, filter_size)
             # padded_x: shape of [None, embedding_size, seq_length + 2 * w - 1, 1]
             conv = tf.contrib.layers.conv2d(
@@ -156,16 +156,16 @@ class HybridCNNEncoder(Layer):
                 stride=1,
                 padding="VALID",
                 activation_fn=tf.nn.tanh,
-                weights_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                weights_regularizer=tf.contrib.layers.l2_regularizer(scale=l2_reg),
-                biases_initializer=tf.constant_initializer(1e-04),
+                weights_initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
+                weights_regularizer=tf.keras.regularizers.l2(l=0.5 * (l2_reg)),
+                biases_initializer=tf.compat.v1.constant_initializer(1e-04),
                 reuse=reuse,
                 trainable=True,
                 scope=scope
             )
             # Weight: [embedding_size, filter_size, in_channels, num_filters]
 
-            conv_trans = tf.transpose(conv, [0, 3, 2, 1], name="conv_trans")
+            conv_trans = tf.transpose(a=conv, perm=[0, 3, 2, 1], name="conv_trans")
         return conv_trans
 
     @staticmethod
@@ -179,7 +179,7 @@ class HybridCNNEncoder(Layer):
             Returns:
                 conv (`tensor`): shape of [None, s1_len - kernel_h + 1, s2_len - kernel_w + 1, num_filters]
         """
-        with tf.variable_scope(name_scope) as scope:
+        with tf.compat.v1.variable_scope(name_scope) as scope:
             # Weight: [kernel_h, kernel_w, 1, num_filters]
             conv = tf.contrib.layers.conv2d(
                 inputs=x,
@@ -188,9 +188,9 @@ class HybridCNNEncoder(Layer):
                 stride=stride,
                 padding=padding,
                 activation_fn=tf.nn.tanh,
-                weights_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
-                weights_regularizer=tf.contrib.layers.l2_regularizer(scale=l2_reg),
-                biases_initializer=tf.constant_initializer(1e-04),
+                weights_initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
+                weights_regularizer=tf.keras.regularizers.l2(l=0.5 * (l2_reg)),
+                biases_initializer=tf.compat.v1.constant_initializer(1e-04),
                 reuse=False,
                 trainable=True,
                 scope=scope
@@ -206,12 +206,12 @@ class HybridCNNEncoder(Layer):
 
         a_mask = tf.expand_dims(tf.cast(a_mask, dtype=tf.float32), -1)  # [None, a_length, 1]
         b_mask = tf.expand_dims(tf.cast(b_mask, dtype=tf.float32), -1)  # [None, b_length, 1]
-        a_embeds = tf.transpose(a_embeds * a_mask, [0, 2, 1], name="emb1_trans")
-        b_embeds = tf.transpose(b_embeds * b_mask, [0, 2, 1], name="emb2_trans")
+        a_embeds = tf.transpose(a=a_embeds * a_mask, perm=[0, 2, 1], name="emb1_trans")
+        b_embeds = tf.transpose(a=b_embeds * b_mask, perm=[0, 2, 1], name="emb2_trans")
         x1 = tf.expand_dims(a_embeds, -1)
         x2 = tf.expand_dims(b_embeds, -1)
 
-        with tf.variable_scope("bicnn"):
+        with tf.compat.v1.variable_scope("bicnn"):
                 left_conv = self.wide_convolution(x=x1,
                                                   filter_size=self.filter_size,
                                                   embedding_size=embed_size,
@@ -219,7 +219,7 @@ class HybridCNNEncoder(Layer):
                                                   l2_reg=self.l2_reg,
                                                   reuse=False)
                 # left_avg_pooled: shape of [None, num_filters, 1, 1]
-                left_max_pooled = tf.layers.max_pooling2d(inputs=left_conv,
+                left_max_pooled = tf.compat.v1.layers.max_pooling2d(inputs=left_conv,
                                                           pool_size=(1, a_length + self.filter_size - 1),
                                                           strides=1,
                                                           padding="VALID",
@@ -232,18 +232,18 @@ class HybridCNNEncoder(Layer):
                                                   num_filters=self.num_filters,
                                                   l2_reg=self.l2_reg,
                                                   reuse=True)
-                right_max_pooled = tf.layers.max_pooling2d(inputs=right_conv,
+                right_max_pooled = tf.compat.v1.layers.max_pooling2d(inputs=right_conv,
                                                            pool_size=(1, b_length + self.filter_size - 1),
                                                            strides=1,
                                                            padding="VALID",
                                                            name="max_pooled")
                 right_max_pooled = tf.squeeze(tf.squeeze(right_max_pooled, axis=-1), axis=-1)
 
-        with tf.variable_scope("pyramid_cnn"):
-            attention_matrix = tf.matmul(tf.transpose(a_embeds, [0, 2, 1]), b_embeds,
+        with tf.compat.v1.variable_scope("pyramid_cnn"):
+            attention_matrix = tf.matmul(tf.transpose(a=a_embeds, perm=[0, 2, 1]), b_embeds,
                                           name='pyramid_cnn_attention_matrix')
             # shape of [None, a_length, b_length]
-            attention_mask = tf.matmul(a_mask, tf.transpose(b_mask, [0, 2, 1]))
+            attention_mask = tf.matmul(a_mask, tf.transpose(a=b_mask, perm=[0, 2, 1]))
             attention_matrix = attention_matrix * attention_mask
             attention_matrix = tf.expand_dims(attention_matrix, axis=-1)
             # shape of [None, a_length, b_length, 1]
@@ -254,7 +254,7 @@ class HybridCNNEncoder(Layer):
                                                      name_scope="attn_conv_1")
             # attn_conv: shape of [None, s1_len - attn_filter_size_1 + 1,
             # s2_len - attn_filter_size_1 + 1, attn_num_filters_1]
-            attn_max_pooled_1 = tf.layers.max_pooling2d(inputs=attn_conv_1,
+            attn_max_pooled_1 = tf.compat.v1.layers.max_pooling2d(inputs=attn_conv_1,
                                                         pool_size=(4, 4),
                                                         strides=4,
                                                         padding="VALID",
@@ -266,7 +266,7 @@ class HybridCNNEncoder(Layer):
                                                      padding="VALID",
                                                      stride=3,
                                                      name_scope="attn_conv_2")
-            attn_max_pooled_2 = tf.layers.max_pooling2d(inputs=attn_conv_2,
+            attn_max_pooled_2 = tf.compat.v1.layers.max_pooling2d(inputs=attn_conv_2,
                                                         pool_size=(2, 2),
                                                         strides=2,
                                                         padding="VALID",
@@ -299,16 +299,16 @@ class TextCNNEncoder(Layer):
         embeds =  tf.expand_dims(embeds, -1)
         pooled_outputs = list()
         for i, filter_size in enumerate(self.filter_sizes):
-            with tf.variable_scope("Conv-pool-layer-{}".format(filter_size)):
-                filter = tf.get_variable('filter-%s' % filter_size,
+            with tf.compat.v1.variable_scope("Conv-pool-layer-{}".format(filter_size)):
+                filter = tf.compat.v1.get_variable('filter-%s' % filter_size,
                                          [filter_size, self.embed_size, 1, self.num_filters[i]],
                                          initializer=get_initializer(0.01))
-                conv = tf.nn.conv2d(embeds, filter, strides=[1, 1, 1, 1], padding="VALID", name="conv")
+                conv = tf.nn.conv2d(input=embeds, filters=filter, strides=[1, 1, 1, 1], padding="VALID", name="conv")
                 # [bsize, max_sent_len - filter_size + 1, 1, n_filters]
                 # conv = tf.contrib.layers.batch_norm(conv, is_training=self.is_training_flag, scope='cnn_bn_')
-                b = tf.get_variable("b-%s" % filter_size, [self.num_filters[i]])  # ADD 2017-06-09
+                b = tf.compat.v1.get_variable("b-%s" % filter_size, [self.num_filters[i]])  # ADD 2017-06-09
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), "relu")
-                pooled = tf.nn.max_pool(h, ksize=[1, self.max_seq_len - filter_size + 1, 1, 1],
+                pooled = tf.nn.max_pool2d(input=h, ksize=[1, self.max_seq_len - filter_size + 1, 1, 1],
                                         strides=[1, 1, 1, 1], padding='VALID',
                                         name="pool")
                 # [bsize, 1, 1, num_filters]

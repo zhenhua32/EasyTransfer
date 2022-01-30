@@ -34,10 +34,10 @@ ALL_SPECIAL_TOKENS = [PAD_WORD, UNK_WORD, BOS_WORD, EOS_WORD, MASK_WORD, SEP_WOR
 
 
 def get_pretrained_embedding(stoi, pretrained_w2v_path, init="random"):
-    tf.logging.info("Start loading pretrained word embeddings from {}".format(pretrained_w2v_path))
+    tf.compat.v1.logging.info("Start loading pretrained word embeddings from {}".format(pretrained_w2v_path))
     mu, sigma = 0, 0.01
     hit = 0
-    with tf.gfile.GFile(pretrained_w2v_path) as f:
+    with tf.io.gfile.GFile(pretrained_w2v_path) as f:
         line = f.readline()
         word_num, vec_dim = line.split(" ")
         vec_dim = int(vec_dim)
@@ -48,7 +48,7 @@ def get_pretrained_embedding(stoi, pretrained_w2v_path, init="random"):
             res_embed_matrix = np.zeros((len(stoi), vec_dim))
         else:
             raise NotImplementedError
-        tf.logging.info("Total pretrained word num: {}".format(word_num))
+        tf.compat.v1.logging.info("Total pretrained word num: {}".format(word_num))
         for i, line in enumerate(f):
             word = convert_to_unicode(line.split(" ")[0])
             vec = [float(t) for t in line.strip().split(" ")[1:]]
@@ -57,8 +57,8 @@ def get_pretrained_embedding(stoi, pretrained_w2v_path, init="random"):
             if word in stoi:
                 hit += 1
                 res_embed_matrix[stoi[word]] = vec
-        tf.logging.info("Hit: {}/{}".format(hit, len(stoi)))
-    tf.logging.info("Loading pretrained Done")
+        tf.compat.v1.logging.info("Hit: {}/{}".format(hit, len(stoi)))
+    tf.compat.v1.logging.info("Loading pretrained Done")
     return res_embed_matrix
 
 
@@ -126,7 +126,7 @@ class DeepTextVocab(object):
 
     @classmethod
     def build_from_file(cls, file_path):
-        with tf.gfile.GFile(file_path) as f:
+        with tf.io.gfile.GFile(file_path) as f:
             stoi = json.load(f)
         obj = cls()
         obj.stoi = {convert_to_unicode(key): val for key, val in stoi.items()}
@@ -135,7 +135,7 @@ class DeepTextVocab(object):
         return obj
 
     def export_to_file(self, file_path):
-        with tf.gfile.GFile(file_path, mode="w") as f:
+        with tf.io.gfile.GFile(file_path, mode="w") as f:
             json.dump(self.stoi, f)
 
 
@@ -151,7 +151,7 @@ class DeepTextPreprocessor(Preprocessor):
             hasattr(self.config, "pretrain_word_embedding_name_or_path") and \
             self.config.pretrain_word_embedding_name_or_path:
             emb_path = self.config.pretrain_word_embedding_name_or_path
-            assert tf.gfile.Exists(emb_path)
+            assert tf.io.gfile.exists(emb_path)
             self.pretrained_word_embeddings = get_pretrained_embedding(
                 self.vocab.stoi, emb_path)
         else:

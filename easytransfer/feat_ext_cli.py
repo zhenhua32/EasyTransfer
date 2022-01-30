@@ -28,7 +28,7 @@ from easytransfer.app_zoo.app_utils import get_all_columns_name, get_selected_co
 from easytransfer.app_zoo.feature_extractor import BertFeatureExtractor
 
 
-_app_flags = tf.app.flags
+_app_flags = tf.compat.v1.app.flags
 _app_flags.DEFINE_string("inputTable", default=None, help='Input table (only for pai cmd)')
 _app_flags.DEFINE_string("outputTable", default=None, help='Output table (only for pai cmd)')
 _app_flags.DEFINE_string("inputSchema", default=None,
@@ -67,8 +67,8 @@ class BertFeatConfig(Config):
         predict_checkpoint_path = _APP_FLAGS.modelName
 
         predict_checkpoint_dir = os.path.dirname(predict_checkpoint_path)
-        if tf.gfile.Exists(os.path.join(predict_checkpoint_dir, "train_config.json")):
-            with tf.gfile.Open(os.path.join(predict_checkpoint_dir, "train_config.json")) as f:
+        if tf.io.gfile.exists(os.path.join(predict_checkpoint_dir, "train_config.json")):
+            with tf.io.gfile.GFile(os.path.join(predict_checkpoint_dir, "train_config.json")) as f:
                 train_config_json = json.load(f)
             # 读取 model_name
             if "model_name" in train_config_json:
@@ -104,7 +104,7 @@ class BertFeatConfig(Config):
         # 附加列
         append_columns = [t for t in _APP_FLAGS.appendCols.split(",") if t and t in all_input_col_names] \
                           if _APP_FLAGS.appendCols else []
-        tf.logging.info(input_table)
+        tf.compat.v1.logging.info(input_table)
         if "odps://" in FLAGS.inputTable and "PAI" in tf.__version__:
             selected_cols_set = [first_sequence]
             if second_sequence:
@@ -152,12 +152,12 @@ class BertFeatConfig(Config):
         config_json["job_name"] = FLAGS.job_name
         config_json["num_gpus"] = FLAGS.workerGPU
         config_json["num_workers"] = FLAGS.workerCount
-        tf.logging.info("{}".format(config_json))
+        tf.compat.v1.logging.info("{}".format(config_json))
         # 调用父类的初始化
         super(BertFeatConfig, self).__init__(mode="predict_on_the_fly", config_json=config_json)
 
         for key, val in self.__dict__.items():
-            tf.logging.info("  {}: {}".format(key, val))
+            tf.compat.v1.logging.info("  {}: {}".format(key, val))
 
 
 def main():

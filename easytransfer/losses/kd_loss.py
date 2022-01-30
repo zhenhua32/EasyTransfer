@@ -37,17 +37,17 @@ def build_kd_loss(teacher_logits,
 
 
 def mse_loss(teacher_logits, student_logits):
-    loss = tf.reduce_mean(tf.nn.l2_loss(teacher_logits - student_logits))
+    loss = tf.reduce_mean(input_tensor=tf.nn.l2_loss(teacher_logits - student_logits))
     return loss
 
 
 def xent_loss(teacher_logits, student_logits, labels, distill_tempreture,
             task_balance):
     student_task_xent = tf.reduce_mean(
-        tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.squeeze(labels),
+        input_tensor=tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.squeeze(labels),
                                                        logits=student_logits))
     teacher_targets = tf.nn.softmax(teacher_logits / distill_tempreture)
-    student_distill_xent = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+    student_distill_xent = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(
         labels=tf.stop_gradient(teacher_targets), logits=student_logits))
     losses = task_balance * student_task_xent
     losses += (1 - task_balance) * student_distill_xent
@@ -59,11 +59,11 @@ def kld_loss(teacher_logits, student_logits, labels, distill_temperature,
             task_balance):
     student_task_xent = tf.nn.sparse_softmax_cross_entropy_with_logits(
         labels=tf.squeeze(labels), logits=student_logits)
-    student_distill = tf.reduce_sum(tf.nn.softmax(student_logits / distill_temperature) * (
-        tf.log(tf.nn.softmax(student_logits / distill_temperature + 1e-5) -
-        tf.log(tf.nn.softmax(teacher_logits / distill_temperature + 1e-5)))))
-    losses = task_balance * tf.reduce_mean(student_task_xent)
-    losses += (1 - task_balance) * tf.reduce_mean(student_distill)
+    student_distill = tf.reduce_sum(input_tensor=tf.nn.softmax(student_logits / distill_temperature) * (
+        tf.math.log(tf.nn.softmax(student_logits / distill_temperature + 1e-5) -
+        tf.math.log(tf.nn.softmax(teacher_logits / distill_temperature + 1e-5)))))
+    losses = task_balance * tf.reduce_mean(input_tensor=student_task_xent)
+    losses += (1 - task_balance) * tf.reduce_mean(input_tensor=student_distill)
 
     return losses
 

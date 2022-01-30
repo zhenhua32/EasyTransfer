@@ -69,7 +69,7 @@ class Evaluator(six.with_metaclass(ABCMeta, object)):
 
         # py_func 是个包装器, 将 python 函数作为 tensorflow 函数
         # 输入是 feed_list, 没有输出
-        update_op = tf.py_func(self.add_batch_info, feed_list, [])
+        update_op = tf.compat.v1.py_func(self.add_batch_info, feed_list, [])
 
         def first_value_func():
             # evaluation will be done only in the first value
@@ -84,14 +84,14 @@ class Evaluator(six.with_metaclass(ABCMeta, object)):
             return value_func
 
         # ensure that the metrics are only evaluated once.
-        first_value_op = tf.py_func(first_value_func, [], tf.float32)
+        first_value_op = tf.compat.v1.py_func(first_value_func, [], tf.float32)
         # 先执行第一个 metric 函数
         eval_metric_ops = {self._metric_names[0]: (first_value_op, update_op)}
         # because we have done evaluate operation in first_value func, so we need to control the
         # dependency of all value funcs, make sure first value func is running first
         with tf.control_dependencies([first_value_op]):
             for metric_name in self._metric_names[1:]:
-                eval_metric_ops[metric_name] = (tf.py_func(
+                eval_metric_ops[metric_name] = (tf.compat.v1.py_func(
                     value_func_factory(metric_name), [], np.float32), update_op)
 
         # 返回的是一个字典, key 是 _metric_names 中的每个值, value 是一个元组, 第一个元素是 metric 函数的结果, 第二个元素是 update_op

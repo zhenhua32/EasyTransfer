@@ -20,7 +20,7 @@ def avgloss_logger_hook(max_steps, loss, model_dir, log_step_count_steps, task_i
     """
     返回一个类, 这个类初始化时, 无需任何参数
     """
-    class _LoggerHook(tf.train.SessionRunHook):
+    class _LoggerHook(tf.estimator.SessionRunHook):
         """Logs loss and runtime."""
 
         def __init__(self):
@@ -31,7 +31,7 @@ def avgloss_logger_hook(max_steps, loss, model_dir, log_step_count_steps, task_i
             # 衰减率
             self.decay = 0.99
             # 文件写入器
-            self.writer = tf.summary.FileWriter(model_dir+"/avg_loss")
+            self.writer = tf.compat.v1.summary.FileWriter(model_dir+"/avg_loss")
             # 每多少个步长记录一次
             self.log_step_count_steps  = log_step_count_steps
             # 任务索引
@@ -50,7 +50,7 @@ def avgloss_logger_hook(max_steps, loss, model_dir, log_step_count_steps, task_i
             # 每次运行前加 1
             self._step += 1
             # loss 是函数传入的, 表示要添加到 Session.run() 的参数
-            return tf.train.SessionRunArgs([loss])
+            return tf.estimator.SessionRunArgs([loss])
 
         def after_run(self, run_context, run_values):
             """
@@ -70,13 +70,13 @@ def avgloss_logger_hook(max_steps, loss, model_dir, log_step_count_steps, task_i
                 # 计算当前进度
                 progress = float(self._step) / self.max_steps * 100.0
                 # 收集数据
-                summary = tf.Summary()
+                summary = tf.compat.v1.Summary()
                 # 添加一个 avg_loss 项
                 summary.value.add(tag='avg_loss', simple_value=self.avg_loss)
                 # 写入文件
                 self.writer.add_summary(summary, self._step)
                 # 并且在日志中打印
-                tf.logging.info(
+                tf.compat.v1.logging.info(
                     'progress = %.2f%%, avg_loss = %.6f' % (progress, float(self.avg_loss)))
 
     return _LoggerHook()

@@ -143,7 +143,7 @@ def load_vocab(vocab_file: str) -> collections.OrderedDict:
     将词汇表文件加载到字典中
     """
     vocab = collections.OrderedDict()
-    with tf.gfile.GFile(vocab_file, "r") as reader:
+    with tf.io.gfile.GFile(vocab_file, "r") as reader:
         while True:
             token = convert_to_unicode(reader.readline())
             if not token:
@@ -193,9 +193,9 @@ class FullTokenizer(object):
             # https://pypi.org/project/sentencepiece/
             # sentencepiece 是个分词器
             self.sp_model = spm.SentencePieceProcessor()
-            tf.logging.info("loading sentence piece model")
+            tf.compat.v1.logging.info("loading sentence piece model")
             # Handle cases where SP can't load the file, but gfile can.
-            sp_model_ = tf.gfile.GFile(spm_model_file, "rb").read()
+            sp_model_ = tf.io.gfile.GFile(spm_model_file, "rb").read()
             self.sp_model.LoadFromSerializedProto(sp_model_)
             # Note(mingdachen): For the purpose of consisent API, we are
             # generating a vocabulary for the sentence piece tokenizer.

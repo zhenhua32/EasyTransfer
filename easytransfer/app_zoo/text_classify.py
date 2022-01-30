@@ -89,7 +89,7 @@ class BaseTextClassify(ApplicationModel):
 
     def _build_single_label_predictions(self, predict_output):
         logits, _ = predict_output
-        predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+        predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
         probs = tf.nn.softmax(logits, axis=1)
         ret_dict = {
             "predictions": predictions,
@@ -179,7 +179,7 @@ class BertTextClassify(BaseTextClassify):
 
         # 添加一个 dropout 层
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
-        pool_output = tf.layers.dropout(
+        pool_output = tf.compat.v1.layers.dropout(
             pool_output, rate=self.config.dropout_rate, training=is_training)
         # 添加一个 dense 层, 输出的长度是标签数
         logits = layers.Dense(self.config.num_labels,
@@ -244,7 +244,7 @@ class TextCNNClassify(BaseTextClassify):
                                                     embed_size=self.config.embedding_size,
                                                     pretrained_word_embeddings=text_preprocessor.pretrained_word_embeddings,
                                                     trainable=not self.config.fix_embedding)
-        text_embeds = tf.nn.embedding_lookup(word_embeddings, text_indices)
+        text_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_indices)
 
         # textcnn 编码器
         output_features = layers.TextCNNEncoder(num_filters=self.config.num_filters,
@@ -253,7 +253,7 @@ class TextCNNClassify(BaseTextClassify):
                                                 max_seq_len=self.config.sequence_length,
                                                 )([text_embeds, text_masks], training=is_training)
 
-        output_features = tf.layers.dropout(
+        output_features = tf.compat.v1.layers.dropout(
             output_features, rate=self.config.dropout_rate, training=is_training, name='output_features')
 
         # 最后的 dense 层
@@ -265,16 +265,16 @@ class TextCNNClassify(BaseTextClassify):
         return logits, label_ids
 
     def _add_word_embeddings(self, vocab_size, embed_size, pretrained_word_embeddings=None, trainable=False):
-        with tf.name_scope("input_representations"):
+        with tf.compat.v1.name_scope("input_representations"):
             # 使用预训练的词嵌入
             if pretrained_word_embeddings is not None:
-                tf.logging.info("Initialize word embedding from pretrained")
+                tf.compat.v1.logging.info("Initialize word embedding from pretrained")
                 # 常量初始化器
-                word_embedding_initializer = tf.constant_initializer(pretrained_word_embeddings)
+                word_embedding_initializer = tf.compat.v1.constant_initializer(pretrained_word_embeddings)
             else:
                 word_embedding_initializer = layers.get_initializer(0.02)
             # 得到或创建一个新的 tf 变量
-            word_embeddings = tf.get_variable("word_embeddings",
+            word_embeddings = tf.compat.v1.get_variable("word_embeddings",
                                               [vocab_size, embed_size],
                                               dtype=tf.float32, initializer=word_embedding_initializer,
                                               trainable=trainable)

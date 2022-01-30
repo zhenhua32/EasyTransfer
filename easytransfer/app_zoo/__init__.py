@@ -58,9 +58,9 @@ _name_to_app_model = {
 def get_application_model(config):
     try:
         assert config.model_name in _name_to_app_model
-        tf.logging.info(config.model_name)
+        tf.compat.v1.logging.info(config.model_name)
         app_model = _name_to_app_model.get(config.model_name)(user_defined_config=config)
-        tf.logging.info(app_model)
+        tf.compat.v1.logging.info(app_model)
         return app_model
     except Exception:
         traceback.print_exc()

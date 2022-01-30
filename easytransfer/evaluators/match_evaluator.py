@@ -68,7 +68,7 @@ class MatchEvaluator(Evaluator):
         all test batched data are predicted
         '''
         if len(self.predictions) == 0 or len(self.labels) == 0:
-            tf.logging.info('empty data to evaluate')
+            tf.compat.v1.logging.info('empty data to evaluate')
             ret_metric = {key: 0.0 for key in self.metric_names}
             return ret_metric
 
@@ -95,7 +95,7 @@ def match_eval_metrics(logits, labels, num_labels):
     if isinstance(logits, list):
         logits = logits[0]
     if len(logits.shape) == 2:
-        predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+        predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
     else:
         predictions = tf.cast(logits > 0.5, dtype=tf.int32)
     info_dict = {
@@ -106,9 +106,9 @@ def match_eval_metrics(logits, labels, num_labels):
 
     evaluator = MatchEvaluator(num_labels=num_labels)
     metric_dict = evaluator.get_metric_ops(info_dict, label_ids)
-    tf.logging.info(metric_dict)
+    tf.compat.v1.logging.info(metric_dict)
     ret_metrics = evaluator.evaluate(label_ids)
-    tf.logging.info(ret_metrics)
+    tf.compat.v1.logging.info(ret_metrics)
     for key, val in ret_metrics.items():
-        tf.summary.scalar("eval_" + key, val)
+        tf.compat.v1.summary.scalar("eval_" + key, val)
     return metric_dict

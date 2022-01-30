@@ -43,9 +43,9 @@ class PredictProcess(distribution.Process):
                                              input_queue=input_queue,
                                              output_queue=output_queue,
                                              batch_size=batch_size)
-        self.sess = tf.Session(graph=tf.Graph())
-        meta_graph_def = tf.saved_model.loader.load(self.sess,
-                                                    [tf.saved_model.tag_constants.SERVING],
+        self.sess = tf.compat.v1.Session(graph=tf.Graph())
+        meta_graph_def = tf.compat.v1.saved_model.loader.load(self.sess,
+                                                    [tf.saved_model.SERVING],
                                                     saved_model_path)
         self.signature = meta_graph_def.signature_def
         self.signature_key = DEFAULT_SERVING_SIGNATURE_DEF_KEY

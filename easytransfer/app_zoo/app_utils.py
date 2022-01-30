@@ -33,20 +33,20 @@ def copy_pretrain_model_files_to_dir(pretrain_model_name_or_path, output_dir):
     predict_checkpoint_dir = os.path.dirname(pretrain_checkpoint_path)
     vocab_file = os.path.join(predict_checkpoint_dir, "vocab.txt")
     vocab_out_file = os.path.join(output_dir, "vocab.txt")
-    if tf.gfile.Exists(vocab_file) and not tf.gfile.Exists(vocab_out_file):
-        tf.gfile.Copy(vocab_file, vocab_out_file)
+    if tf.io.gfile.exists(vocab_file) and not tf.io.gfile.exists(vocab_out_file):
+        tf.io.gfile.copy(vocab_file, vocab_out_file)
     config_file = os.path.join(predict_checkpoint_dir, "config.json")
     config_out_file = os.path.join(output_dir, "config.json")
-    if tf.gfile.Exists(config_file) and not tf.gfile.Exists(config_out_file):
-        tf.gfile.Copy(config_file, config_out_file)
+    if tf.io.gfile.exists(config_file) and not tf.io.gfile.exists(config_out_file):
+        tf.io.gfile.copy(config_file, config_out_file)
 
 
 def copy_file_to_new_path(old_dir, new_dir, fname, newfname=None):
     newfname = newfname if newfname else fname
     src_path = os.path.join(old_dir, fname)
     tgt_path = os.path.join(new_dir, newfname)
-    if tf.gfile.Exists(src_path) and not tf.gfile.Exists(tgt_path):
-        tf.gfile.Copy(src_path, tgt_path)
+    if tf.io.gfile.exists(src_path) and not tf.io.gfile.exists(tgt_path):
+        tf.io.gfile.copy(src_path, tgt_path)
 
 
 def get_reader_fn(input_fp=None):
@@ -149,8 +149,8 @@ def get_label_enumerate_values(label_enumerate_value_or_path):
     if label_enumerate_value_or_path is None:
         return ""
     # 先尝试从文件中读取, 读取行, 用逗号拼接
-    if tf.gfile.Exists(label_enumerate_value_or_path):
-        with tf.gfile.Open(label_enumerate_value_or_path) as f:
+    if tf.io.gfile.exists(label_enumerate_value_or_path):
+        with tf.io.gfile.GFile(label_enumerate_value_or_path) as f:
             label_enumerate_value = ",".join([convert_to_unicode(line.strip()) for line in f])
     else:
         label_enumerate_value = label_enumerate_value_or_path
@@ -159,8 +159,8 @@ def get_label_enumerate_values(label_enumerate_value_or_path):
 
 def get_pretrain_model_name_or_path(pretrain_model_name_or_path):
     contrib_models_path = os.path.join(FLAGS.modelZooBasePath, "contrib_models.json")
-    if tf.gfile.Exists(contrib_models_path):
-        with tf.gfile.Open(os.path.join(FLAGS.modelZooBasePath, "contrib_models.json")) as f:
+    if tf.io.gfile.exists(contrib_models_path):
+        with tf.io.gfile.GFile(os.path.join(FLAGS.modelZooBasePath, "contrib_models.json")) as f:
             contrib_models = json.load(f)
         if pretrain_model_name_or_path in contrib_models:
             pretrain_model_name_or_path = contrib_models[pretrain_model_name_or_path]
@@ -172,5 +172,5 @@ def log_duration_time(func):
         _st_time = time.time()
         func(*args, **kw)
         _end_time = time.time()
-        tf.logging.info("Duration time: {:.4f}s".format(_end_time - _st_time))
+        tf.compat.v1.logging.info("Duration time: {:.4f}s".format(_end_time - _st_time))
     return wrapper

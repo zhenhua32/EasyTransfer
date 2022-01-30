@@ -78,7 +78,7 @@ class BaseTextMatch(ApplicationModel):
         if isinstance(logits, list):
             logits = logits[0]
         if len(logits.shape) == 2:
-            predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+            predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
             probs = tf.nn.softmax(logits, axis=1)
         else:
             probs = (logits + 1.0) / 2.0
@@ -92,13 +92,13 @@ class BaseTextMatch(ApplicationModel):
         return ret_dict
 
     def _add_word_embeddings(self, vocab_size, embed_size, pretrained_word_embeddings=None, trainable=False):
-        with tf.name_scope("input_representations"):
+        with tf.compat.v1.name_scope("input_representations"):
             if pretrained_word_embeddings is not None:
-                tf.logging.info("Initialize word embedding from pretrained")
-                word_embedding_initializer = tf.constant_initializer(pretrained_word_embeddings)
+                tf.compat.v1.logging.info("Initialize word embedding from pretrained")
+                word_embedding_initializer = tf.compat.v1.constant_initializer(pretrained_word_embeddings)
             else:
                 word_embedding_initializer = layers.get_initializer(0.02)
-            word_embeddings = tf.get_variable("word_embeddings",
+            word_embeddings = tf.compat.v1.get_variable("word_embeddings",
                                               [vocab_size, embed_size],
                                               dtype=tf.float32, initializer=word_embedding_initializer,
                                               trainable=trainable)
@@ -160,7 +160,7 @@ class BertTextMatch(BaseTextMatch):
         _, pool_output = bert_backbone([input_ids, input_mask, segment_ids], mode=mode)
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
-        pool_output = tf.layers.dropout(
+        pool_output = tf.compat.v1.layers.dropout(
             pool_output, rate=self.config.dropout_rate, training=is_training)
         logits = layers.Dense(self.config.num_labels,
                               kernel_initializer=layers.get_initializer(0.02),
@@ -227,7 +227,7 @@ class BertTextMatchTwoTower(BaseTextMatch):
         input_ids_a, input_mask_a, \
         segment_ids_a, input_ids_b, input_mask_b, segment_ids_b, label_id = bert_preprocessor(features)
 
-        with tf.variable_scope('text_match_bert_two_tower', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('text_match_bert_two_tower', reuse=tf.compat.v1.AUTO_REUSE):
             bert_backbone = model_zoo.get_pretrained_model(self.config.pretrain_model_name_or_path)
             if self.config.projection_dim == -1:
                 _, pool_output_a = bert_backbone([input_ids_a, input_mask_a, segment_ids_a], mode=mode)
@@ -240,9 +240,9 @@ class BertTextMatchTwoTower(BaseTextMatch):
                 first_token_output_a = all_hidden_outputs_a[:, 0, :]
                 first_token_output_b = all_hidden_outputs_b[:, 0, :]
 
-                pool_output_a = tf.layers.dense(inputs=first_token_output_a, units=self.config.projection_dim,
+                pool_output_a = tf.compat.v1.layers.dense(inputs=first_token_output_a, units=self.config.projection_dim,
                                                      activation=None, name='output_dense_layer')
-                pool_output_b = tf.layers.dense(inputs=first_token_output_b, units=self.config.projection_dim,
+                pool_output_b = tf.compat.v1.layers.dense(inputs=first_token_output_b, units=self.config.projection_dim,
                                                          activation=None, name='output_dense_layer')
 
         logits = self._cosine(pool_output_a, pool_output_b)
@@ -252,10 +252,10 @@ class BertTextMatchTwoTower(BaseTextMatch):
 
     @staticmethod
     def _cosine(q, a):
-        pooled_len_1 = tf.sqrt(tf.reduce_sum(q * q, 1))
-        pooled_len_2 = tf.sqrt(tf.reduce_sum(a * a, 1))
-        pooled_mul_12 = tf.reduce_sum(q * a, 1)
-        score = tf.div(pooled_mul_12, pooled_len_1 * pooled_len_2 + 1e-8, name="scores")
+        pooled_len_1 = tf.sqrt(tf.reduce_sum(input_tensor=q * q, axis=1))
+        pooled_len_2 = tf.sqrt(tf.reduce_sum(input_tensor=a * a, axis=1))
+        pooled_mul_12 = tf.reduce_sum(input_tensor=q * a, axis=1)
+        score = tf.compat.v1.div(pooled_mul_12, pooled_len_1 * pooled_len_2 + 1e-8, name="scores")
         return score
 
     def build_loss(self, outputs, label_id):
@@ -335,13 +335,13 @@ class DAMTextMatch(BaseTextMatch):
                                                     embed_size=self.config.embedding_size,
                                                     pretrained_word_embeddings=text_preprocessor.pretrained_word_embeddings,
                                                     trainable=not self.config.fix_embedding)
-        a_embeds = tf.nn.embedding_lookup(word_embeddings, text_a_indices)
-        b_embeds = tf.nn.embedding_lookup(word_embeddings, text_b_indices)
+        a_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_a_indices)
+        b_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_b_indices)
 
         dam_output_features = layers.DAMEncoder(self.config.hidden_size)(
             [a_embeds, b_embeds, text_a_masks, text_b_masks], training=is_training)
 
-        dam_output_features = tf.layers.dropout(
+        dam_output_features = tf.compat.v1.layers.dropout(
             dam_output_features, rate=0.2, training=is_training, name='dam_out_features_dropout')
         dam_output_features = layers.Dense(self.config.hidden_size,
                                            activation=tf.nn.relu,
@@ -423,22 +423,22 @@ class DAMPlusTextMatch(BaseTextMatch):
                                                     embed_size=self.config.embedding_size,
                                                     pretrained_word_embeddings=text_preprocessor.pretrained_word_embeddings,
                                                     trainable=not self.config.fix_embedding)
-        a_embeds = tf.nn.embedding_lookup(word_embeddings, text_a_indices)
-        b_embeds = tf.nn.embedding_lookup(word_embeddings, text_b_indices)
+        a_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_a_indices)
+        b_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_b_indices)
 
         dam_output_features = layers.DAMEncoder(self.config.hidden_size)(
             [a_embeds, b_embeds, text_a_masks, text_b_masks], training=is_training)
         bcnn_output_features = layers.BiCNNEncoder(self.config.hidden_size // 2)(
             [a_embeds, b_embeds, text_a_masks, text_b_masks])
 
-        dam_output_features = tf.layers.dropout(
+        dam_output_features = tf.compat.v1.layers.dropout(
             dam_output_features, rate=0.2, training=is_training, name='dam_out_features_dropout')
         dam_output_features = layers.Dense(self.config.hidden_size,
                                            activation=tf.nn.relu,
                                            kernel_initializer=layers.get_initializer(0.02),
                                            name='dam_out_features_projection')(dam_output_features)
 
-        bcnn_output_features = tf.layers.dropout(
+        bcnn_output_features = tf.compat.v1.layers.dropout(
             bcnn_output_features, rate=0.2, training=is_training, name='dam_out_features_dropout')
         bcnn_output_features = layers.Dense(self.config.hidden_size,
                                            activation=tf.nn.relu,
@@ -521,13 +521,13 @@ class BiCNNTextMatch(BaseTextMatch):
                                                     embed_size=self.config.embedding_size,
                                                     pretrained_word_embeddings=text_preprocessor.pretrained_word_embeddings,
                                                     trainable=not self.config.fix_embedding)
-        a_embeds = tf.nn.embedding_lookup(word_embeddings, text_a_indices)
-        b_embeds = tf.nn.embedding_lookup(word_embeddings, text_b_indices)
+        a_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_a_indices)
+        b_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_b_indices)
 
         bcnn_output_features = layers.BiCNNEncoder(self.config.hidden_size)(
             [a_embeds, b_embeds, text_a_masks, text_b_masks])
 
-        bcnn_output_features = tf.layers.dropout(
+        bcnn_output_features = tf.compat.v1.layers.dropout(
             bcnn_output_features, rate=0.2, training=is_training, name='dam_out_features_dropout')
         bcnn_output_features = layers.Dense(self.config.hidden_size,
                                            activation=tf.nn.relu,
@@ -609,15 +609,15 @@ class HCNNTextMatch(BaseTextMatch):
                                                     embed_size=self.config.embedding_size,
                                                     pretrained_word_embeddings=text_preprocessor.pretrained_word_embeddings,
                                                     trainable=not self.config.fix_embedding)
-        a_embeds = tf.nn.embedding_lookup(word_embeddings, text_a_indices)
-        b_embeds = tf.nn.embedding_lookup(word_embeddings, text_b_indices)
+        a_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_a_indices)
+        b_embeds = tf.nn.embedding_lookup(params=word_embeddings, ids=text_b_indices)
 
         hcnn_output_features = layers.HybridCNNEncoder(
             num_filters=self.config.hidden_size,
             l2_reg=self.config.l2_reg,
             filter_size=self.config.filter_size)([a_embeds, b_embeds, text_a_masks, text_b_masks])
 
-        hcnn_output_features = tf.layers.dropout(
+        hcnn_output_features = tf.compat.v1.layers.dropout(
             hcnn_output_features, rate=0.2, training=is_training, name='dam_out_features_dropout')
         hcnn_output_features = layers.Dense(self.config.hidden_size,
                                             activation=tf.nn.relu,

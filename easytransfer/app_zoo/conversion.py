@@ -60,7 +60,7 @@ class ConversionModel(ApplicationModel):
         prefix = "bert_pre_trained_model/"
         # 这变量都没用上, 是为了测试能否正常加载吗?
         checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
             # 列出检查点的变量名和变量形状
             for var_name, _ in tf.contrib.framework.list_variables(checkpoint_dir):
                 # Load the variable
@@ -70,7 +70,7 @@ class ConversionModel(ApplicationModel):
                 if "global_step" in var_name:
                     continue
                 # 直接加载变量
-                var = tf.contrib.framework.load_variable(checkpoint_dir, var_name)
+                var = tf.train.load_variable(checkpoint_dir, var_name)
 
                 # Set the new name
                 # 取个新名字
@@ -81,9 +81,9 @@ class ConversionModel(ApplicationModel):
 
             # Save the variables
             # 在循环完所有的变量后, 直接导出就可以了吗?
-            saver = tf.train.Saver()
+            saver = tf.compat.v1.train.Saver()
             # 那这一步就是收集到所有变量了?
-            sess.run(tf.global_variables_initializer())
+            sess.run(tf.compat.v1.global_variables_initializer())
             saver.save(sess, os.path.join(export_dir_base, "bert_model.ckpt"))
 
         # 复制词汇表和配置文件
@@ -110,10 +110,10 @@ class ConversionModel(ApplicationModel):
 
         prefix = "bert_pre_trained_model/"
         checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
             for var_name, _ in tf.contrib.framework.list_variables(checkpoint_dir):
                 # Load the variable
-                var = tf.contrib.framework.load_variable(checkpoint_dir, var_name)
+                var = tf.train.load_variable(checkpoint_dir, var_name)
 
                 # Set the new name
                 new_name = var_name
@@ -121,7 +121,7 @@ class ConversionModel(ApplicationModel):
                 new_name = prefix + new_name
                 var = tf.Variable(var, name=new_name)
 
-            global_step = tf.train.get_or_create_global_step()
+            global_step = tf.compat.v1.train.get_or_create_global_step()
             optimizer = AdamWeightDecayOptimizer(
                 learning_rate=1e-5,
                 epsilon=1e-6,
@@ -129,12 +129,12 @@ class ConversionModel(ApplicationModel):
                 weight_decay_rate=0.0)
 
             # Save the variables
-            saver = tf.train.Saver()
-            sess.run(tf.global_variables_initializer())
+            saver = tf.compat.v1.train.Saver()
+            sess.run(tf.compat.v1.global_variables_initializer())
             saver.save(sess, os.path.join(export_dir_base, "model.ckpt"))
 
         # 产生新的配置文件
-        with tf.gfile.Open(os.path.join(checkpoint_dir, "bert_config.json")) as f:
+        with tf.io.gfile.GFile(os.path.join(checkpoint_dir, "bert_config.json")) as f:
             config_json = json.load(f)
         new_config_json = {
             "model_type": "bert",
@@ -146,6 +146,6 @@ class ConversionModel(ApplicationModel):
             "num_attention_heads": config_json["num_attention_heads"],
             "type_vocab_size": config_json["type_vocab_size"],
         }
-        with tf.gfile.Open(os.path.join(export_dir_base, "config.json"), "w") as f:
+        with tf.io.gfile.GFile(os.path.join(export_dir_base, "config.json"), "w") as f:
             json.dump(new_config_json, f)
         copy_file_to_new_path(checkpoint_dir, export_dir_base, "vocab.txt")

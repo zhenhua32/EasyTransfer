@@ -51,30 +51,30 @@ class TFRecordReader(Reader):
         if ".list_tfrecord" in self.input_glob:
             # .list_tfrecord 就一定是训练集
             if is_training:
-                with tf.gfile.Open(input_glob, 'r') as f:
+                with tf.io.gfile.GFile(input_glob, 'r') as f:
                     for i, line in enumerate(f):
                         # 如果是第一行, 且第一行是数字, 就用这个数字作为训练集的长度
                         if i == 0 and line.strip().isdigit():
                             self.num_train_examples = int(line.strip())
                             break
                         if i % 10 == 0:
-                            tf.logging.info("Reading {} files".format(i))
+                            tf.compat.v1.logging.info("Reading {} files".format(i))
                         fp = line.strip()
                         # 那就是每行是一个 tf_record 文件的路径
-                        for record in tf.python_io.tf_record_iterator(fp):
+                        for record in tf.compat.v1.python_io.tf_record_iterator(fp):
                             self.num_train_examples += 1
-                tf.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
+                tf.compat.v1.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
         else:
             if is_training:
                 self.num_train_examples = 0
-                for record in tf.python_io.tf_record_iterator(input_glob):
+                for record in tf.compat.v1.python_io.tf_record_iterator(input_glob):
                     self.num_train_examples += 1
-                tf.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
+                tf.compat.v1.logging.info("{}, total number of training examples {}".format(input_glob, self.num_train_examples))
             else:
                 self.num_eval_examples = 0
-                for record in tf.python_io.tf_record_iterator(input_glob):
+                for record in tf.compat.v1.python_io.tf_record_iterator(input_glob):
                     self.num_eval_examples += 1
-                tf.logging.info("{}, total number of eval examples {}".format(input_glob, self.num_eval_examples))
+                tf.compat.v1.logging.info("{}, total number of eval examples {}".format(input_glob, self.num_eval_examples))
 
     def get_input_fn(self):
         def input_fn():
@@ -89,7 +89,7 @@ class TFRecordReader(Reader):
             # 也是解析为固定长度的特征
             name_to_features[name] = tf.io.FixedLenFeature(feature.shape, feature.dtype, None)
         # 解析单条样本, name_to_features 指定需要的特征
-        example = tf.parse_single_example(record, name_to_features)
+        example = tf.io.parse_single_example(serialized=record, features=name_to_features)
         return example
 
 
@@ -101,7 +101,7 @@ class BundleTFRecordReader(TFRecordReader):
         super(BundleTFRecordReader, self).__init__(input_glob, batch_size, is_training, **kwargs)
 
         self.input_fps = []
-        with tf.gfile.Open(input_glob, 'r') as f:
+        with tf.io.gfile.GFile(input_glob, 'r') as f:
             for line in f:
                 line = line.strip()
                 if line == '' or line.isdigit():
@@ -110,9 +110,9 @@ class BundleTFRecordReader(TFRecordReader):
         self.worker_hosts = worker_hosts
         self.task_index = task_index
         self.distribution_strategy = distribution_strategy
-        tf.logging.info("***********Distribution Strategy In Reader is {}***********".format(self.distribution_strategy))
-        tf.logging.info("***********Task Index In Reader is {}***********".format(self.task_index))
-        tf.logging.info("***********Worker Hosts In Reader is {}***********".format(self.worker_hosts))
+        tf.compat.v1.logging.info("***********Distribution Strategy In Reader is {}***********".format(self.distribution_strategy))
+        tf.compat.v1.logging.info("***********Task Index In Reader is {}***********".format(self.task_index))
+        tf.compat.v1.logging.info("***********Worker Hosts In Reader is {}***********".format(self.worker_hosts))
 
     def get_input_fn(self):
         def input_fn():

@@ -63,7 +63,7 @@ class BaseSequenceLabeling(ApplicationModel):
         """
         logits = predict_output[0]
         probabilities = tf.nn.softmax(logits, axis=-1)
-        predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+        predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
         return {
             "predictions": predictions,
             "probabilities": probabilities,
@@ -128,11 +128,11 @@ class BertSequenceLabeling(BaseSequenceLabeling):
 
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
-        sequence_output = tf.layers.dropout(
+        sequence_output = tf.compat.v1.layers.dropout(
             sequence_output, rate=self.config.dropout_rate, training=is_training)
 
-        kernel_initializer = tf.glorot_uniform_initializer(seed=np.random.randint(10000), dtype=tf.float32)
-        bias_initializer = tf.zeros_initializer
+        kernel_initializer = tf.compat.v1.glorot_uniform_initializer(seed=np.random.randint(10000), dtype=tf.float32)
+        bias_initializer = tf.compat.v1.zeros_initializer
         logits = layers.Dense(self.config.num_labels,
                               kernel_initializer=kernel_initializer,
                               bias_initializer=bias_initializer,

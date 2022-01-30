@@ -48,7 +48,7 @@ class HiddenLayerProbes(Layer):
 
         i = 0
         layered_logits = []
-        first_layer_mean_token_output = tf.math.reduce_mean(embedding_output, 1)
+        first_layer_mean_token_output = tf.math.reduce_mean(input_tensor=embedding_output, axis=1)
         logits_0 = Dense(self.num_labels,
                          kernel_initializer=self.kernel_initializer,
                          name='probe_dense_%d' % i)(first_layer_mean_token_output)

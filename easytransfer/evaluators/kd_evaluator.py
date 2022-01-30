@@ -60,7 +60,7 @@ class ProbesEvaluator(Evaluator):
         all test batched data are predicted
         '''
         if len(self.predictions) == 0 or len(self.labels) == 0:
-            tf.logging.info('empty data to evaluate')
+            tf.compat.v1.logging.info('empty data to evaluate')
             return {key: 0.0 for key in self.metric_names}
 
         ret_dict = OrderedDict()
@@ -80,7 +80,7 @@ def teacher_probes_eval_metrics(logits, labels, num_labels):
         ret_dict (`dict`): A dict of each layer accuracy tf.metrics op
     """
     predictions_list = [
-        tf.argmax(layer_logits, axis=-1, output_type=tf.int32) for layer_logits in logits]
+        tf.argmax(input=layer_logits, axis=-1, output_type=tf.int32) for layer_logits in logits]
     info_dict = {
         "predictions": predictions_list,
         "labels": labels,
@@ -90,5 +90,5 @@ def teacher_probes_eval_metrics(logits, labels, num_labels):
     metric_dict = evaluator.get_metric_ops(info_dict, label_ids)
     ret_metrics = evaluator.evaluate(label_ids)
     for i in range(len(logits)):
-        tf.summary.scalar("eval_accuracy_layer_%d" % i, ret_metrics['accuracy_layer_%d' % i] )
+        tf.compat.v1.summary.scalar("eval_accuracy_layer_%d" % i, ret_metrics['accuracy_layer_%d' % i] )
     return metric_dict

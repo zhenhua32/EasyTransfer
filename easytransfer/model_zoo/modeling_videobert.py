@@ -229,7 +229,7 @@ class VideoBertPreTrainedModel(PreTrainedModel):
         self.mvc = VideoBertMVCHead(config, name="cls/video_predictions")
 
     def mask_clip_features(self, patch_features, masked_patch_ids):
-        onehot_image_mask = tf.reduce_sum(tf.one_hot(masked_patch_ids, 10, dtype=tf.float32),
+        onehot_image_mask = tf.reduce_sum(input_tensor=tf.one_hot(masked_patch_ids, 10, dtype=tf.float32),
                                           axis=1)
         reverse_onehot_image_mask = 1 - (onehot_image_mask[:, :, tf.newaxis])
         masked_patch = tf.multiply(patch_features, reverse_onehot_image_mask)

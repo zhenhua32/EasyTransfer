@@ -22,7 +22,7 @@ def comprehension_loss(logits, labels):
             positions, depth=seq_length, dtype=tf.float32)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
         loss = -tf.reduce_mean(
-            tf.reduce_sum(one_hot_positions * log_probs, axis=-1))
+            input_tensor=tf.reduce_sum(input_tensor=one_hot_positions * log_probs, axis=-1))
         return loss
 
     start_logits, end_logits = logits

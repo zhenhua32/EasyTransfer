@@ -34,7 +34,7 @@ class PretrainedConfig(object):
             try:
                 setattr(self, key, value)
             except AttributeError as err:
-                tf.logging.error("Can't set {} with value {} for {}".format(key, value, self))
+                tf.compat.v1.logging.error("Can't set {} with value {} for {}".format(key, value, self))
                 raise err
 
     @classmethod
@@ -135,11 +135,11 @@ class PreTrainedModel(layers.Layer):
             archive_file = pretrained_model_name_or_path
 
         # 如果这个模型文件存在, 就从这个文件中恢复
-        if tf.gfile.Exists(archive_file+".data-00000-of-00001"):
+        if tf.io.gfile.exists(archive_file+".data-00000-of-00001"):
             model._init_from_pretrained_model(archive_file)
         else:
-            tf.logging.info("archive file {} does not exists".format(archive_file))
-            tf.logging.info("ckpt {} not in model zoo, random initialization".format(pretrained_model_name_or_path))
+            tf.compat.v1.logging.info("archive file {} does not exists".format(archive_file))
+            tf.compat.v1.logging.info("ckpt {} not in model zoo, random initialization".format(pretrained_model_name_or_path))
 
         return model
 
@@ -148,7 +148,7 @@ class PreTrainedModel(layers.Layer):
         从文件中还原预训练模型
         """
         # 所有可训练的变量
-        tvars = tf.trainable_variables()
+        tvars = tf.compat.v1.trainable_variables()
         # 网络名字到变量的映射
         network_name_to_variable = {}
         for var in tvars:
@@ -200,16 +200,16 @@ class PreTrainedModel(layers.Layer):
                 #raise ValueError("ckpt var name {} not in trainable variable".format(key))
             # key 和 var 的对应关系
             assignment_map[key] = var
-        tf.logging.info("Load weights from {}".format(pretrained_model_path))
+        tf.compat.v1.logging.info("Load weights from {}".format(pretrained_model_path))
         # 从检查点初始化
-        tf.train.init_from_checkpoint(pretrained_model_path, assignment_map)
+        tf.compat.v1.train.init_from_checkpoint(pretrained_model_path, assignment_map)
 
 
 def init_from_checkpoint_without_training_ops(pretrained_model_path):
     """
     这个和 PreTrainedModel._init_from_pretrained_model 是一样的, 想不到吧
     """
-    tvars = tf.trainable_variables()
+    tvars = tf.compat.v1.trainable_variables()
     network_name_to_variable = {}
     for var in tvars:
         name = var.name
@@ -248,5 +248,5 @@ def init_from_checkpoint_without_training_ops(pretrained_model_path):
             #raise ValueError("ckpt var name {} not in trainable variable".format(key))
 
         assignment_map[key] = var
-    tf.logging.info("Load weights from {}".format(pretrained_model_path))
-    tf.train.init_from_checkpoint(pretrained_model_path, assignment_map)
+    tf.compat.v1.logging.info("Load weights from {}".format(pretrained_model_path))
+    tf.compat.v1.train.init_from_checkpoint(pretrained_model_path, assignment_map)

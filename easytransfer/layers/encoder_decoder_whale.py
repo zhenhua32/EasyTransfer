@@ -41,7 +41,7 @@ class Encoder(Layer):
         return all_hidden_states, all_att_outputs, hidden_states
 
     def call(self, inputs, training=False):
-        tf.logging.info("***************Inside stage to split model**********")
+        tf.compat.v1.logging.info("***************Inside stage to split model**********")
         hidden_states, attention_mask = inputs
 
         all_hidden_states = ()

@@ -51,11 +51,11 @@ class Mythread(threading.Thread):
         return self.name
 
     def run(self):
-        tf.logging.info("Starting thread %s", self.name)
+        tf.compat.v1.logging.info("Starting thread %s", self.name)
         t1 = time.time()
         self.func(*self.args)
         t2 = time.time()
-        tf.logging.info("Exiting thread %s thread time: %f" % (self.name, t2 - t1))
+        tf.compat.v1.logging.info("Exiting thread %s thread time: %f" % (self.name, t2 - t1))
 
 
 def print_time(threadName, delay, counter):
@@ -96,7 +96,7 @@ class MultiThread(object):
     def run(self):
         # 启动所有线程
         for t in self.thread_pool:
-            tf.logging.info('thread %s start' % t.get_name())
+            tf.compat.v1.logging.info('thread %s start' % t.get_name())
             t.start()
 
     def join(self):
@@ -107,12 +107,12 @@ class MultiThread(object):
                 t.join(self.time_out)
             else:
                 t.join()
-            tf.logging.info('thread %s has finished' % t.get_name())
+            tf.compat.v1.logging.info('thread %s has finished' % t.get_name())
 
         # 如果线程有还活着的, 就记录下异常
         for t in self.thread_pool:
             if t.isAlive():
-                tf.logging.error('thread %s not exit correctly.' % t.get_name())
+                tf.compat.v1.logging.error('thread %s not exit correctly.' % t.get_name())
 
 
 class Process(six.with_metaclass(abc.ABCMeta)):
@@ -188,7 +188,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                 except IndexError:
                     break
                 except Exception:
-                    tf.logging.info(
+                    tf.compat.v1.logging.info(
                         'Exception occured in thread\n %s' % traceback.format_exc())
                     # 将非正常退出设置为 True
                     self.abnormal_exit = True
@@ -240,7 +240,7 @@ class Process(six.with_metaclass(abc.ABCMeta)):
                         if self.output_queue is not None and out is not None:
                             self.put(out)
                 except Exception:
-                    tf.logging.info(
+                    tf.compat.v1.logging.info(
                         'Exception occured in thread\n %s' % traceback.format_exc())
                     self.abnormal_exit = True
                     ALL_PROCESS_EXIT = True
@@ -308,7 +308,7 @@ class Counter(object):
         # only in process which has one thread like io process
         self.cnt += 1
         if self.cnt > 0 and self.cnt % self.interval == 0:
-            tf.logging.info('%d batches have been processed' % self.cnt)
+            tf.compat.v1.logging.info('%d batches have been processed' % self.cnt)
 
 class ProcessExecutor(object):
     """

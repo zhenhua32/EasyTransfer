@@ -31,12 +31,12 @@ class CSVWriter(Process):
         job_name = 'DistTableWriter'
         super(CSVWriter, self).__init__(job_name, 1, input_queue)
 
-        self.writer = tf.gfile.Open(output_glob, "w")
+        self.writer = tf.io.gfile.GFile(output_glob, "w")
 
         self.output_schema = output_schema
 
     def close(self):
-        tf.logging.info('Finished writing')
+        tf.compat.v1.logging.info('Finished writing')
         self.writer.close()
 
     def process(self, features):

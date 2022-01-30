@@ -96,13 +96,13 @@ class Reader(Process):
             self.batch_size = batch_size
 
         # 日志中记录下配置参数
-        tf.logging.info("num_parallel_batches {}".format(self.num_parallel_batches))
-        tf.logging.info("shuffle_buffer_size {}".format(self.shuffle_buffer_size))
-        tf.logging.info("prefetch_buffer_size {}".format(self.prefetch_buffer_size))
-        tf.logging.info("batch_size {}".format(self.batch_size))
-        tf.logging.info("distribution_strategy {}".format(distribution_strategy))
-        tf.logging.info("num_micro_batches {}".format(num_micro_batches))
-        tf.logging.info("input_schema {}".format(self.input_schema))
+        tf.compat.v1.logging.info("num_parallel_batches {}".format(self.num_parallel_batches))
+        tf.compat.v1.logging.info("shuffle_buffer_size {}".format(self.shuffle_buffer_size))
+        tf.compat.v1.logging.info("prefetch_buffer_size {}".format(self.prefetch_buffer_size))
+        tf.compat.v1.logging.info("batch_size {}".format(self.batch_size))
+        tf.compat.v1.logging.info("distribution_strategy {}".format(distribution_strategy))
+        tf.compat.v1.logging.info("num_micro_batches {}".format(num_micro_batches))
+        tf.compat.v1.logging.info("input_schema {}".format(self.input_schema))
 
     def _get_data_pipeline(self, dataset: tf.data.Dataset, _decode_fn):
         """
@@ -112,7 +112,7 @@ class Reader(Process):
         if self.is_training:
             # 当没有指定时, 直接用整个训练集的数量作为 shuffle_buffer_size
             if self.shuffle_buffer_size is None:
-                tf.logging.info("Random shuffle on the whole {} training examples".format(self.num_train_examples))
+                tf.compat.v1.logging.info("Random shuffle on the whole {} training examples".format(self.num_train_examples))
                 self.shuffle_buffer_size = self.num_train_examples
             # 如果没有参数, 就是无限重复数据集
             dataset = dataset.repeat()

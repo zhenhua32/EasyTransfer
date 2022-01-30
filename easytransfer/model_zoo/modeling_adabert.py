@@ -26,12 +26,12 @@ def get_gumbel(shape, eps=1e-8):
     """Generate samples from a gumbel distribution."""
 
     U = tf.random.uniform(shape, minval=0, maxval=1)
-    return -tf.log(-tf.log(U + eps) + eps)
+    return -tf.math.log(-tf.math.log(U + eps) + eps)
 
 
 def get_logits(z, eps=1e-8):
-    shifted_z = z - tf.reduce_max(z, axis=-1, keepdims=True)
-    noralizer = tf.log(tf.reduce_sum(tf.exp(shifted_z)) + eps)
+    shifted_z = z - tf.reduce_max(input_tensor=z, axis=-1, keepdims=True)
+    noralizer = tf.math.log(tf.reduce_sum(input_tensor=tf.exp(shifted_z)) + eps)
     return shifted_z - noralizer
 
 
@@ -130,23 +130,23 @@ class AdaBERTStudent(object):
         else:
             labels = inputs[3]
 
-        self.global_step = tf.train.get_or_create_global_step()
+        self.global_step = tf.compat.v1.train.get_or_create_global_step()
         if self.given_arch is None:
             # this is the search procedure
             # decayed_learning_rate = learning_rate * decay_rate ^ (global_step / decay_steps)
             decay_rate = np.e ** ((100 / self.temp_decay_steps) * np.log(0.2))
-            tf.logging.info("########## decay_rate={} ##########".format(decay_rate))
-            temperature = tf.train.exponential_decay(learning_rate=1.0,
+            tf.compat.v1.logging.info("########## decay_rate={} ##########".format(decay_rate))
+            temperature = tf.compat.v1.train.exponential_decay(learning_rate=1.0,
                                                      global_step=self.global_step,
                                                      decay_steps=100,
                                                      decay_rate=decay_rate,
                                                      staircase=True)
 
         # Determine the batch size dynamically
-        dy_batch_size = tf.shape(labels)[0]
+        dy_batch_size = tf.shape(input=labels)[0]
         if self.is_pair_task:
-            num_words = tf.reduce_sum(masks, -1)
-            sec_sent_words = tf.reduce_sum(seg_ids, -1)
+            num_words = tf.reduce_sum(input_tensor=masks, axis=-1)
+            sec_sent_words = tf.reduce_sum(input_tensor=seg_ids, axis=-1)
             # (bs,)
             first_sent_words = num_words - sec_sent_words
             # (bs, seq_len)
@@ -163,51 +163,51 @@ class AdaBERTStudent(object):
             if self.pretrained_word_embeddings is not None:
                 if self.given_arch is None:
                     # this is the search procedure
-                    high_dimensional_word_embeddings = tf.get_variable(
+                    high_dimensional_word_embeddings = tf.compat.v1.get_variable(
                         name="hd_wemb",
                         shape=self.pretrained_word_embeddings.shape,
-                        initializer=tf.constant_initializer(self.pretrained_word_embeddings))
-                    high_dimensional_pos_embeddings = tf.get_variable(
+                        initializer=tf.compat.v1.constant_initializer(self.pretrained_word_embeddings))
+                    high_dimensional_pos_embeddings = tf.compat.v1.get_variable(
                         name="hd_pemb",
                         shape=self.pretrained_pos_embeddings.shape,
-                        initializer=tf.constant_initializer(self.pretrained_pos_embeddings))
-                    h0_word = tf.nn.embedding_lookup(high_dimensional_word_embeddings, word_ids)
-                    h0_pos = tf.nn.embedding_lookup(high_dimensional_pos_embeddings, pos_ids)
+                        initializer=tf.compat.v1.constant_initializer(self.pretrained_pos_embeddings))
+                    h0_word = tf.nn.embedding_lookup(params=high_dimensional_word_embeddings, ids=word_ids)
+                    h0_pos = tf.nn.embedding_lookup(params=high_dimensional_pos_embeddings, ids=pos_ids)
                     h0 = h0_word + h0_pos
                 else:
-                    wemb = tf.get_variable(
+                    wemb = tf.compat.v1.get_variable(
                         name="wemb",
                         shape=self.pretrained_word_embeddings.shape,
                         dtype=tf.float32,
-                        initializer=tf.constant_initializer(self.pretrained_word_embeddings))
-                    pemb = tf.get_variable(
+                        initializer=tf.compat.v1.constant_initializer(self.pretrained_word_embeddings))
+                    pemb = tf.compat.v1.get_variable(
                         name="pemb",
                         shape=self.pretrained_pos_embeddings.shape,
                         dtype=tf.float32,
-                        initializer=tf.constant_initializer(self.pretrained_pos_embeddings))
-                    h0_word = tf.nn.embedding_lookup(wemb, word_ids)
-                    h0_pos = tf.nn.embedding_lookup(pemb, pos_ids)
+                        initializer=tf.compat.v1.constant_initializer(self.pretrained_pos_embeddings))
+                    h0_word = tf.nn.embedding_lookup(params=wemb, ids=word_ids)
+                    h0_pos = tf.nn.embedding_lookup(params=pemb, ids=pos_ids)
                     h0 = h0_word + h0_pos
             else:
-                wemb = tf.get_variable(
+                wemb = tf.compat.v1.get_variable(
                     name="wemb",
                     shape=(self.vocab_size, self.emb_size),
                     dtype=tf.float32,
-                    initializer=tf.contrib.layers.xavier_initializer())
-                pemb = tf.get_variable(
+                    initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
+                pemb = tf.compat.v1.get_variable(
                     name="pemb",
                     shape=(512, self.emb_size),
                     dtype=tf.float32,
-                    initializer=tf.contrib.layers.xavier_initializer())
-                h0_word = tf.nn.embedding_lookup(wemb, word_ids)
-                h0_pos = tf.nn.embedding_lookup(pemb, pos_ids)
+                    initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
+                h0_word = tf.nn.embedding_lookup(params=wemb, ids=word_ids)
+                h0_pos = tf.nn.embedding_lookup(params=pemb, ids=pos_ids)
                 h0 = h0_word + h0_pos
         if self.pretrained_word_embeddings is not None and self.given_arch is None:
-            compress_transformation = tf.get_variable(
+            compress_transformation = tf.compat.v1.get_variable(
                 name="compress_transformation",
                 shape=(self.pretrained_word_embeddings.shape[1], self.emb_size),
                 dtype=tf.float32,
-                initializer=tf.contrib.layers.xavier_initializer())
+                initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
             h0 = tf.matmul(h0, tf.tile(tf.expand_dims(compress_transformation, 0), [dy_batch_size, 1, 1]))
             # compute the low-dimensional embeddings
             ld_wemb = tf.matmul(high_dimensional_word_embeddings, compress_transformation)
@@ -221,39 +221,39 @@ class AdaBERTStudent(object):
         else:
             h0_first = h0 * tf.expand_dims(tf.cast(masks, tf.float32), -1)
             h0_second = h0_first
-        with tf.variable_scope("preprocessing", reuse=tf.AUTO_REUSE) as scope:
+        with tf.compat.v1.variable_scope("preprocessing", reuse=tf.compat.v1.AUTO_REUSE) as scope:
             h0_first = tf.contrib.layers.layer_norm(
                 h0_first,
                 reuse=scope.reuse,
                 begin_norm_axis=2,
                 scope=scope)
             h0_first = tf.nn.dropout(
-                h0_first, keep_prob=self.keep_prob)
-        with tf.variable_scope("preprocessing", reuse=tf.AUTO_REUSE) as scope:
+                h0_first, rate=1 - (self.keep_prob))
+        with tf.compat.v1.variable_scope("preprocessing", reuse=tf.compat.v1.AUTO_REUSE) as scope:
             h0_second = tf.contrib.layers.layer_norm(
                 h0_second,
                 reuse=scope.reuse,
                 begin_norm_axis=2,
                 scope=scope)
             h0_second = tf.nn.dropout(
-                h0_second, keep_prob=self.keep_prob)
+                h0_second, rate=1 - (self.keep_prob))
 
         if self.given_arch is None:
             # this is the search procedure
             arch_params = dict()
-            with tf.variable_scope("arch_params", reuse=tf.AUTO_REUSE):
+            with tf.compat.v1.variable_scope("arch_params", reuse=tf.compat.v1.AUTO_REUSE):
                 for dest in range(2, 2 + self.num_intermediates):
                     for src in range(0, dest):
-                        alpha = tf.get_variable(
+                        alpha = tf.compat.v1.get_variable(
                             name="alpha{}to{}".format(src, dest),
                             shape=(self.card_of_o,),
                             dtype=tf.float32,
-                            initializer=tf.random_normal_initializer(stddev=0.01))
+                            initializer=tf.compat.v1.random_normal_initializer(stddev=0.01))
                         alpha_logits = get_logits(alpha)
                         gumbel_noise = get_gumbel([self.card_of_o])
                         y_o = tf.nn.softmax(
                             (alpha_logits + tf.cast(is_training, tf.float32) * gumbel_noise) / temperature)
-                        y_hard = tf.cast(tf.equal(y_o, tf.reduce_max(y_o, 0, keep_dims=True)),
+                        y_hard = tf.cast(tf.equal(y_o, tf.reduce_max(input_tensor=y_o, axis=0, keepdims=True)),
                                          y_o.dtype)
                         y_o = tf.stop_gradient(y_hard - y_o) + y_o
                         arch_params[(src, dest)] = y_o
@@ -263,7 +263,7 @@ class AdaBERTStudent(object):
         # each tensor has shape (bs, emb_size)
         cell_states = list()
         # consider embeddings as 0-th layer
-        cell_states.append(tf.reduce_mean(0.5 * (prev_prev_out + prev_out), 1))
+        cell_states.append(tf.reduce_mean(input_tensor=0.5 * (prev_prev_out + prev_out), axis=1))
         for l in range(self.Kmax):
             if self.given_arch:
                 cell_state = self.build_cell(
@@ -273,63 +273,63 @@ class AdaBERTStudent(object):
                 cell_state = self.build_cell(
                     prev_prev_out, prev_out, l, is_training, arch_params, self.given_arch)
             # each (bs, emb_size)
-            cell_states.append(tf.reduce_mean(cell_state, 1))
+            cell_states.append(tf.reduce_mean(input_tensor=cell_state, axis=1))
             prev_prev_out = prev_out
             prev_out = cell_state
         if self.given_arch is None:
             # this is the search procedure
-            with tf.variable_scope("arch_params", reuse=tf.AUTO_REUSE):
-                alphaN = tf.get_variable(
+            with tf.compat.v1.variable_scope("arch_params", reuse=tf.compat.v1.AUTO_REUSE):
+                alphaN = tf.compat.v1.get_variable(
                     name="alphaN",
                     shape=(self.Kmax + 1,),
                     dtype=tf.float32,
-                    initializer=tf.random_normal_initializer(stddev=0.01))
+                    initializer=tf.compat.v1.random_normal_initializer(stddev=0.01))
                 alphaN_logits = get_logits(alphaN)
                 gumbel_noise = get_gumbel([self.Kmax + 1])
                 y_o = tf.nn.softmax((alphaN_logits + tf.cast(is_training, tf.float32) * gumbel_noise) / temperature)
                 y_hard = tf.cast(tf.equal(y_o,
-                                          tf.reduce_max(y_o, 0, keep_dims=True)),
+                                          tf.reduce_max(input_tensor=y_o, axis=0, keepdims=True)),
                                  y_o.dtype)
                 y_o = tf.stop_gradient(y_hard - y_o) + y_o
                 # use at least one cell and keep BP viable
                 # sampled_N = tf.argmax(y_o, output_type=tf.int32) + 1
-                sampled_N = tf.reduce_sum(y_o * tf.range(self.Kmax + 1, dtype=y_o.dtype))
+                sampled_N = tf.reduce_sum(input_tensor=y_o * tf.range(self.Kmax + 1, dtype=y_o.dtype))
 
         # L_{CE}
         optional_ce_loss = list()
         layerwise_logits = list()
         for l in range(len(cell_states)):
-            att_cell_weights = tf.get_variable(
+            att_cell_weights = tf.compat.v1.get_variable(
                 name="l{}_att_cell_ws".format(l + 1),
                 shape=(l + 1,),
                 dtype=tf.float32,
-                initializer=tf.contrib.layers.xavier_initializer())
+                initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
             att_cell_weights = tf.nn.softmax(att_cell_weights)
             # (l+1+1, bs, emb_size)
             cell_states_tensor = tf.stack(cell_states[:l + 1])
             # reshaped to (l+1+1, 1, 1) s.t. appropriately broadcast with (l+1+1, bs, emb_size)
             final_representation = tf.reduce_sum(
-                tf.reshape(att_cell_weights, [-1, 1, 1]) * cell_states_tensor,
-                0)
+                input_tensor=tf.reshape(att_cell_weights, [-1, 1, 1]) * cell_states_tensor,
+                axis=0)
             final_representation = tf.nn.tanh(final_representation)
             final_representation = tf.nn.dropout(
-                final_representation, keep_prob=self.keep_prob)
-            with tf.variable_scope("output_layer", reuse=tf.AUTO_REUSE):
-                logits = tf.layers.dense(inputs=final_representation,
+                final_representation, rate=1 - (self.keep_prob))
+            with tf.compat.v1.variable_scope("output_layer", reuse=tf.compat.v1.AUTO_REUSE):
+                logits = tf.compat.v1.layers.dense(inputs=final_representation,
                                          units=self.num_classes,
                                          activation=None,
                                          name="fc")
                 layerwise_logits.append(logits)
             # CSV_Reader returns labels of shape (batch_size,)
             losses = tf.nn.softmax_cross_entropy_with_logits(
-                labels=tf.one_hot(labels, self.num_classes), logits=logits)
-            optional_ce_loss.append(tf.reduce_mean(losses))
+                labels=tf.stop_gradient(tf.one_hot(labels, self.num_classes)), logits=logits)
+            optional_ce_loss.append(tf.reduce_mean(input_tensor=losses))
         optional_ce_loss = tf.stack(optional_ce_loss)
         if self.given_arch is None:
             self.logits = tf.reduce_sum(
-                tf.reshape(y_o, [-1, 1, 1]) * tf.stack(layerwise_logits),
-                0)
-            L_CE = tf.reduce_sum(y_o * optional_ce_loss)
+                input_tensor=tf.reshape(y_o, [-1, 1, 1]) * tf.stack(layerwise_logits),
+                axis=0)
+            L_CE = tf.reduce_sum(input_tensor=y_o * optional_ce_loss)
         else:
             self.logits = logits
             L_CE = optional_ce_loss[-1]
@@ -340,7 +340,7 @@ class AdaBERTStudent(object):
             # (bs, 13, #classes)
             teacher_prob_logits = tf.reshape(prob_logits, [-1, 13, self.num_classes])
             # (13, bs, #classes)
-            teacher_prob_logits = tf.transpose(teacher_prob_logits, perm=[1, 0, 2])
+            teacher_prob_logits = tf.transpose(a=teacher_prob_logits, perm=[1, 0, 2])
             # (13, bs, #classes)
             teacher_prob_lbs = tf.nn.softmax(teacher_prob_logits)
             optional_kd_loss = list()
@@ -349,17 +349,17 @@ class AdaBERTStudent(object):
                 delta_l = 12 // (1 + l)
                 for m in range(l + 1):
                     # calculate cross-entropy losses of shape (bs,)
-                    prob_ces = tf.nn.softmax_cross_entropy_with_logits(labels=teacher_prob_lbs[m * delta_l, :, :],
+                    prob_ces = tf.nn.softmax_cross_entropy_with_logits(labels=tf.stop_gradient(teacher_prob_lbs[m * delta_l, :, :]),
                                                                        logits=layerwise_logits[m])
-                    included_prob_ces.append(tf.reduce_mean(prob_ces))
+                    included_prob_ces.append(tf.reduce_mean(input_tensor=prob_ces))
                 optional_kd_loss.append((1.0 / float(len(included_prob_ces))) * tf.add_n(included_prob_ces))
             optional_kd_loss = tf.stack(optional_kd_loss)
-            L_KD = tf.reduce_sum(y_o * optional_kd_loss)
+            L_KD = tf.reduce_sum(input_tensor=y_o * optional_kd_loss)
 
             # L_{E}
             per_edge_les = list()
             for alpha in arch_params.values():
-                per_edge_les.append(tf.reduce_sum(alpha * EP))
+                per_edge_les.append(tf.reduce_sum(input_tensor=alpha * EP))
             L_E = (tf.cast(sampled_N, tf.float32) / self.Kmax) * (1.0 / float(
                 np.sum([indegree for indegree in range(2, 2 + self.num_intermediates)]))) * tf.add_n(per_edge_les)
 
@@ -368,14 +368,14 @@ class AdaBERTStudent(object):
         else:
             self.loss = L_CE
 
-        self.model_params = [var for var in tf.trainable_variables()
+        self.model_params = [var for var in tf.compat.v1.trainable_variables()
                              if "arch_params" not in var.name]
         print("There are {} model vars".format(len(self.model_params)))
-        self.arch_params = [var for var in tf.trainable_variables()
+        self.arch_params = [var for var in tf.compat.v1.trainable_variables()
                             if "arch_params" in var.name]
         print("There are {} arch vars".format(len(self.arch_params)))
         num_var_floats = 0
-        for var in tf.trainable_variables():
+        for var in tf.compat.v1.trainable_variables():
             num_var_floats += np.prod(var.shape.as_list())
         print("Trainable variables are of {} MBs".format(4 * num_var_floats / 1024 / 1024))
         model_reg_loss = tf.add_n(
@@ -384,7 +384,7 @@ class AdaBERTStudent(object):
             # this is the search procedure
             arch_reg_loss = tf.add_n(
                 [tf.nn.l2_loss(var) for var in self.arch_params])
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
         max_device_idx = -1
         for op in update_ops:
@@ -404,10 +404,10 @@ class AdaBERTStudent(object):
         #                                    self.global_step,
         #                                    10000,
         #                                    alpha=self.model_opt_final_lr / self.model_opt_init_lr)
-        model_opt = tf.train.AdamOptimizer(self.model_opt_lr, name="model_opt")
+        model_opt = tf.compat.v1.train.AdamOptimizer(self.model_opt_lr, name="model_opt")
         if self.given_arch is None:
             # this is the search procedure
-            arch_opt = tf.train.AdamOptimizer(self.arch_opt_lr, name="arch_opt")
+            arch_opt = tf.compat.v1.train.AdamOptimizer(self.arch_opt_lr, name="arch_opt")
 
         with tf.control_dependencies([update_ops]):
             # As there are batch normalization layers, we need to depend on
@@ -451,8 +451,8 @@ class AdaBERTStudent(object):
         else:
             self.update = model_update
 
-        self.predictions = tf.argmax(self.logits, -1)
-        self.acc = tf.metrics.accuracy(labels, self.predictions)
+        self.predictions = tf.argmax(input=self.logits, axis=-1)
+        self.acc = tf.compat.v1.metrics.accuracy(labels, self.predictions)
 
     def build_cell(self,
                    input0,
@@ -465,21 +465,21 @@ class AdaBERTStudent(object):
         """
 
         inputs = [input0, input1]
-        with tf.variable_scope("c{}".format(index)):
+        with tf.compat.v1.variable_scope("c{}".format(index)):
             for i in range(2, 2 + self.num_intermediates):
                 inputs.append(
                     self.build_node(inputs, i, arch_params, given_arch, is_training))
-            att_node_weights = tf.get_variable(
+            att_node_weights = tf.compat.v1.get_variable(
                 name="att_node_weights",
                 shape=(self.num_intermediates,),
                 dtype=tf.float32,
-                initializer=tf.random_normal_initializer(stddev=0.01))
+                initializer=tf.compat.v1.random_normal_initializer(stddev=0.01))
             att_node_weights = tf.nn.softmax(att_node_weights)
             # (#inter, bs, seq_len, emb_dim)
             intermediates = tf.stack(inputs[-self.num_intermediates:])
             att_node_weights = tf.reshape(att_node_weights, [-1, 1, 1, 1])
             # (bs, seq_len, emb_dim)
-            output = tf.reduce_sum(att_node_weights * intermediates, 0)
+            output = tf.reduce_sum(input_tensor=att_node_weights * intermediates, axis=0)
         return output
 
     def build_node(self,
@@ -491,10 +491,10 @@ class AdaBERTStudent(object):
         """Create the computation graph for a node."""
 
         states = list()
-        with tf.variable_scope("node{}".format(index)):
+        with tf.compat.v1.variable_scope("node{}".format(index)):
             for src, h in enumerate(inputs):
                 if given_arch is not None and (src, index) not in given_arch:
-                    tf.logging.info("excluded edge {}-{}".format(src, index))
+                    tf.compat.v1.logging.info("excluded edge {}-{}".format(src, index))
                     continue
                 states.append(
                     self.build_edge(h, arch_params[(src, index)] if arch_params else given_arch[(src, index)],
@@ -509,7 +509,7 @@ class AdaBERTStudent(object):
                    tgt):
         """Create the computation graph for an edge."""
 
-        with tf.variable_scope("edge{}to{}".format(src, tgt)):
+        with tf.compat.v1.variable_scope("edge{}to{}".format(src, tgt)):
             h_last_activation = tf.nn.relu(h_last)
             NHWC_h0 = tf.reshape(h_last_activation,
                                  [-1, 1, self.seq_len, self.emb_size])
@@ -555,21 +555,21 @@ class AdaBERTStudent(object):
                           h1_res, h1_skip])
             op_weights = tf.reshape(alpha, [-1, 1, 1, 1])
             # (bs, seq_len, emb_dim)
-            h = tf.reduce_sum(h * op_weights, 0)
+            h = tf.reduce_sum(input_tensor=h * op_weights, axis=0)
         return h
 
     def build_cnn3(self, x, is_training):
-        conv3 = tf.get_variable(
+        conv3 = tf.compat.v1.get_variable(
             name="conv3",
             shape=(3, self.emb_size, self.emb_size),
             dtype=tf.float32,
-            initializer=tf.contrib.layers.xavier_initializer())
-        h1_cnn3 = tf.nn.conv1d(x,
+            initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
+        h1_cnn3 = tf.nn.conv1d(input=x,
                                filters=conv3,
                                stride=1,
                                padding='SAME')
         h1_cnn3 = tf.squeeze(
-            tf.layers.batch_normalization(
+            tf.compat.v1.layers.batch_normalization(
                 tf.expand_dims(h1_cnn3, 1),
                 momentum=0.9,
                 training=is_training,
@@ -578,17 +578,17 @@ class AdaBERTStudent(object):
         return h1_cnn3
 
     def build_cnn5(self, x, is_training):
-        conv5 = tf.get_variable(
+        conv5 = tf.compat.v1.get_variable(
             name="conv5",
             shape=(5, self.emb_size, self.emb_size),
             dtype=tf.float32,
-            initializer=tf.contrib.layers.xavier_initializer())
-        h1_cnn5 = tf.nn.conv1d(x,
+            initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
+        h1_cnn5 = tf.nn.conv1d(input=x,
                                filters=conv5,
                                stride=1,
                                padding='SAME')
         h1_cnn5 = tf.squeeze(
-            tf.layers.batch_normalization(
+            tf.compat.v1.layers.batch_normalization(
                 tf.expand_dims(h1_cnn5, 1),
                 momentum=0.9,
                 training=is_training,
@@ -597,17 +597,17 @@ class AdaBERTStudent(object):
         return h1_cnn5
 
     def build_cnn7(self, x, is_training):
-        conv7 = tf.get_variable(
+        conv7 = tf.compat.v1.get_variable(
             name="conv7",
             shape=(7, self.emb_size, self.emb_size),
             dtype=tf.float32,
-            initializer=tf.contrib.layers.xavier_initializer())
-        h1_cnn7 = tf.nn.conv1d(x,
+            initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
+        h1_cnn7 = tf.nn.conv1d(input=x,
                                filters=conv7,
                                stride=1,
                                padding='SAME')
         h1_cnn7 = tf.squeeze(
-            tf.layers.batch_normalization(
+            tf.compat.v1.layers.batch_normalization(
                 tf.expand_dims(h1_cnn7, 1),
                 momentum=0.9,
                 training=is_training,
@@ -616,61 +616,61 @@ class AdaBERTStudent(object):
         return h1_cnn7
 
     def build_dilated_cnn3(self, x, is_training):
-        dila_conv3 = tf.get_variable(
+        dila_conv3 = tf.compat.v1.get_variable(
             name="dila_conv3",
             shape=(1, 3, self.emb_size),
             dtype=tf.float32,
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         h1_dila_cnn3 = tf.nn.dilation2d(
             x,
-            filter=dila_conv3,
+            filters=dila_conv3,
             strides=[1, 1, 1, 1],
-            rates=[1, 1, 1, 1],
-            padding='SAME')
+            dilations=[1, 1, 1, 1],
+            padding='SAME', data_format='NHWC')
         h1_dila_cnn3 = tf.squeeze(
-            tf.layers.batch_normalization(
+            tf.compat.v1.layers.batch_normalization(
                 h1_dila_cnn3, momentum=0.9, training=is_training, name="dila_cnn3bn"),
             [1])
         return h1_dila_cnn3
 
     def build_dilated_cnn5(self, x, is_training):
-        dila_conv5 = tf.get_variable(
+        dila_conv5 = tf.compat.v1.get_variable(
             name="dila_conv5",
             shape=(1, 5, self.emb_size),
             dtype=tf.float32,
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         h1_dila_cnn5 = tf.nn.dilation2d(
             x,
-            filter=dila_conv5,
+            filters=dila_conv5,
             strides=[1, 1, 1, 1],
-            rates=[1, 1, 1, 1],
-            padding='SAME')
+            dilations=[1, 1, 1, 1],
+            padding='SAME', data_format='NHWC')
         h1_dila_cnn5 = tf.squeeze(
-            tf.layers.batch_normalization(
+            tf.compat.v1.layers.batch_normalization(
                 h1_dila_cnn5, momentum=0.9, training=is_training, name="dila_cnn5bn"),
             [1])
         return h1_dila_cnn5
 
     def build_dilated_cnn7(self, x, is_training):
-        dila_conv7 = tf.get_variable(
+        dila_conv7 = tf.compat.v1.get_variable(
             name="dila_conv7",
             shape=(1, 7, self.emb_size),
             dtype=tf.float32,
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         h1_dila_cnn7 = tf.nn.dilation2d(
             x,
-            filter=dila_conv7,
+            filters=dila_conv7,
             strides=[1, 1, 1, 1],
-            rates=[1, 1, 1, 1],
-            padding='SAME')
+            dilations=[1, 1, 1, 1],
+            padding='SAME', data_format='NHWC')
         h1_dila_cnn7 = tf.squeeze(
-            tf.layers.batch_normalization(
+            tf.compat.v1.layers.batch_normalization(
                 h1_dila_cnn7, momentum=0.9, training=is_training, name="dila_cnn6bn"),
             [1])
         return h1_dila_cnn7
 
     def build_max_pool(self, x):
-        h1_max_pool = tf.nn.max_pool(x,
+        h1_max_pool = tf.nn.max_pool2d(input=x,
                                      ksize=[1, 1, 3, 1],
                                      strides=[1, 1, 1, 1],
                                      padding='SAME')
@@ -678,7 +678,7 @@ class AdaBERTStudent(object):
         return h1_max_pool
 
     def build_avg_pool(self, x):
-        h1_mean_pool = tf.nn.avg_pool(x,
+        h1_mean_pool = tf.nn.avg_pool2d(input=x,
                                       ksize=[1, 1, 3, 1],
                                       strides=[1, 1, 1, 1],
                                       padding='SAME')
