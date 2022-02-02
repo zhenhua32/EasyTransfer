@@ -19,12 +19,13 @@ import random
 import numpy as np
 import os
 import tensorflow as tf
+
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 tf.compat.v1.logging.info("*********** tf.__version__ is {} ******".format(tf.__version__))
 
 # 固定的种子
 SEED = 123123
-os.environ['PYTHONHASHSEED'] = str(SEED)
+os.environ["PYTHONHASHSEED"] = str(SEED)
 random.seed(SEED)
 np.random.seed(SEED)
 tf.compat.v1.reset_default_graph()
@@ -32,18 +33,20 @@ tf.compat.v1.set_random_seed(SEED)
 
 # 一堆命令行参数, 也是不同的风格, 一人用 keyword, 另一人不用. 居然还是同一人, 那就是不同时期了
 flags = tf.compat.v1.app.flags
-flags.DEFINE_string("config", default=None, help='')
-flags.DEFINE_string("tables", default=None, help='')
-flags.DEFINE_string("outputs", default=None, help='')
-flags.DEFINE_integer('task_index', 0, 'task_index')
-flags.DEFINE_string('worker_hosts', 'localhost:5001', 'worker_hosts')
-flags.DEFINE_string('job_name', 'worker', 'job_name')
+flags.DEFINE_string("config", default=None, help="")
+flags.DEFINE_string("tables", default=None, help="")
+flags.DEFINE_string("outputs", default=None, help="")
+flags.DEFINE_integer("task_index", 0, "task_index")
+flags.DEFINE_string("worker_hosts", "localhost:5001", "worker_hosts")
+flags.DEFINE_string("job_name", "worker", "job_name")
 flags.DEFINE_string("mode", default=None, help="Which mode")
-flags.DEFINE_string("modelZooBasePath", default=os.path.join(os.getenv("HOME"), ".eztransfer_modelzoo"), help="eztransfer_modelzoo")
+flags.DEFINE_string(
+    "modelZooBasePath", default=os.path.join(os.getenv("HOME"), ".eztransfer_modelzoo"), help="eztransfer_modelzoo"
+)
 flags.DEFINE_integer("workerCount", default=1, help="num_workers")
 flags.DEFINE_integer("workerGPU", default=1, help="num_gpus")
 flags.DEFINE_integer("workerCPU", default=1, help="num_cpus")
-flags.DEFINE_string('f', '', 'kernel')
+flags.DEFINE_string("f", "", "kernel")
 FLAGS = flags.FLAGS
 
 from easytransfer.utils.hooks import avgloss_logger_hook
@@ -115,6 +118,7 @@ class Config(object):
         receiver_tensors_schema: str
         input_tensors_schema: str
     """
+
     def __init__(self, mode, config_json):
         # 直接复制原始的配置项
         self._config_json = copy.deepcopy(config_json)
@@ -128,213 +132,236 @@ class Config(object):
         self.num_workers = int(config_json["num_workers"])
         # 如果 oss 不在 modelZooBasePath, 就会尝试从 config_json 中取, 默认值是 ~/.eztransfer_modelzoo
         if "oss://" not in FLAGS.modelZooBasePath:
-            FLAGS.modelZooBasePath = config_json.get("modelZooBasePath", os.path.join(os.getenv("HOME"), ".eztransfer_modelzoo"))
-        tf.compat.v1.logging.info("***************** modelZooBasePath {} ***************".format(FLAGS.modelZooBasePath))
+            FLAGS.modelZooBasePath = config_json.get(
+                "modelZooBasePath", os.path.join(os.getenv("HOME"), ".eztransfer_modelzoo")
+            )
+        tf.compat.v1.logging.info(
+            "***************** modelZooBasePath {} ***************".format(FLAGS.modelZooBasePath)
+        )
 
         # 以 train 开头的模式
-        if self.mode == 'train' or self.mode == "train_and_evaluate" \
-                or self.mode == "train_and_evaluate_on_the_fly" or self.mode == "train_on_the_fly":
+        if (
+            self.mode == "train"
+            or self.mode == "train_and_evaluate"
+            or self.mode == "train_and_evaluate_on_the_fly"
+            or self.mode == "train_on_the_fly"
+        ):
 
             # 分布式策略 distribution_config
-            self.enable_xla = bool(config_json["train_config"].get('distribution_config', {}).get(
-                'enable_xla', False))
+            self.enable_xla = bool(config_json["train_config"].get("distribution_config", {}).get("enable_xla", False))
 
             self.distribution_strategy = str(
-                config_json["train_config"].get('distribution_config', {}).get("distribution_strategy", None))
+                config_json["train_config"].get("distribution_config", {}).get("distribution_strategy", None)
+            )
             # 多机多卡的时候输出评测
-            self.pull_evaluation_in_multiworkers_training = bool(config_json["train_config"].get('distribution_config', {}).get(
-                'pull_evaluation_in_multiworkers_training', False))
+            self.pull_evaluation_in_multiworkers_training = bool(
+                config_json["train_config"]
+                .get("distribution_config", {})
+                .get("pull_evaluation_in_multiworkers_training", False)
+            )
 
             # 梯度每X批反向传播一次
-            self.num_accumulated_batches = int(config_json["train_config"].get('distribution_config', {}).get(
-                'num_accumulated_batches', 1))
+            self.num_accumulated_batches = int(
+                config_json["train_config"].get("distribution_config", {}).get("num_accumulated_batches", 1)
+            )
 
-            self.num_model_replica = int(config_json["train_config"].get('distribution_config', {}).get(
-                'num_model_replica', 1))
+            self.num_model_replica = int(
+                config_json["train_config"].get("distribution_config", {}).get("num_model_replica", 1)
+            )
 
-            self.num_communicators = int(config_json["train_config"].get('distribution_config', {}).get(
-                'num_communicators', 1))
+            self.num_communicators = int(
+                config_json["train_config"].get("distribution_config", {}).get("num_communicators", 1)
+            )
 
-            self.num_splits = int(config_json["train_config"].get('distribution_config', {}).get(
-                'num_splits', 1))
+            self.num_splits = int(config_json["train_config"].get("distribution_config", {}).get("num_splits", 1))
 
             # optimizer
-            self.optimizer = str(config_json["train_config"]['optimizer_config'].get('optimizer', "adam"))
-            self.learning_rate = float(config_json['train_config']['optimizer_config'].get('learning_rate', 0.001))
+            self.optimizer = str(config_json["train_config"]["optimizer_config"].get("optimizer", "adam"))
+            self.learning_rate = float(config_json["train_config"]["optimizer_config"].get("learning_rate", 0.001))
 
             # 权重衰减比率
             self.weight_decay_ratio = float(
-                config_json['train_config']['optimizer_config'].get('weight_decay_ratio', 0))
+                config_json["train_config"]["optimizer_config"].get("weight_decay_ratio", 0)
+            )
             # 学习率衰减方式
-            self.lr_decay = config_json['train_config']['optimizer_config'].get('lr_decay', "polynomial")
+            self.lr_decay = config_json["train_config"]["optimizer_config"].get("lr_decay", "polynomial")
             # 学习率开始warm up的比率
-            self.warmup_ratio = float(config_json['train_config']['optimizer_config'].get('warmup_ratio', 0.1))
-            self.clip_norm_value = float(config_json['train_config']['optimizer_config'].get('clip_norm_value', 1.0))
+            self.warmup_ratio = float(config_json["train_config"]["optimizer_config"].get("warmup_ratio", 0.1))
+            self.clip_norm_value = float(config_json["train_config"]["optimizer_config"].get("clip_norm_value", 1.0))
             # 是否做梯度裁剪
-            self.gradient_clip = bool(config_json['train_config']['optimizer_config'].get('gradient_clip', True))
-            self.num_freezed_layers = int(config_json['train_config']['optimizer_config'].get('num_freezed_layers', 0))
+            self.gradient_clip = bool(config_json["train_config"]["optimizer_config"].get("gradient_clip", True))
+            self.num_freezed_layers = int(config_json["train_config"]["optimizer_config"].get("num_freezed_layers", 0))
 
             # misc
-            self.num_epochs = float(config_json['train_config'].get('num_epochs', 1))
+            self.num_epochs = float(config_json["train_config"].get("num_epochs", 1))
             try:
-                self.model_dir = str(config_json['train_config'].get('model_dir', None))
+                self.model_dir = str(config_json["train_config"].get("model_dir", None))
             except:
                 raise ValueError("input model dir")
 
             # 评估最小间隔时间（秒）
-            self.throttle_secs = int(config_json['train_config'].get('throttle_secs', 100))
+            self.throttle_secs = int(config_json["train_config"].get("throttle_secs", 100))
             # 最多存储X个checkpoint，新覆盖旧
-            self.keep_checkpoint_max = int(config_json['train_config'].get('keep_checkpoint_max', 10))
+            self.keep_checkpoint_max = int(config_json["train_config"].get("keep_checkpoint_max", 10))
 
             # 这个写的也是真混乱, 没有就是设置为 None, 有就是 int 类型
-            if 'save_steps' not in config_json['train_config']:
+            if "save_steps" not in config_json["train_config"]:
                 self.save_steps = None
             else:
-                self.save_steps = int(config_json['train_config']['save_steps']) \
-                    if config_json['train_config']['save_steps'] else \
-                    config_json['train_config']['save_steps']  # else 这种情况, 就是为 None 或者为 0 之类的
+                self.save_steps = (
+                    int(config_json["train_config"]["save_steps"])
+                    if config_json["train_config"]["save_steps"]
+                    else config_json["train_config"]["save_steps"]
+                )  # else 这种情况, 就是为 None 或者为 0 之类的
 
             # 每处理X批打印训练状态（如loss等）
-            self.log_step_count_steps = int(config_json['train_config'].get('log_step_count_steps', 100))
+            self.log_step_count_steps = int(config_json["train_config"].get("log_step_count_steps", 100))
 
             # model
             # 将 model_config 中的配置直接设置在 self 上
-            for key, val in config_json['model_config'].items():
+            for key, val in config_json["model_config"].items():
                 setattr(self, key, val)
 
             # data
             # 输入文件的列schema（本地运行）
-            self.input_schema = str(config_json['preprocess_config'].get('input_schema', None))
+            self.input_schema = str(config_json["preprocess_config"].get("input_schema", None))
 
-            if self.mode == 'train_and_evaluate_on_the_fly' or self.mode == 'train_on_the_fly':
+            if self.mode == "train_and_evaluate_on_the_fly" or self.mode == "train_on_the_fly":
                 # 序列整体最大长度
-                self.sequence_length = int(config_json['preprocess_config']['sequence_length'])
+                self.sequence_length = int(config_json["preprocess_config"]["sequence_length"])
                 # 序列一的长度
-                self.first_sequence = str(config_json['preprocess_config']['first_sequence'])
+                self.first_sequence = str(config_json["preprocess_config"]["first_sequence"])
                 # 序列二的长度
-                self.second_sequence = str(config_json['preprocess_config'].get('second_sequence', None))
+                self.second_sequence = str(config_json["preprocess_config"].get("second_sequence", None))
                 # 标签在输入格式中对应的列名
-                self.label_name = str(config_json['preprocess_config']['label_name'])
+                self.label_name = str(config_json["preprocess_config"]["label_name"])
                 # 标签枚举值
-                self.label_enumerate_values = config_json['preprocess_config'].get('label_enumerate_values', None)
-                self.append_feature_columns = config_json['preprocess_config'].get('append_feature_columns', None)
+                self.label_enumerate_values = config_json["preprocess_config"].get("label_enumerate_values", None)
+                self.append_feature_columns = config_json["preprocess_config"].get("append_feature_columns", None)
 
-            if self.mode == 'train_and_evaluate' or self.mode == 'train_and_evaluate_on_the_fly':
+            if self.mode == "train_and_evaluate" or self.mode == "train_and_evaluate_on_the_fly":
                 # 评估时批处理大小
-                self.eval_batch_size = int(config_json['evaluate_config']['eval_batch_size'])
+                self.eval_batch_size = int(config_json["evaluate_config"]["eval_batch_size"])
 
                 # 这个处理方式和上面的 save_steps 是一样的
                 # 评估时在评估集上跑多少批
-                if 'num_eval_steps' not in config_json['evaluate_config']:
+                if "num_eval_steps" not in config_json["evaluate_config"]:
                     self.num_eval_steps = None
                 else:
-                    self.num_eval_steps = int(config_json['evaluate_config']['num_eval_steps']) \
-                        if config_json['evaluate_config']['num_eval_steps'] else \
-                        config_json['evaluate_config']['num_eval_steps']
+                    self.num_eval_steps = (
+                        int(config_json["evaluate_config"]["num_eval_steps"])
+                        if config_json["evaluate_config"]["num_eval_steps"]
+                        else config_json["evaluate_config"]["num_eval_steps"]
+                    )
 
-                self.eval_input_fp = str(config_json['evaluate_config']['eval_input_fp'])
+                self.eval_input_fp = str(config_json["evaluate_config"]["eval_input_fp"])
 
-            self.train_input_fp = str(config_json['train_config']['train_input_fp'])
+            self.train_input_fp = str(config_json["train_config"]["train_input_fp"])
             # 训练时的批次大小
-            self.train_batch_size = int(config_json['train_config']['train_batch_size'])
+            self.train_batch_size = int(config_json["train_config"]["train_batch_size"])
 
         # 以 evaluate 开头的模式
         elif self.mode == "evaluate" or self.mode == "evaluate_on_the_fly":
-            self.eval_ckpt_path = config_json['evaluate_config']['eval_checkpoint_path']
+            self.eval_ckpt_path = config_json["evaluate_config"]["eval_checkpoint_path"]
 
-            self.input_schema = config_json['preprocess_config']['input_schema']
+            self.input_schema = config_json["preprocess_config"]["input_schema"]
             if self.mode == "evaluate_on_the_fly":
-                self.sequence_length = int(config_json['preprocess_config']['sequence_length'])
-                self.first_sequence = str(config_json['preprocess_config']['first_sequence'])
-                self.second_sequence = str(config_json['preprocess_config']['second_sequence'])
-                self.label_name = str(config_json['preprocess_config']['label_name'])
-                self.label_enumerate_values = config_json['preprocess_config'].get('label_enumerate_values', None)
+                self.sequence_length = int(config_json["preprocess_config"]["sequence_length"])
+                self.first_sequence = str(config_json["preprocess_config"]["first_sequence"])
+                self.second_sequence = str(config_json["preprocess_config"]["second_sequence"])
+                self.label_name = str(config_json["preprocess_config"]["label_name"])
+                self.label_enumerate_values = config_json["preprocess_config"].get("label_enumerate_values", None)
 
-            for key, val in config_json['model_config'].items():
+            for key, val in config_json["model_config"].items():
                 setattr(self, key, val)
 
             if "train_config" in config_json:
-                self.model_dir = str(config_json['train_config'].get('model_dir', None))
+                self.model_dir = str(config_json["train_config"].get("model_dir", None))
                 self.distribution_strategy = str(
-                    config_json["train_config"].get('distribution_config', {}).get("distribution_strategy", None))
-            self.eval_batch_size = config_json['evaluate_config']['eval_batch_size']
-            self.num_eval_steps = config_json['evaluate_config'].get('num_eval_steps', None)
-            self.eval_input_fp = config_json['evaluate_config']['eval_input_fp']
+                    config_json["train_config"].get("distribution_config", {}).get("distribution_strategy", None)
+                )
+            self.eval_batch_size = config_json["evaluate_config"]["eval_batch_size"]
+            self.num_eval_steps = config_json["evaluate_config"].get("num_eval_steps", None)
+            self.eval_input_fp = config_json["evaluate_config"]["eval_input_fp"]
 
         # 以 predict 开头的模式
-        elif self.mode == 'predict' or self.mode == 'predict_on_the_fly':
-            self.predict_checkpoint_path = config_json['predict_config'].get('predict_checkpoint_path', None)
-            self.input_schema = config_json['preprocess_config']['input_schema']
-            self.label_name = config_json['preprocess_config'].get('label_name', None)
-            self.label_enumerate_values = config_json['preprocess_config'].get('label_enumerate_values', None)
-            self.append_feature_columns = config_json['preprocess_config'].get('append_feature_columns', None)
-            self.model_dir = config_json.get('train_config', {}).get('model_dir', None)
+        elif self.mode == "predict" or self.mode == "predict_on_the_fly":
+            self.predict_checkpoint_path = config_json["predict_config"].get("predict_checkpoint_path", None)
+            self.input_schema = config_json["preprocess_config"]["input_schema"]
+            self.label_name = config_json["preprocess_config"].get("label_name", None)
+            self.label_enumerate_values = config_json["preprocess_config"].get("label_enumerate_values", None)
+            self.append_feature_columns = config_json["preprocess_config"].get("append_feature_columns", None)
+            self.model_dir = config_json.get("train_config", {}).get("model_dir", None)
             # 选择输出数据中需要哪几个预测值
-            self.output_schema = config_json['preprocess_config'].get('output_schema', None)
+            self.output_schema = config_json["preprocess_config"].get("output_schema", None)
 
-            if self.mode == 'predict_on_the_fly':
-                self.first_sequence = config_json['preprocess_config']['first_sequence']
-                self.second_sequence = config_json['preprocess_config'].get('second_sequence', None)
-                self.sequence_length = config_json['preprocess_config']['sequence_length']
-                self.max_predictions_per_seq = config_json['preprocess_config'].get('max_predictions_per_seq', None)
+            if self.mode == "predict_on_the_fly":
+                self.first_sequence = config_json["preprocess_config"]["first_sequence"]
+                self.second_sequence = config_json["preprocess_config"].get("second_sequence", None)
+                self.sequence_length = config_json["preprocess_config"]["sequence_length"]
+                self.max_predictions_per_seq = config_json["preprocess_config"].get("max_predictions_per_seq", None)
 
-            self.predict_batch_size = config_json['predict_config']['predict_batch_size']
+            self.predict_batch_size = config_json["predict_config"]["predict_batch_size"]
 
             # output_schema 可以定义一些简写, 在这里自动还原
-            if config_json['preprocess_config'].get('output_schema', None) == "bert_finetune":
+            if config_json["preprocess_config"].get("output_schema", None) == "bert_finetune":
                 self.output_schema = "input_ids,input_mask,segment_ids,label_id"
-            elif config_json['preprocess_config'].get('output_schema', None) == "bert_pretrain":
-                self.output_schema = "input_ids,input_mask,segment_ids,masked_lm_positions,masked_lm_ids,masked_lm_weights"
-            elif config_json['preprocess_config'].get('output_schema', None) == "bert_predict":
+            elif config_json["preprocess_config"].get("output_schema", None) == "bert_pretrain":
+                self.output_schema = (
+                    "input_ids,input_mask,segment_ids,masked_lm_positions,masked_lm_ids,masked_lm_weights"
+                )
+            elif config_json["preprocess_config"].get("output_schema", None) == "bert_predict":
                 self.output_schema = "input_ids,input_mask,segment_ids"
             else:
                 # WARN: 这句话真是多余, 和 前面的重复了
-                self.output_schema = config_json['preprocess_config'].get('output_schema', None)
+                self.output_schema = config_json["preprocess_config"].get("output_schema", None)
 
             # 这个和前面不太一样, 将本身也设置到了 self 上
-            self.model_config = config_json['model_config']
-            for key, val in config_json['model_config'].items():
+            self.model_config = config_json["model_config"]
+            for key, val in config_json["model_config"].items():
                 setattr(self, key, val)
 
-            self.predict_input_fp = config_json['predict_config']['predict_input_fp']
-            self.predict_output_fp = config_json['predict_config'].get('predict_output_fp', None)
+            self.predict_input_fp = config_json["predict_config"]["predict_input_fp"]
+            self.predict_output_fp = config_json["predict_config"].get("predict_output_fp", None)
 
-        elif self.mode == 'export':
-            self.checkpoint_path = config_json['export_config']['checkpoint_path']
-            for key, val in config_json['model_config'].items():
+        elif self.mode == "export":
+            self.checkpoint_path = config_json["export_config"]["checkpoint_path"]
+            for key, val in config_json["model_config"].items():
                 setattr(self, key, val)
             # 导出模型的目录
-            self.export_dir_base = config_json['export_config']['export_dir_base']
+            self.export_dir_base = config_json["export_config"]["export_dir_base"]
             # WARN: 所以, 这行代码又是重复的
-            self.checkpoint_path = config_json['export_config']['checkpoint_path']
-            self.receiver_tensors_schema = config_json['export_config']['receiver_tensors_schema']
-            self.input_tensors_schema = config_json['export_config']['input_tensors_schema']
+            self.checkpoint_path = config_json["export_config"]["checkpoint_path"]
+            self.receiver_tensors_schema = config_json["export_config"]["receiver_tensors_schema"]
+            self.input_tensors_schema = config_json["export_config"]["input_tensors_schema"]
 
-        elif self.mode == 'preprocess':
-            self.input_schema = config_json['preprocess_config']['input_schema']
-            self.first_sequence = config_json['preprocess_config']['first_sequence']
-            self.second_sequence = config_json['preprocess_config'].get('second_sequence', None)
-            self.label_name = config_json['preprocess_config'].get('label_name', None)
-            self.label_enumerate_values = config_json['preprocess_config'].get('label_enumerate_values', None)
-            self.sequence_length = config_json['preprocess_config']['sequence_length']
-            self.max_predictions_per_seq = config_json['preprocess_config'].get('max_predictions_per_seq', None)
+        elif self.mode == "preprocess":
+            self.input_schema = config_json["preprocess_config"]["input_schema"]
+            self.first_sequence = config_json["preprocess_config"]["first_sequence"]
+            self.second_sequence = config_json["preprocess_config"].get("second_sequence", None)
+            self.label_name = config_json["preprocess_config"].get("label_name", None)
+            self.label_enumerate_values = config_json["preprocess_config"].get("label_enumerate_values", None)
+            self.sequence_length = config_json["preprocess_config"]["sequence_length"]
+            self.max_predictions_per_seq = config_json["preprocess_config"].get("max_predictions_per_seq", None)
 
             # output_schema 定义了一些简写, 在这里自动还原
-            if config_json['preprocess_config']['output_schema'] == "bert_finetune":
+            if config_json["preprocess_config"]["output_schema"] == "bert_finetune":
                 self.output_schema = "input_ids,input_mask,segment_ids,label_id"
 
-            elif config_json['preprocess_config']['output_schema'] == "bert_pretrain":
-                self.output_schema = "input_ids,input_mask,segment_ids,masked_lm_positions,masked_lm_ids,masked_lm_weights"
+            elif config_json["preprocess_config"]["output_schema"] == "bert_pretrain":
+                self.output_schema = (
+                    "input_ids,input_mask,segment_ids,masked_lm_positions,masked_lm_ids,masked_lm_weights"
+                )
 
-            elif config_json['preprocess_config']['output_schema'] == "bert_predict":
+            elif config_json["preprocess_config"]["output_schema"] == "bert_predict":
                 self.output_schema = "input_ids,input_mask,segment_ids"
             else:
-                self.output_schema = config_json['preprocess_config']['output_schema']
+                self.output_schema = config_json["preprocess_config"]["output_schema"]
 
-            self.preprocess_input_fp = config_json['preprocess_config']['preprocess_input_fp']
-            self.preprocess_output_fp = config_json['preprocess_config']['preprocess_output_fp']
-            self.preprocess_batch_size = config_json['preprocess_config']['preprocess_batch_size']
-            self.tokenizer_name_or_path = config_json['preprocess_config']['tokenizer_name_or_path']
+            self.preprocess_input_fp = config_json["preprocess_config"]["preprocess_input_fp"]
+            self.preprocess_output_fp = config_json["preprocess_config"]["preprocess_output_fp"]
+            self.preprocess_batch_size = config_json["preprocess_config"]["preprocess_batch_size"]
+            self.tokenizer_name_or_path = config_json["preprocess_config"]["tokenizer_name_or_path"]
 
     def __str__(self):
         return json.dumps(self.__dict__, sort_keys=False, indent=4)
@@ -345,15 +372,19 @@ class EzTransEstimator(object):
 
         # 有点奇怪, self.config 是在哪里初始化的?
         # 以 train 开头的模式
-        if self.config.mode == 'train' or self.config.mode == "train_and_evaluate" or \
-                self.config.mode == "train_and_evaluate_on_the_fly" or self.config.mode == "train_on_the_fly":
+        if (
+            self.config.mode == "train"
+            or self.config.mode == "train_and_evaluate"
+            or self.config.mode == "train_and_evaluate_on_the_fly"
+            or self.config.mode == "train_on_the_fly"
+        ):
 
             tf.compat.v1.logging.info("***********Running in {} mode***********".format(self.config.mode))
 
             # 是否启用 xla, 也不知道是什么
             if self.config.enable_xla is True:
                 tf.compat.v1.logging.info("***********Enable Tao***********")
-                os.environ['BRIDGE_ENABLE_TAO'] = 'True'
+                os.environ["BRIDGE_ENABLE_TAO"] = "True"
                 os.environ["TAO_ENABLE_CHECK"] = "false"
                 os.environ["TAO_COMPILATION_MODE_ASYNC"] = "false"
                 os.environ["DISABLE_DEADNESS_ANALYSIS"] = "true"
@@ -368,11 +399,11 @@ class EzTransEstimator(object):
             NCCL_SHM_DISABLE = "0"
             NCCL_LAUNCH_MODE = "PARALLEL"
 
-            TF_JIT_PROFILING = 'False'
-            PAI_ENABLE_HLO_DUMPER = 'False'
+            TF_JIT_PROFILING = "False"
+            PAI_ENABLE_HLO_DUMPER = "False"
 
-            os.environ['PAI_ENABLE_HLO_DUMPER'] = PAI_ENABLE_HLO_DUMPER
-            os.environ['TF_JIT_PROFILING'] = TF_JIT_PROFILING
+            os.environ["PAI_ENABLE_HLO_DUMPER"] = PAI_ENABLE_HLO_DUMPER
+            os.environ["TF_JIT_PROFILING"] = TF_JIT_PROFILING
 
             os.environ["NCCL_MAX_NRINGS"] = NCCL_MAX_NRINGS
             os.environ["NCCL_MIN_NRINGS"] = NCCL_MIN_NRINGS
@@ -393,37 +424,54 @@ class EzTransEstimator(object):
             # 分布式策略
             self.strategy = None
             # 多机多卡
-            if self.config.num_gpus >= 1 and self.config.num_workers >= 1 and \
-                    (self.config.distribution_strategy == "ExascaleStrategy" or
-                     self.config.distribution_strategy == "CollectiveAllReduceStrategy"):
+            if (
+                self.config.num_gpus >= 1
+                and self.config.num_workers >= 1
+                and (
+                    self.config.distribution_strategy == "ExascaleStrategy"
+                    or self.config.distribution_strategy == "CollectiveAllReduceStrategy"
+                )
+            ):
 
                 # 阿里巴巴集团的机器学习平台PAI(Platform of Artificial Intelligence)
                 # https://pypi.org/project/alipai/
                 if "PAI" in tf.__version__:
                     import pai
+
                     # 用逗号隔开的主机列表
-                    worker_hosts = self.config.worker_hosts.split(',')
+                    worker_hosts = self.config.worker_hosts.split(",")
                     tf.compat.v1.logging.info("***********Job Name is {}***********".format(self.config.job_name))
                     tf.compat.v1.logging.info("***********Task Index is {}***********".format(self.config.task_index))
-                    tf.compat.v1.logging.info("***********Worker Hosts is {}***********".format(self.config.worker_hosts))
-                    pai.distribute.set_tf_config(self.config.job_name,
-                                                 self.config.task_index,
-                                                 worker_hosts,
-                                                 has_evaluator=self.config.pull_evaluation_in_multiworkers_training)
+                    tf.compat.v1.logging.info(
+                        "***********Worker Hosts is {}***********".format(self.config.worker_hosts)
+                    )
+                    pai.distribute.set_tf_config(
+                        self.config.job_name,
+                        self.config.task_index,
+                        worker_hosts,
+                        has_evaluator=self.config.pull_evaluation_in_multiworkers_training,
+                    )
 
                 # ExascaleStrategy 策略
                 if self.config.distribution_strategy == "ExascaleStrategy":
                     tf.compat.v1.logging.info("*****************Using ExascaleStrategy*********************")
                     if "PAI" in tf.__version__:
-                        tf.compat.v1.logging.info("***********ESS_COMMUNICATION_NUM_COMMUNICATORS {}***********".format(
-                            self.config.num_communicators))
                         tf.compat.v1.logging.info(
-                            "***********ESS_COMMUNICATION_NUM_SPLITS {}***********".format(self.config.num_splits))
+                            "***********ESS_COMMUNICATION_NUM_COMMUNICATORS {}***********".format(
+                                self.config.num_communicators
+                            )
+                        )
+                        tf.compat.v1.logging.info(
+                            "***********ESS_COMMUNICATION_NUM_SPLITS {}***********".format(self.config.num_splits)
+                        )
                         import pai
-                        self.strategy = pai.distribute.ExascaleStrategy(num_gpus=self.config.num_gpus,
-                                                                        num_micro_batches=self.config.num_accumulated_batches,
-                                                                        num_communicators=self.config.num_communicators,
-                                                                        max_splits=self.config.num_splits)
+
+                        self.strategy = pai.distribute.ExascaleStrategy(
+                            num_gpus=self.config.num_gpus,
+                            num_micro_batches=self.config.num_accumulated_batches,
+                            num_communicators=self.config.num_communicators,
+                            max_splits=self.config.num_splits,
+                        )
                     else:
                         raise ValueError("Please run ExascaleStrategy in DLC")
 
@@ -432,16 +480,21 @@ class EzTransEstimator(object):
                     tf.compat.v1.logging.info("*****************Using CollectiveAllReduceStrategy*********************")
                     if "PAI" in tf.__version__:
                         cross_tower_ops_type = "horovod"
-                        tf.compat.v1.logging.info("*****************cross_tower_ops_type is {}*********************".format(
-                            cross_tower_ops_type))
+                        tf.compat.v1.logging.info(
+                            "*****************cross_tower_ops_type is {}*********************".format(
+                                cross_tower_ops_type
+                            )
+                        )
                         self.strategy = tf.contrib.distribute.CollectiveAllReduceStrategy(
                             num_gpus_per_worker=self.config.num_gpus,
                             cross_tower_ops_type=cross_tower_ops_type,
                             all_dense=True,
-                            iter_size=self.config.num_accumulated_batches)
+                            iter_size=self.config.num_accumulated_batches,
+                        )
                     else:
                         self.strategy = tf.contrib.distribute.CollectiveAllReduceStrategy(
-                            num_gpus_per_worker=self.config.num_gpus)
+                            num_gpus_per_worker=self.config.num_gpus
+                        )
 
                 # 是否在多机多卡的时候输出评测
                 if self.config.pull_evaluation_in_multiworkers_training is True:
@@ -450,36 +503,52 @@ class EzTransEstimator(object):
                     real_num_workers = self.config.num_workers
 
                 # 单次训练的批次 * GPU数量 * worker数量 * 梯度每X批反向传播一次
-                global_batch_size = self.config.train_batch_size * self.config.num_gpus * real_num_workers * self.config.num_accumulated_batches
-
+                global_batch_size = (
+                    self.config.train_batch_size
+                    * self.config.num_gpus
+                    * real_num_workers
+                    * self.config.num_accumulated_batches
+                )
 
             # 单机多卡
-            elif self.config.num_gpus > 1 and self.config.num_workers == 1 and \
-                    self.config.distribution_strategy == "MirroredStrategy":
+            elif (
+                self.config.num_gpus > 1
+                and self.config.num_workers == 1
+                and self.config.distribution_strategy == "MirroredStrategy"
+            ):
                 tf.compat.v1.logging.info("*****************Using MirroredStrategy*********************")
                 if "PAI" in tf.__version__:
                     tf.compat.v1.logging.info("*****************Using PAI MirroredStrategy*********************")
-                    if 'TF_CONFIG' in os.environ:
-                        del os.environ['TF_CONFIG']
+                    if "TF_CONFIG" in os.environ:
+                        del os.environ["TF_CONFIG"]
                     from tensorflow.contrib.distribute.python import cross_tower_ops as cross_tower_ops_lib
-                    cross_tower_ops = cross_tower_ops_lib.AllReduceCrossTowerOps('nccl')
+
+                    cross_tower_ops = cross_tower_ops_lib.AllReduceCrossTowerOps("nccl")
                     self.strategy = tf.contrib.distribute.MirroredStrategy(
                         num_gpus=self.config.num_gpus,
                         cross_tower_ops=cross_tower_ops,
                         all_dense=True,
-                        iter_size=self.config.num_accumulated_batches)
+                        iter_size=self.config.num_accumulated_batches,
+                    )
                 else:
                     self.strategy = tf.contrib.distribute.MirroredStrategy(num_gpus=self.config.num_gpus)
 
-                global_batch_size = self.config.train_batch_size * self.config.num_gpus * self.config.num_accumulated_batches
+                global_batch_size = (
+                    self.config.train_batch_size * self.config.num_gpus * self.config.num_accumulated_batches
+                )
 
-            elif self.config.num_gpus >= 1 and self.config.num_workers >= 1 and \
-                    self.config.distribution_strategy == "WhaleStrategy":
+            elif (
+                self.config.num_gpus >= 1
+                and self.config.num_workers >= 1
+                and self.config.distribution_strategy == "WhaleStrategy"
+            ):
 
                 if "PAI" in tf.__version__:
                     tf.compat.v1.logging.info("***********Job Name is {}***********".format(self.config.job_name))
                     tf.compat.v1.logging.info("***********Task Index is {}***********".format(self.config.task_index))
-                    tf.compat.v1.logging.info("***********Worker Hosts is {}***********".format(self.config.worker_hosts))
+                    tf.compat.v1.logging.info(
+                        "***********Worker Hosts is {}***********".format(self.config.worker_hosts)
+                    )
 
                 tf.compat.v1.logging.info("*****************Using WhaleStrategy*********************")
                 WHALE_COMMUNICATION_SPARSE_AS_DENSE = "True"
@@ -488,18 +557,34 @@ class EzTransEstimator(object):
                 os.environ["WHALE_COMMUNICATION_NUM_COMMUNICATORS"] = str(self.config.num_communicators)
                 os.environ["WHALE_COMMUNICATION_NUM_SPLITS"] = str(self.config.num_splits)
                 os.environ["WHALE_UNBALANCED_IO_SLICING"] = WHALE_UNBALANCED_IO_SLICING
-                tf.compat.v1.logging.info("***********WHALE_COMMUNICATION_SPARSE_AS_DENSE {}***********".format(WHALE_COMMUNICATION_SPARSE_AS_DENSE))
-                tf.compat.v1.logging.info("***********WHALE_COMMUNICATION_NUM_COMMUNICATORS {}***********".format(self.config.num_communicators))
-                tf.compat.v1.logging.info("***********WHALE_COMMUNICATION_NUM_SPLITS {}***********".format(self.config.num_splits))
-                tf.compat.v1.logging.info("***********WHALE_UNBALANCED_IO_SLICING {}***********".format(WHALE_UNBALANCED_IO_SLICING))
-                global_batch_size = self.config.train_batch_size * self.config.num_accumulated_batches * self.config.num_model_replica
+                tf.compat.v1.logging.info(
+                    "***********WHALE_COMMUNICATION_SPARSE_AS_DENSE {}***********".format(
+                        WHALE_COMMUNICATION_SPARSE_AS_DENSE
+                    )
+                )
+                tf.compat.v1.logging.info(
+                    "***********WHALE_COMMUNICATION_NUM_COMMUNICATORS {}***********".format(
+                        self.config.num_communicators
+                    )
+                )
+                tf.compat.v1.logging.info(
+                    "***********WHALE_COMMUNICATION_NUM_SPLITS {}***********".format(self.config.num_splits)
+                )
+                tf.compat.v1.logging.info(
+                    "***********WHALE_UNBALANCED_IO_SLICING {}***********".format(WHALE_UNBALANCED_IO_SLICING)
+                )
+                global_batch_size = (
+                    self.config.train_batch_size * self.config.num_accumulated_batches * self.config.num_model_replica
+                )
 
             # 单机单卡
             elif self.config.num_gpus == 1 and self.config.num_workers == 1:
-                if 'TF_CONFIG' in os.environ:
-                    del os.environ['TF_CONFIG']
+                if "TF_CONFIG" in os.environ:
+                    del os.environ["TF_CONFIG"]
                 global_batch_size = self.config.train_batch_size * self.config.num_accumulated_batches
-                tf.compat.v1.logging.info("***********Single worker, Single gpu, Don't use distribution strategy***********")
+                tf.compat.v1.logging.info(
+                    "***********Single worker, Single gpu, Don't use distribution strategy***********"
+                )
 
             # 没有 GPU
             elif self.config.num_gpus == 0 and self.config.num_workers == 1:
@@ -512,14 +597,15 @@ class EzTransEstimator(object):
                     "In train model, Please set correct num_workers, num_gpus and distribution_strategy, \n"
                     "num_workers>=1, num_gpus>=1, distribution_strategy=WhaleStrategy|ExascaleStrategy|CollectiveAllReduceStrategy \n"
                     "num_workers>1, num_gpus==1, distribution_strategy=MirroredStrategy \n"
-                    "num_workers=1, num_gpus=1, distribution_strategy=None")
+                    "num_workers=1, num_gpus=1, distribution_strategy=None"
+                )
 
             # num_train_examples 这个关键字参数必须存在
             # Validate optional keyword arguments.
             if "num_train_examples" not in kwargs:
-                raise ValueError('Please pass num_train_examples')
+                raise ValueError("Please pass num_train_examples")
 
-            self.num_train_examples = kwargs['num_train_examples']
+            self.num_train_examples = kwargs["num_train_examples"]
 
             # if save steps is None, save per epoch
             if self.config.save_steps is None:
@@ -529,8 +615,7 @@ class EzTransEstimator(object):
                 self.save_steps = self.config.save_steps
 
             # 总的训练步长, 就是多乘了 num_epochs
-            self.train_steps = int(self.num_train_examples *
-                                   self.config.num_epochs / global_batch_size) + 1
+            self.train_steps = int(self.num_train_examples * self.config.num_epochs / global_batch_size) + 1
 
             # 评估最小间隔时间
             self.throttle_secs = self.config.throttle_secs
@@ -559,13 +644,16 @@ class EzTransEstimator(object):
                 self.estimator = tf.estimator.Estimator(
                     model_fn=self._build_model_fn(),
                     model_dir=self.config.model_dir,
-                    config=self._get_run_train_config(config=self.config))
+                    config=self._get_run_train_config(config=self.config),
+                )
             else:
                 tf.compat.v1.logging.info("***********Using Whale Estimator***********")
                 try:
                     from easytransfer.engines.whale_estimator import WhaleEstimator
+
                     # https://github.com/hyperqueryhq/whale
                     import whale as wh
+
                     wh.init()
                     self.estimator = WhaleEstimator(
                         model_fn=self._build_model_fn(),
@@ -574,45 +662,44 @@ class EzTransEstimator(object):
                         num_accumulated_batches=self.config.num_accumulated_batches,
                         keep_checkpoint_max=self.config.keep_checkpoint_max,
                         save_checkpoints_steps=self.config.save_steps,
-                        task_index=self.config.task_index)
+                        task_index=self.config.task_index,
+                    )
                 except:
                     raise NotImplementedError("WhaleStrategy doesn't work well")
 
             # 需要评估的时候, 初始化下 num_eval_steps
-            if self.config.mode == 'train_and_evaluate' or self.config.mode == 'train_and_evaluate_on_the_fly':
+            if self.config.mode == "train_and_evaluate" or self.config.mode == "train_and_evaluate_on_the_fly":
                 self.num_eval_steps = self.config.num_eval_steps
                 tf.compat.v1.logging.info("num eval steps: {}".format(self.num_eval_steps))
 
         # 以 evaluate 开头的模式
-        elif self.config.mode == 'evaluate' or self.config.mode == 'evaluate_on_the_fly':
+        elif self.config.mode == "evaluate" or self.config.mode == "evaluate_on_the_fly":
             self.num_eval_steps = self.config.num_eval_steps
             tf.compat.v1.logging.info("num eval steps: {}".format(self.num_eval_steps))
             tf.compat.v1.logging.info("***********Running in {} mode***********".format(self.config.mode))
             # 也是初始化 Estimator
             self.estimator = tf.estimator.Estimator(
-                model_fn=self._build_model_fn(),
-                config=self._get_run_predict_config())
+                model_fn=self._build_model_fn(), config=self._get_run_predict_config()
+            )
 
         # 以 predict 开头的模式
-        elif self.config.mode == 'predict' or self.config.mode == 'predict_on_the_fly':
+        elif self.config.mode == "predict" or self.config.mode == "predict_on_the_fly":
             tf.compat.v1.logging.info("***********Running in {} mode***********".format(self.config.mode))
             self.estimator = tf.estimator.Estimator(
-                model_fn=self._build_model_fn(),
-                config=self._get_run_predict_config())
+                model_fn=self._build_model_fn(), config=self._get_run_predict_config()
+            )
 
         # 以 export 开头的模式
-        elif self.config.mode == 'export':
+        elif self.config.mode == "export":
             tf.compat.v1.logging.info("***********Running in {} mode***********".format(self.config.mode))
             self.estimator = tf.estimator.Estimator(
-                model_fn=self._build_model_fn(),
-                config=self._get_run_predict_config())
+                model_fn=self._build_model_fn(), config=self._get_run_predict_config()
+            )
 
         # 以 preprocess 开头的模式
-        elif self.config.mode == 'preprocess':
+        elif self.config.mode == "preprocess":
             tf.compat.v1.logging.info("***********Running in {} mode***********".format(self.config.mode))
-            self.estimator = tf.estimator.Estimator(
-                model_fn=self._build_model_fn(),
-                config=tf.estimator.RunConfig())
+            self.estimator = tf.estimator.Estimator(model_fn=self._build_model_fn(), config=tf.estimator.RunConfig())
 
             self.first_sequence = self.config.first_sequence
             self.second_sequence = self.config.second_sequence
@@ -629,18 +716,20 @@ class EzTransEstimator(object):
             log_device_placement=False,
             intra_op_parallelism_threads=1024,
             inter_op_parallelism_threads=1024,
-            gpu_options=tf.compat.v1.GPUOptions(allow_growth=True,
-                                      force_gpu_compatible=True,
-                                      per_process_gpu_memory_fraction=1.0))
+            gpu_options=tf.compat.v1.GPUOptions(
+                allow_growth=True, force_gpu_compatible=True, per_process_gpu_memory_fraction=1.0
+            ),
+        )
 
-        run_config = tf.estimator.RunConfig(session_config=session_config,
-                                            model_dir=config.model_dir,
-                                            tf_random_seed=123123,
-                                            train_distribute=self.strategy,
-                                            log_step_count_steps=100,
-                                            save_checkpoints_steps=self.save_steps,
-                                            keep_checkpoint_max=config.keep_checkpoint_max
-                                            )
+        run_config = tf.estimator.RunConfig(
+            session_config=session_config,
+            model_dir=config.model_dir,
+            tf_random_seed=123123,
+            train_distribute=self.strategy,
+            log_step_count_steps=100,
+            save_checkpoints_steps=self.save_steps,
+            keep_checkpoint_max=config.keep_checkpoint_max,
+        )
         return run_config
 
     def _get_run_predict_config(self):
@@ -652,9 +741,10 @@ class EzTransEstimator(object):
             log_device_placement=False,
             intra_op_parallelism_threads=1024,
             inter_op_parallelism_threads=1024,
-            gpu_options=tf.compat.v1.GPUOptions(allow_growth=True,
-                                      force_gpu_compatible=True,
-                                      per_process_gpu_memory_fraction=1.0))
+            gpu_options=tf.compat.v1.GPUOptions(
+                allow_growth=True, force_gpu_compatible=True, per_process_gpu_memory_fraction=1.0
+            ),
+        )
 
         # 上面的 session_config 和训练时是一致的, 但 RunConfig 就不需要其他参数了
         run_config = tf.estimator.RunConfig(session_config=session_config)
@@ -675,37 +765,42 @@ class EzTransEstimator(object):
                 # tower 是塔?
                 num_towers = self.config.num_workers * self.config.num_gpus
                 # 获取训练的操作函数
-                train_op = get_train_op(learning_rate=self.config.learning_rate,
-                                        weight_decay_ratio=self.config.weight_decay_ratio,
-                                        loss=total_loss,
-                                        num_towers=num_towers,
-                                        lr_decay=self.config.lr_decay,
-                                        warmup_ratio=self.config.warmup_ratio,
-                                        optimizer_name=self.config.optimizer,
-                                        tvars=self.tvars if hasattr(self, "tvars") else None,
-                                        train_steps=self.train_steps,
-                                        clip_norm=self.config.gradient_clip,
-                                        clip_norm_value=self.config.clip_norm_value,
-                                        num_freezed_layers=self.config.num_freezed_layers
-                                        )
+                train_op = get_train_op(
+                    learning_rate=self.config.learning_rate,
+                    weight_decay_ratio=self.config.weight_decay_ratio,
+                    loss=total_loss,
+                    num_towers=num_towers,
+                    lr_decay=self.config.lr_decay,
+                    warmup_ratio=self.config.warmup_ratio,
+                    optimizer_name=self.config.optimizer,
+                    tvars=self.tvars if hasattr(self, "tvars") else None,
+                    train_steps=self.train_steps,
+                    clip_norm=self.config.gradient_clip,
+                    clip_norm_value=self.config.clip_norm_value,
+                    num_freezed_layers=self.config.num_freezed_layers,
+                )
 
                 # 这个分布式策略, 提前返回了, 不正经的返回值
                 if self.config.distribution_strategy == "WhaleStrategy":
                     return total_loss, train_op
 
                 # 注册钩子函数
-                avgloss_hook = avgloss_logger_hook(self.train_steps,
-                                                   total_loss,
-                                                   self.model_dir,
-                                                   self.config.log_step_count_steps,
-                                                   self.config.task_index)
+                avgloss_hook = avgloss_logger_hook(
+                    self.train_steps,
+                    total_loss,
+                    self.model_dir,
+                    self.config.log_step_count_steps,
+                    self.config.task_index,
+                )
 
-                summary_hook = tf.estimator.SummarySaverHook(save_steps=100, summary_op=tf.compat.v1.summary.merge_all())
+                summary_hook = tf.estimator.SummarySaverHook(
+                    save_steps=100, summary_op=tf.compat.v1.summary.merge_all()
+                )
                 # 文档里说的正经人都是返回 EstimatorSpec 的
                 # 就是返回了 mode, 总的损失, 训练操作, 钩子函数的列表
                 return tf.estimator.EstimatorSpec(
-                    mode=mode, loss=total_loss, train_op=train_op,
-                    training_hooks=[summary_hook, avgloss_hook])
+                    mode=mode, loss=total_loss, train_op=train_op, training_hooks=[summary_hook, avgloss_hook]
+                )
 
             elif mode == tf.estimator.ModeKeys.EVAL:
                 # 评估阶段, 前两步也是一样的
@@ -716,42 +811,40 @@ class EzTransEstimator(object):
                 # 获取评估值
                 metrics = self.build_eval_metrics(logits, labels)
                 # 一样的钩子
-                summary_hook = tf.estimator.SummarySaverHook(save_steps=100,
-                                                         summary_op=tf.compat.v1.summary.merge_all())
+                summary_hook = tf.estimator.SummarySaverHook(
+                    save_steps=100, summary_op=tf.compat.v1.summary.merge_all()
+                )
                 # 参数换成了 eval 开头的
-                return tf.estimator.EstimatorSpec(mode, loss=eval_loss,
-                                                  eval_metric_ops=metrics,
-                                                  evaluation_hooks=[summary_hook])
+                return tf.estimator.EstimatorSpec(
+                    mode, loss=eval_loss, eval_metric_ops=metrics, evaluation_hooks=[summary_hook]
+                )
 
             elif mode == tf.estimator.ModeKeys.PREDICT:
                 # 预测阶段
 
                 # 这给我看晕了, 前面几个 if 都是一样的操作, 有必要区分吗?
-                if self.config.mode == 'predict' or self.config.mode == 'export':
+                if self.config.mode == "predict" or self.config.mode == "export":
                     output = self.build_logits(features, mode=mode)
                     # 调用预测函数, 获取预测结果, predictions 应该是个字典
                     predictions = self.build_predictions(output)
 
-                elif self.config.mode == 'predict_on_the_fly':
+                elif self.config.mode == "predict_on_the_fly":
                     output = self.build_logits(features, mode=mode)
                     predictions = self.build_predictions(output)
 
-                elif self.config.mode == 'preprocess':
+                elif self.config.mode == "preprocess":
                     output = self.build_logits(features, mode=mode)
                     predictions = self.build_predictions(output)
                 else:
                     predictions = features
 
                 # predictions 是类似字典的结构? 可以用 update 方法
-                output = {'serving_default': tf.estimator.export.PredictOutput(predictions)}
+                output = {"serving_default": tf.estimator.export.PredictOutput(predictions)}
                 # 在预测结果中, 再把原始特征加上去
                 predictions.update(features)
 
                 # 参数换成了 predict 和 export
-                return tf.estimator.EstimatorSpec(
-                    mode=mode,
-                    predictions=predictions,
-                    export_outputs=output)
+                return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, export_outputs=output)
 
         return model_fn
 
@@ -759,33 +852,31 @@ class EzTransEstimator(object):
         """
         训练且评估
         """
-        train_spec = tf.estimator.TrainSpec(input_fn=train_reader.get_input_fn(),
-                                            max_steps=self.train_steps)
+        train_spec = tf.estimator.TrainSpec(input_fn=train_reader.get_input_fn(), max_steps=self.train_steps)
 
-        eval_spec = tf.estimator.EvalSpec(input_fn=eval_reader.get_input_fn(),
-                                          steps=self.num_eval_steps,
-                                          # 评估最小间隔时间
-                                          throttle_secs=self.throttle_secs)
+        eval_spec = tf.estimator.EvalSpec(
+            input_fn=eval_reader.get_input_fn(),
+            steps=self.num_eval_steps,
+            # 评估最小间隔时间
+            throttle_secs=self.throttle_secs,
+        )
 
         tf.compat.v1.logging.info("*********Calling tf.estimator.train_and_evaluate *********")
-        tf.estimator.train_and_evaluate(self.estimator,
-                                        train_spec=train_spec,
-                                        eval_spec=eval_spec)
+        tf.estimator.train_and_evaluate(self.estimator, train_spec=train_spec, eval_spec=eval_spec)
 
     def run_train(self, reader):
         """
         训练
         """
-        self.estimator.train(input_fn=reader.get_input_fn(),
-                             max_steps=self.train_steps)
+        self.estimator.train(input_fn=reader.get_input_fn(), max_steps=self.train_steps)
 
     def run_evaluate(self, reader, checkpoint_path=None):
         """
         评估
         """
-        return self.estimator.evaluate(input_fn=reader.get_input_fn(),
-                                       steps=self.num_eval_steps,
-                                       checkpoint_path=checkpoint_path)
+        return self.estimator.evaluate(
+            input_fn=reader.get_input_fn(), steps=self.num_eval_steps, checkpoint_path=checkpoint_path
+        )
 
     def run_predict(self, reader, writer=None, checkpoint_path=None, yield_single_examples=False):
         """
@@ -796,12 +887,17 @@ class EzTransEstimator(object):
             return self.estimator.predict(
                 input_fn=reader.get_input_fn(),
                 yield_single_examples=yield_single_examples,
-                checkpoint_path=checkpoint_path)
+                checkpoint_path=checkpoint_path,
+            )
 
         # 否则就遍历结果, 然后调用 writer.process 的方法处理
-        for batch_idx, outputs in enumerate(self.estimator.predict(input_fn=reader.get_input_fn(),
-                                                                   yield_single_examples=yield_single_examples,
-                                                                   checkpoint_path=checkpoint_path)):
+        for batch_idx, outputs in enumerate(
+            self.estimator.predict(
+                input_fn=reader.get_input_fn(),
+                yield_single_examples=yield_single_examples,
+                checkpoint_path=checkpoint_path,
+            )
+        ):
 
             if batch_idx % 100 == 0:
                 tf.compat.v1.logging.info("Processing %d batches" % (batch_idx))
@@ -814,9 +910,9 @@ class EzTransEstimator(object):
         """
         进行预处理
         """
-        for batch_idx, outputs in enumerate(self.estimator.predict(input_fn=reader.get_input_fn(),
-                                                                   yield_single_examples=False,
-                                                                   checkpoint_path=None)):
+        for batch_idx, outputs in enumerate(
+            self.estimator.predict(input_fn=reader.get_input_fn(), yield_single_examples=False, checkpoint_path=None)
+        ):
             if batch_idx % 100 == 0:
                 tf.compat.v1.logging.info("Processing %d batches" % (batch_idx))
             writer.process(outputs)
@@ -833,15 +929,19 @@ class EzTransEstimator(object):
         def serving_input_receiver_fn():
             export_features, receiver_tensors = self.get_export_features()
             return tf.estimator.export.ServingInputReceiver(
-                features=export_features, receiver_tensors=receiver_tensors, receiver_tensors_alternatives={})
+                features=export_features, receiver_tensors=receiver_tensors, receiver_tensors_alternatives={}
+            )
 
-        return self.estimator.export_savedmodel(export_dir_base, serving_input_receiver_fn,
-                                                checkpoint_path=checkpoint_path)
+        return self.estimator.export_savedmodel(
+            export_dir_base, serving_input_receiver_fn, checkpoint_path=checkpoint_path
+        )
+
 
 class base_model(EzTransEstimator):
     """
     基础模型
     """
+
     def __init__(self, **kwargs):
         user_defined_config = kwargs.get("user_defined_config", None)
         # 当这个参数 user_defined_config 没有传时, 就要使用 FLAGS 取配置了
@@ -862,34 +962,35 @@ class base_model(EzTransEstimator):
             # 根据 tables 参数解析训练文件
             if FLAGS.tables is not None:
                 if FLAGS.mode.startswith("train_and_evaluate"):
-                    config_json['train_config']['train_input_fp'] = FLAGS.tables.split(",")[0]
-                    config_json['evaluate_config']['eval_input_fp'] = FLAGS.tables.split(",")[1]
+                    config_json["train_config"]["train_input_fp"] = FLAGS.tables.split(",")[0]
+                    config_json["evaluate_config"]["eval_input_fp"] = FLAGS.tables.split(",")[1]
                 elif FLAGS.mode.startswith("train"):
-                    config_json['train_config']['train_input_fp'] = FLAGS.tables.split(",")[0]
+                    config_json["train_config"]["train_input_fp"] = FLAGS.tables.split(",")[0]
                 elif FLAGS.mode.startswith("evaluate"):
-                    config_json['evaluate_config']['eval_input_fp'] = FLAGS.tables.split(",")[0]
+                    config_json["evaluate_config"]["eval_input_fp"] = FLAGS.tables.split(",")[0]
                 elif FLAGS.mode.startswith("predict"):
-                    config_json['predict_config']['predict_input_fp'] = FLAGS.tables.split(",")[0]
+                    config_json["predict_config"]["predict_input_fp"] = FLAGS.tables.split(",")[0]
                 elif FLAGS.mode.startswith("preprocess"):
-                    config_json['preprocess_config']['preprocess_input_fp'] = FLAGS.tables.split(",")[0]
+                    config_json["preprocess_config"]["preprocess_input_fp"] = FLAGS.tables.split(",")[0]
                 else:
                     raise RuntimeError
 
             # 根据 outputs 解析输出文件
             if FLAGS.outputs is not None:
                 if FLAGS.mode.startswith("predict"):
-                    config_json['predict_config']['predict_output_fp'] = FLAGS.outputs.split(",")[0]
+                    config_json["predict_config"]["predict_output_fp"] = FLAGS.outputs.split(",")[0]
                 elif FLAGS.mode.startswith("preprocess"):
-                    config_json['preprocess_config']['preprocess_output_fp'] = FLAGS.outputs.split(",")[0]
+                    config_json["preprocess_config"]["preprocess_output_fp"] = FLAGS.outputs.split(",")[0]
                 else:
                     raise RuntimeError
 
             if "predict" in FLAGS.mode:
                 # 尝试从 train_config.json 文件中读取配置, 添加为 config_json 的 model_config
-                if config_json['predict_config'].get('predict_checkpoint_path', None) is not None:
-                    model_ckpt = config_json['predict_config']['predict_checkpoint_path'].split("/")[-1]
-                    config_fp = config_json['predict_config']['predict_checkpoint_path'].replace(model_ckpt,
-                                                                                                 "train_config.json")
+                if config_json["predict_config"].get("predict_checkpoint_path", None) is not None:
+                    model_ckpt = config_json["predict_config"]["predict_checkpoint_path"].split("/")[-1]
+                    config_fp = config_json["predict_config"]["predict_checkpoint_path"].replace(
+                        model_ckpt, "train_config.json"
+                    )
                     if tf.io.gfile.exists(config_fp):
                         with tf.io.gfile.GFile(config_fp, "r") as f:
                             saved_config = json.load(f)
@@ -906,7 +1007,7 @@ class base_model(EzTransEstimator):
                     tf.io.gfile.makedirs(self.config.model_dir)
 
                 if not tf.io.gfile.exists(self.config.model_dir + "/train_config.json"):
-                    with tf.io.gfile.GFile(self.config.model_dir + "/train_config.json", mode='w') as f:
+                    with tf.io.gfile.GFile(self.config.model_dir + "/train_config.json", mode="w") as f:
                         json.dump(config_json, f)
 
         else:
@@ -921,46 +1022,52 @@ class base_model(EzTransEstimator):
         num_predict_examples = 0
         if "train" in self.config.mode:
             if "odps://" in self.config.train_input_fp:
-                reader = tf.python_io.TableReader(self.config.train_input_fp,
-                                                  selected_cols="",
-                                                  excluded_cols="",
-                                                  slice_id=0,
-                                                  slice_count=1,
-                                                  num_threads=0,
-                                                  capacity=0)
+                reader = tf.python_io.TableReader(
+                    self.config.train_input_fp,
+                    selected_cols="",
+                    excluded_cols="",
+                    slice_id=0,
+                    slice_count=1,
+                    num_threads=0,
+                    capacity=0,
+                )
                 num_train_examples = reader.get_row_count()
             elif ".tfrecord" in self.config.train_input_fp:
                 for record in tf.compat.v1.python_io.tf_record_iterator(self.config.train_input_fp):
                     num_train_examples += 1
 
             elif ".list_tfrecord" in self.config.train_input_fp:
-                with tf.io.gfile.GFile(self.config.train_input_fp, 'r') as f:
+                with tf.io.gfile.GFile(self.config.train_input_fp, "r") as f:
                     for i, line in enumerate(f):
                         if i == 0 and line.strip().isdigit():
                             num_train_examples = int(line.strip())
-                            tf.compat.v1.logging.info("Reading {} training examples from list_tfrecord".format(str(num_train_examples)))
+                            tf.compat.v1.logging.info(
+                                "Reading {} training examples from list_tfrecord".format(str(num_train_examples))
+                            )
                             break
-                        if i%10 ==0:
+                        if i % 10 == 0:
                             tf.compat.v1.logging.info("Reading {} files".format(i))
                         fp = line.strip()  # 每一行都是一个文件路径
                         for record in tf.compat.v1.python_io.tf_record_iterator(fp):
                             num_train_examples += 1
             elif ".list_csv" in self.config.train_input_fp:
-                with tf.io.gfile.GFile(self.config.train_input_fp, 'r') as f:
+                with tf.io.gfile.GFile(self.config.train_input_fp, "r") as f:
                     for i, line in enumerate(f):
                         if i == 0 and line.strip().isdigit():
                             num_train_examples = int(line.strip())
-                            tf.compat.v1.logging.info("Reading {} training examples from list_csv".format(str(num_train_examples)))
+                            tf.compat.v1.logging.info(
+                                "Reading {} training examples from list_csv".format(str(num_train_examples))
+                            )
                             break
-                        if i%10 ==0:
+                        if i % 10 == 0:
                             tf.compat.v1.logging.info("Reading {} files".format(i))
                         fp = line.strip()
-                        with tf.io.gfile.GFile(fp, 'r') as f:
+                        with tf.io.gfile.GFile(fp, "r") as f:
                             for record in f:
                                 num_train_examples += 1
 
             else:
-                with tf.io.gfile.GFile(self.config.train_input_fp, 'r') as f:
+                with tf.io.gfile.GFile(self.config.train_input_fp, "r") as f:
                     for record in f:
                         num_train_examples += 1
 
@@ -969,13 +1076,15 @@ class base_model(EzTransEstimator):
         elif "predict" in self.config.mode:
             # 预测的也类似跑一遍, 获取预测样本数
             if "odps" in self.config.predict_input_fp:
-                reader = tf.python_io.TableReader(self.config.predict_input_fp,
-                                                  selected_cols="",
-                                                  excluded_cols="",
-                                                  slice_id=0,
-                                                  slice_count=1,
-                                                  num_threads=0,
-                                                  capacity=0)
+                reader = tf.python_io.TableReader(
+                    self.config.predict_input_fp,
+                    selected_cols="",
+                    excluded_cols="",
+                    slice_id=0,
+                    slice_count=1,
+                    num_threads=0,
+                    capacity=0,
+                )
                 num_predict_examples = reader.get_row_count()
 
             elif ".tfrecord" in self.config.predict_input_fp:
@@ -983,21 +1092,21 @@ class base_model(EzTransEstimator):
                     num_predict_examples += 1
 
             elif ".list_csv" in self.config.predict_input_fp:
-                with tf.io.gfile.GFile(self.config.predict_input_fp, 'r') as f:
+                with tf.io.gfile.GFile(self.config.predict_input_fp, "r") as f:
                     for i, line in enumerate(f):
                         if i == 0 and line.strip().isdigit():
                             num_predict_examples = int(line.strip())
                             tf.compat.v1.logging.info("Use preset num training examples")
                             break
-                        if i%10 ==0:
+                        if i % 10 == 0:
                             tf.compat.v1.logging.info("Reading {} files".format(i))
                         fp = line.strip()
-                        with tf.io.gfile.GFile(fp, 'r') as f:
+                        with tf.io.gfile.GFile(fp, "r") as f:
                             for record in f:
                                 num_predict_examples += 1
 
             else:
-                with tf.io.gfile.GFile(self.config.predict_input_fp, 'r') as f:
+                with tf.io.gfile.GFile(self.config.predict_input_fp, "r") as f:
                     for record in f:
                         num_predict_examples += 1
 
@@ -1021,8 +1130,8 @@ class base_model(EzTransEstimator):
             feat_type = feat.split(":")[1]  # 类型
             seq_len = int(feat.split(":")[2])  # 序列长度
             feat = {}
-            feat['name'] = feat_name
-            feat['type'] = feat_type
+            feat["name"] = feat_name
+            feat["type"] = feat_type
             if feat_type == "int":
                 dtype = tf.int32
             elif feat_type == "float":
@@ -1051,7 +1160,7 @@ class base_model(EzTransEstimator):
     """
 
     def build_logits(self, features, mode):
-        """ Given features, this method take care of building graph for train/eval/predict
+        """Given features, this method take care of building graph for train/eval/predict
 
         Args:
 
