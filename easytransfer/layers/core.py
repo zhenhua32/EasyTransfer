@@ -18,29 +18,32 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.keras import layers as keras_layers
+
+import tensorflow as tf
+from tensorflow.keras import layers as keras_layers
 from tensorflow.python.layers import base
-from tensorflow.python.ops import init_ops
 import tf_slim as slim
 from .utils import get_initializer
 
+
 def LayerNormalization(input_tensor, name=None):
     """Run layer normalization on the last dimension of the tensor."""
-    return slim.layers.layer_norm(
-        inputs=input_tensor, begin_norm_axis=-1, begin_params_axis=-1, scope=name)
+    return slim.layers.layer_norm(inputs=input_tensor, begin_norm_axis=-1, begin_params_axis=-1, scope=name)
+
 
 class Embedding(keras_layers.Embedding, base.Layer):
-
-    def __init__(self,
-                 input_dim,
-                 output_dim,
-                 embeddings_initializer='uniform',
-                 embeddings_regularizer=None,
-                 activity_regularizer=None,
-                 embeddings_constraint=None,
-                 mask_zero=False,
-                 input_length=None,
-                 **kwargs):
+    def __init__(
+        self,
+        input_dim,
+        output_dim,
+        embeddings_initializer="uniform",
+        embeddings_regularizer=None,
+        activity_regularizer=None,
+        embeddings_constraint=None,
+        mask_zero=False,
+        input_length=None,
+        **kwargs
+    ):
         super(Embedding, self).__init__(
             input_dim=input_dim,
             output_dim=output_dim,
@@ -50,53 +53,51 @@ class Embedding(keras_layers.Embedding, base.Layer):
             embeddings_constraint=embeddings_constraint,
             mask_zero=mask_zero,
             input_length=input_length,
-            **kwargs)
+            **kwargs
+        )
 
 
 class Dense(keras_layers.Dense, base.Layer):
-
-    def __init__(self, units,
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer=None,
-                 bias_initializer=init_ops.zeros_initializer(),
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 trainable=True,
-                 name=None,
-                 **kwargs):
-        super(Dense, self).__init__(units=units,
-                                    activation=activation,
-                                    use_bias=use_bias,
-                                    kernel_initializer=kernel_initializer,
-                                    bias_initializer=bias_initializer,
-                                    kernel_regularizer=kernel_regularizer,
-                                    bias_regularizer=bias_regularizer,
-                                    activity_regularizer=activity_regularizer,
-                                    kernel_constraint=kernel_constraint,
-                                    bias_constraint=bias_constraint,
-                                    trainable=trainable,
-                                    name=name,
-                                    **kwargs)
+    def __init__(
+        self,
+        units,
+        activation=None,
+        use_bias=True,
+        kernel_initializer=None,
+        bias_initializer=tf.zeros_initializer(),
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        trainable=True,
+        name=None,
+        **kwargs
+    ):
+        super(Dense, self).__init__(
+            units=units,
+            activation=activation,
+            use_bias=use_bias,
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer,
+            kernel_regularizer=kernel_regularizer,
+            bias_regularizer=bias_regularizer,
+            activity_regularizer=activity_regularizer,
+            kernel_constraint=kernel_constraint,
+            bias_constraint=bias_constraint,
+            trainable=trainable,
+            name=name,
+            **kwargs
+        )
 
 
 class Dropout(keras_layers.Dropout, base.Layer):
-    def __init__(self, rate=0.5,
-                 noise_shape=None,
-                 seed=None,
-                 name=None,
-                 **kwargs):
-        super(Dropout, self).__init__(rate=rate,
-                                      noise_shape=noise_shape,
-                                      seed=seed,
-                                      name=name,
-                                      **kwargs)
+    def __init__(self, rate=0.5, noise_shape=None, seed=None, name=None, **kwargs):
+        super(Dropout, self).__init__(rate=rate, noise_shape=noise_shape, seed=seed, name=name, **kwargs)
 
     def call(self, inputs, training=False):
         return super(Dropout, self).call(inputs, training=training)
+
 
 class dense_dropoutput_layernorm(base.Layer):
     def __init__(self, config, **kwargs):
