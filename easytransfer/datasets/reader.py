@@ -14,30 +14,31 @@
 # limitations under the License.
 
 import sys
+
 sys.path.append("../..")
 import tensorflow as tf
 from easytransfer.engines.distribution import Process
 from collections import OrderedDict
 
+
 class Reader(Process):
     """
     读取器
     """
-    def __init__(self,
-                 batch_size,
-                 is_training,
-                 thread_num=1,
-                 input_queue=None,
-                 output_queue=None,
-                 job_name='DISTReader',
-                 **kwargs):
+
+    def __init__(
+        self,
+        batch_size,
+        is_training,
+        thread_num=1,
+        input_queue=None,
+        output_queue=None,
+        job_name="DISTReader",
+        **kwargs
+    ):
 
         # 先初始化父类
-        Process.__init__(self, job_name,
-                         thread_num,
-                         input_queue,
-                         output_queue,
-                         batch_size=batch_size)
+        Process.__init__(self, job_name, thread_num, input_queue, output_queue, batch_size=batch_size)
 
         # 训练样本数和测试样本数
         self.num_train_examples = 0
@@ -76,7 +77,7 @@ class Reader(Process):
                 default_value = 0.0
             elif type == "str":
                 tensor_type = tf.string
-                default_value = ''
+                default_value = ""
             elif type == "base64":
                 tensor_type = "base64"
                 default_value = "base64"
@@ -112,7 +113,9 @@ class Reader(Process):
         if self.is_training:
             # 当没有指定时, 直接用整个训练集的数量作为 shuffle_buffer_size
             if self.shuffle_buffer_size is None:
-                tf.compat.v1.logging.info("Random shuffle on the whole {} training examples".format(self.num_train_examples))
+                tf.compat.v1.logging.info(
+                    "Random shuffle on the whole {} training examples".format(self.num_train_examples)
+                )
                 self.shuffle_buffer_size = self.num_train_examples
             # 如果没有参数, 就是无限重复数据集
             dataset = dataset.repeat()
@@ -123,27 +126,14 @@ class Reader(Process):
 
         return self._map_batch_prefetch(dataset, _decode_fn)
 
-    def _map_batch_prefetch(self, dataset, decode_fn):
+    def _map_batch_prefetch(self, dataset: tf.data.Dataset, decode_fn):
         # 就是在数据流水线中应用了 decode_fn 函数
-        dataset = dataset.apply(
-            # map_and_batch 已被弃用, 等效于 map 和 batch 的组合
-            tf.data.experimental.map_and_batch(
-                # decode_fn 会用在每个 record 上
-                lambda *record: decode_fn(*record),
-                batch_size=self.batch_size,
-                num_parallel_batches=self.num_parallel_batches,
-                drop_remainder=False))
+        dataset = dataset.map(lambda *record: decode_fn(*record), num_parallel_calls=self.num_parallel_batches).batch(
+            self.batch_size, drop_remainder=False
+        )
         # 预取数据, 提高吞吐量. 文档上建议流水线以这个结束
         dataset = dataset.prefetch(self.prefetch_buffer_size)
         return dataset
 
     def process(self, input_data):
         raise NotImplementedError("must be implemented in descendants")
-
-
-
-
-
-
-
-
