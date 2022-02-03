@@ -19,9 +19,10 @@ from tensorflow.python.layers.base import Layer
 from .core import LayerNormalization, Dropout
 from .utils import get_initializer, get_shape_list
 
+
 class BertEmbeddings(Layer):
-    """Construct the embeddings from word, position and token_type embeddings.
-    """
+    """Construct the embeddings from word, position and token_type embeddings."""
+
     def __init__(self, config, **kwargs):
         super(BertEmbeddings, self).__init__(**kwargs)
 
@@ -29,14 +30,14 @@ class BertEmbeddings(Layer):
         self.hidden_size = config.hidden_size
         self.initializer_range = config.initializer_range
         self.token_type_vocab_size = config.type_vocab_size
-        self.max_position_embeddings  = config.max_position_embeddings
+        self.max_position_embeddings = config.max_position_embeddings
 
         self.LayerNorm = LayerNormalization
         self.dropout = Dropout(config.hidden_dropout_prob)
         self.initializer = get_initializer(self.initializer_range)
 
     def build(self, input_shape):
-        """Build shared word embedding layer """
+        """Build shared word embedding layer"""
         self.word_embeddings = self.add_weight(
             "word_embeddings",
             dtype=tf.float32,
@@ -57,7 +58,7 @@ class BertEmbeddings(Layer):
             shape=[self.token_type_vocab_size, self.hidden_size],
             initializer=self.initializer,
         )
-        super(BertEmbeddings,self).build(input_shape)
+        super(BertEmbeddings, self).build(input_shape)
 
     def call(self, inputs, training=False):
         input_ids, token_type_ids = inputs
@@ -74,8 +75,7 @@ class BertEmbeddings(Layer):
         flat_token_type_ids = tf.reshape(token_type_ids, [-1])
         one_hot_ids = tf.one_hot(flat_token_type_ids, depth=self.token_type_vocab_size)
         token_type_embeddings = tf.matmul(one_hot_ids, self.token_type_embeddings)
-        token_type_embeddings = tf.reshape(token_type_embeddings,
-                                           [batch_size, seq_length, width])
+        token_type_embeddings = tf.reshape(token_type_embeddings, [batch_size, seq_length, width])
         input_embeddings += token_type_embeddings
 
         position_embeddings = tf.gather(self.position_embeddings, tf.range(0, seq_length))
@@ -89,8 +89,8 @@ class BertEmbeddings(Layer):
 
 
 class AlbertEmbeddings(Layer):
-    """Construct the embeddings from word, position and token_type embeddings.
-    """
+    """Construct the embeddings from word, position and token_type embeddings."""
+
     def __init__(self, config, **kwargs):
         super(AlbertEmbeddings, self).__init__(**kwargs)
 
@@ -98,14 +98,14 @@ class AlbertEmbeddings(Layer):
         self.embedding_size = config.embedding_size
         self.initializer_range = config.initializer_range
         self.token_type_vocab_size = config.type_vocab_size
-        self.max_position_embeddings  = config.max_position_embeddings
+        self.max_position_embeddings = config.max_position_embeddings
 
         self.LayerNorm = LayerNormalization
         self.dropout = Dropout(config.hidden_dropout_prob)
         self.initializer = get_initializer(self.initializer_range)
 
     def build(self, input_shape):
-        """Build shared word embedding layer """
+        """Build shared word embedding layer"""
 
         self.word_embeddings = self.add_weight(
             "word_embeddings",
@@ -144,8 +144,7 @@ class AlbertEmbeddings(Layer):
         flat_token_type_ids = tf.reshape(token_type_ids, [-1])
         one_hot_ids = tf.one_hot(flat_token_type_ids, depth=self.token_type_vocab_size)
         token_type_embeddings = tf.matmul(one_hot_ids, self.token_type_embeddings)
-        token_type_embeddings = tf.reshape(token_type_embeddings,
-                                           [batch_size, seq_length, width])
+        token_type_embeddings = tf.reshape(token_type_embeddings, [batch_size, seq_length, width])
         input_embeddings += token_type_embeddings
 
         position_embeddings = tf.gather(self.position_embeddings, tf.range(0, seq_length))
