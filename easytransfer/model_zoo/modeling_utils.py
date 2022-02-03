@@ -24,10 +24,12 @@ from tensorflow.python.platform import gfile
 from easytransfer.engines.model import FLAGS
 from easytransfer import layers
 
+
 class PretrainedConfig(object):
     """
     预训练模型的配置
     """
+
     def __init__(self, **kwargs):
         # Additional attributes without default values
         for key, value in kwargs.items():
@@ -60,7 +62,7 @@ class PretrainedConfig(object):
         """
         从 json 文件中获取字典
         """
-        with gfile.GFile(json_file, mode='r') as reader:
+        with gfile.GFile(json_file, mode="r") as reader:
             text = reader.read()
         return json.loads(text)
 
@@ -69,6 +71,7 @@ class PreTrainedModel(layers.Layer):
     """
     预训练模型, 也是从 Layer 继承的
     """
+
     # 配置类
     config_class: PretrainedConfig = None
     # 模型名字和模型 ckpt 路径的映射
@@ -78,14 +81,14 @@ class PreTrainedModel(layers.Layer):
 
     @classmethod
     def dummy_inputs(self, seq_length):
-        """ Dummy inputs to build the network.
+        """Dummy inputs to build the network.
         假的输入
         Returns:
             tf.Tensor with dummy inputs
         """
-        #input_ids = [[7, 6, 0, 0, 1], [1, 2, 3, 0, 0], [0, 0, 0, 4, 5]]
+        # input_ids = [[7, 6, 0, 0, 1], [1, 2, 3, 0, 0], [0, 0, 0, 4, 5]]
         # 序列长度个 1, 然后外面再套一层数组
-        input_ids = [[1]*seq_length]
+        input_ids = [[1] * seq_length]
         return tf.constant(input_ids)
 
     def __init__(self, config, **kwargs):
@@ -117,14 +120,12 @@ class PreTrainedModel(layers.Layer):
             config_path = os.path.join(os.path.dirname(pretrained_model_name_or_path), "config.json")
 
         # 获取配置的实例
-        config: PretrainedConfig = cls.config_class.get(
-            config_path,
-            **kwargs)
+        config: PretrainedConfig = cls.config_class.get(config_path, **kwargs)
         # 实例化模型
         model = cls(config, **kwargs)
 
         # 先用假的输入调用一次, 看能否调用成功
-        model(model.dummy_inputs(kwargs.get('input_sequence_length', 512)), mode='eval', output_features=False)
+        model(model.dummy_inputs(kwargs.get("input_sequence_length", 512)), mode="eval", output_features=False)
 
         # 模型的文件
         archive_file = None
@@ -135,11 +136,13 @@ class PreTrainedModel(layers.Layer):
             archive_file = pretrained_model_name_or_path
 
         # 如果这个模型文件存在, 就从这个文件中恢复
-        if tf.io.gfile.exists(archive_file+".data-00000-of-00001"):
+        if tf.io.gfile.exists(archive_file + ".data-00000-of-00001"):
             model._init_from_pretrained_model(archive_file)
         else:
             tf.compat.v1.logging.info("archive file {} does not exists".format(archive_file))
-            tf.compat.v1.logging.info("ckpt {} not in model zoo, random initialization".format(pretrained_model_name_or_path))
+            tf.compat.v1.logging.info(
+                "ckpt {} not in model zoo, random initialization".format(pretrained_model_name_or_path)
+            )
 
         return model
 
@@ -168,8 +171,7 @@ class PreTrainedModel(layers.Layer):
             # 获取变量名到形状的映射
             var_to_shape_map = reader.get_variable_to_shape_map()
         except errors_impl.DataLossError:
-            raise ImportError(
-                '`load_weights` requires correct tf ckpts.')
+            raise ImportError("`load_weights` requires correct tf ckpts.")
 
         # 已经分配的映射
         assignment_map = {}
@@ -183,7 +185,7 @@ class PreTrainedModel(layers.Layer):
             var = None
             if "pre_trained_model" in key:
                 # 如果有 pre_trained_model 字样, 就先用 / 分隔, 取出第一个, 然后加上 /, 将这部分清除掉
-                root_key = key.replace(key.split("/")[0]+"/","")
+                root_key = key.replace(key.split("/")[0] + "/", "")
             else:
                 root_key = key
 
@@ -197,7 +199,7 @@ class PreTrainedModel(layers.Layer):
             if var is None:
                 print("Variable: {} in ckpt not in trainable variable".format(key))
                 continue
-                #raise ValueError("ckpt var name {} not in trainable variable".format(key))
+                # raise ValueError("ckpt var name {} not in trainable variable".format(key))
             # key 和 var 的对应关系
             assignment_map[key] = var
         tf.compat.v1.logging.info("Load weights from {}".format(pretrained_model_path))
@@ -222,8 +224,7 @@ def init_from_checkpoint_without_training_ops(pretrained_model_path):
         reader = tf.compat.v1.train.NewCheckpointReader(pretrained_model_path)
         var_to_shape_map = reader.get_variable_to_shape_map()
     except errors_impl.DataLossError:
-        raise ImportError(
-            '`load_weights` requires correct tf ckpts.')
+        raise ImportError("`load_weights` requires correct tf ckpts.")
 
     assignment_map = {}
     for key in var_to_shape_map:
@@ -234,7 +235,7 @@ def init_from_checkpoint_without_training_ops(pretrained_model_path):
 
         var = None
         if "pre_trained_model" in key:
-            root_key = key.replace(key.split("/")[0]+"/","")
+            root_key = key.replace(key.split("/")[0] + "/", "")
         else:
             root_key = key
 
@@ -245,7 +246,7 @@ def init_from_checkpoint_without_training_ops(pretrained_model_path):
         if var is None:
             print("Variable: {} in ckpt not in trainable variable".format(key))
             continue
-            #raise ValueError("ckpt var name {} not in trainable variable".format(key))
+            # raise ValueError("ckpt var name {} not in trainable variable".format(key))
 
         assignment_map[key] = var
     tf.compat.v1.logging.info("Load weights from {}".format(pretrained_model_path))
