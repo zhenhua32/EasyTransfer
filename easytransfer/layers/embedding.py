@@ -15,8 +15,9 @@
 
 
 import tensorflow as tf
-from tensorflow.python.layers.base import Layer
-from .core import LayerNormalization, Dropout
+from tensorflow.keras import layers as keras_layers
+from tensorflow.keras.layers import Layer
+from .core import Dropout
 from .utils import get_initializer, get_shape_list
 
 
@@ -26,13 +27,15 @@ class BertEmbeddings(Layer):
     def __init__(self, config, **kwargs):
         super(BertEmbeddings, self).__init__(**kwargs)
 
+        # 配置项, 其实是从模型目录下的 config.json 中读取而来的
         self.vocab_size = config.vocab_size
         self.hidden_size = config.hidden_size
         self.initializer_range = config.initializer_range
         self.token_type_vocab_size = config.type_vocab_size
         self.max_position_embeddings = config.max_position_embeddings
 
-        self.LayerNorm = LayerNormalization
+        # self.LayerNorm = LayerNormalization
+        self.layer_norm = keras_layers.LayerNormalization(axis=-1, epsilon=1e-12, name="LayerNorm")
         self.dropout = Dropout(config.hidden_dropout_prob)
         self.initializer = get_initializer(self.initializer_range)
 
@@ -61,8 +64,15 @@ class BertEmbeddings(Layer):
         super(BertEmbeddings, self).build(input_shape)
 
     def call(self, inputs, training=False):
+        """"
+        前向传播调用
+        inputs 是个数组或元组, 有两个值
+        """
         input_ids, token_type_ids = inputs
 
+        # tf.gather 是用来获取切片的, 参数是两个, 第一个是张量, 第二个是索引
+        # word_embeddings 的 shape 是 (self.vocab_size, self.hidden_size)
+        # input_embeddings 的 shape 是 (batch_size, seq_length, self.hidden_size)
         input_embeddings = tf.gather(self.word_embeddings, input_ids)
 
         input_shape = get_shape_list(input_embeddings)
@@ -83,7 +93,7 @@ class BertEmbeddings(Layer):
 
         input_embeddings += position_embeddings
 
-        output = self.LayerNorm(input_embeddings, name="LayerNorm")
+        output = self.layer_norm(input_embeddings)
         output = self.dropout(output, training=training)
         return output
 

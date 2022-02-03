@@ -27,7 +27,8 @@ from .utils import get_initializer
 
 
 def LayerNormalization(input_tensor, name=None):
-    """Run layer normalization on the last dimension of the tensor."""
+    """TODO: DELETE: 没什么用了
+    Run layer normalization on the last dimension of the tensor."""
     return slim.layers.layer_norm(inputs=input_tensor, begin_norm_axis=-1, begin_params_axis=-1, scope=name)
 
 
