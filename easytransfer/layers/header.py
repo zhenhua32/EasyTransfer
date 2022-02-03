@@ -14,11 +14,12 @@
 # limitations under the License.
 
 
-from tensorflow.python.layers.base import Layer
+from tensorflow.keras.layers import Layer
 import tensorflow as tf
 from .core import Dense, LayerNormalization
 from .activations import gelu_new
 from .utils import get_initializer, gather_indexes
+
 
 class MLMHead(Layer):
     def __init__(self, config, embeddings, **kwargs):
@@ -35,8 +36,7 @@ class MLMHead(Layer):
         self.embeddings = embeddings
 
     def build(self, input_shape):
-        self.bias = self.add_weight(shape=(self.vocab_size,),
-                                    initializer="zeros", trainable=True, name="output_bias")
+        self.bias = self.add_weight(shape=(self.vocab_size,), initializer="zeros", trainable=True, name="output_bias")
         super(MLMHead, self).build(input_shape)
 
     def call(self, hidden_states, masked_lm_positions):
@@ -56,12 +56,14 @@ class NSPHead(Layer):
         self.config = config
 
     def build(self, input_shape):
-        self.output_weights = self.add_weight(shape=[2, self.hidden_size],
-                                    initializer=get_initializer(self.config.initializer_range),
-                                       trainable=True, name="output_weights")
+        self.output_weights = self.add_weight(
+            shape=[2, self.hidden_size],
+            initializer=get_initializer(self.config.initializer_range),
+            trainable=True,
+            name="output_weights",
+        )
 
-        self.bias = self.add_weight(shape=(2,),
-                                    initializer="zeros", trainable=True, name="output_bias")
+        self.bias = self.add_weight(shape=(2,), initializer="zeros", trainable=True, name="output_bias")
 
         super(NSPHead, self).build(input_shape)
 
@@ -69,6 +71,7 @@ class NSPHead(Layer):
         logits = tf.matmul(hidden_states, self.output_weights, transpose_b=True)
         logits = tf.nn.bias_add(logits, self.bias)
         return logits
+
 
 class AlbertMLMHead(Layer):
     def __init__(self, config, embeddings, **kwargs):
@@ -84,8 +87,7 @@ class AlbertMLMHead(Layer):
         self.embeddings = embeddings
 
     def build(self, input_shape):
-        self.bias = self.add_weight(shape=(self.vocab_size,),
-                                    initializer="zeros", trainable=True, name="output_bias")
+        self.bias = self.add_weight(shape=(self.vocab_size,), initializer="zeros", trainable=True, name="output_bias")
         super(AlbertMLMHead, self).build(input_shape)
 
     def call(self, hidden_states, masked_lm_positions):
@@ -96,6 +98,7 @@ class AlbertMLMHead(Layer):
         logits = tf.matmul(hidden_states, word_embeddings, transpose_b=True)
         logits = tf.nn.bias_add(logits, self.bias)
         return logits
+
 
 class FactorizedBertMLMHead(Layer):
     def __init__(self, config, embeddings, **kwargs):
@@ -111,8 +114,7 @@ class FactorizedBertMLMHead(Layer):
         self.embeddings = embeddings
 
     def build(self, input_shape):
-        self.bias = self.add_weight(shape=(self.vocab_size,),
-                                    initializer="zeros", trainable=True, name="output_bias")
+        self.bias = self.add_weight(shape=(self.vocab_size,), initializer="zeros", trainable=True, name="output_bias")
         super(FactorizedBertMLMHead, self).build(input_shape)
 
     def call(self, hidden_states, masked_lm_positions):
