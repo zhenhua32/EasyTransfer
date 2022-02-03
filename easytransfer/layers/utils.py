@@ -18,6 +18,7 @@
 import tensorflow as tf
 import six
 
+
 def assert_rank(tensor, expected_rank, name=None):
     """Raises an exception if the tensor rank is not of the expected rank.
 
@@ -44,8 +45,9 @@ def assert_rank(tensor, expected_rank, name=None):
         scope_name = tf.compat.v1.get_variable_scope().name
         raise ValueError(
             "For the tensor `%s` in scope `%s`, the actual rank "
-            "`%d` (shape = %s) is not equal to the expected rank `%s`" %
-            (name, scope_name, actual_rank, str(tensor.shape), str(expected_rank)))
+            "`%d` (shape = %s) is not equal to the expected rank `%s`"
+            % (name, scope_name, actual_rank, str(tensor.shape), str(expected_rank))
+        )
 
 
 def get_shape_list_imagebert(tensor, expected_rank=None, name=None):
@@ -99,7 +101,7 @@ def get_initializer(initializer_range=0.02):
     Returns:
         TruncatedNormal initializer with stddev = `initializer_range`.
     """
-    return tf.compat.v1.keras.initializers.TruncatedNormal(stddev=initializer_range)
+    return tf.keras.initializers.TruncatedNormal(stddev=initializer_range)
 
 
 def gather_indexes(sequence_tensor, positions):
@@ -111,10 +113,8 @@ def gather_indexes(sequence_tensor, positions):
 
     batch_size = tf.cast(batch_size, tf.int64)
     seq_length = tf.cast(seq_length, tf.int64)
-    flat_offsets = tf.reshape(
-        tf.range(0, batch_size, dtype=tf.int64) * seq_length, [-1, 1])
+    flat_offsets = tf.reshape(tf.range(0, batch_size, dtype=tf.int64) * seq_length, [-1, 1])
     flat_positions = tf.reshape(positions + flat_offsets, [-1])
-    flat_sequence_tensor = tf.reshape(sequence_tensor,
-                                      [batch_size * seq_length, width])
+    flat_sequence_tensor = tf.reshape(sequence_tensor, [batch_size * seq_length, width])
     output_tensor = tf.gather(flat_sequence_tensor, flat_positions)
     return output_tensor
