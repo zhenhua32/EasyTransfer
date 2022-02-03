@@ -16,7 +16,7 @@
 import tensorflow as tf
 
 from easytransfer import layers
-from .modeling_utils import PretrainedConfig, PreTrainedModel
+from .modeling_utils import PretrainedConfig, PreTrainedModel, MyPreTrainedModel
 
 # 名字和模型路径的映射
 BERT_PRETRAINED_MODEL_ARCHIVE_MAP = {
@@ -135,13 +135,14 @@ class BertBackbone(layers.Layer):
             name="pooler/dense",
         )
 
-        super(BertBackbone, self).__init__(config, **kwargs)
+        super().__init__(**kwargs)
 
     def call(self, inputs, input_mask=None, segment_ids=None, training=False):
         """
+        前向传播, 返回 编码器和池化层输出的元素
         call 是给 Layer.__call__ 调用的, 可以直接将实例当作函数用
         """
-        # 如果是元组或列表
+        # 如果是元组或列表, 最多有三个输入
         if isinstance(inputs, (tuple, list)):
             input_ids = inputs[0]
             # 取出可能的 input_mask 和 segment_ids
@@ -153,6 +154,7 @@ class BertBackbone(layers.Layer):
 
         # 获取形状的数组
         input_shape = layers.get_shape_list(input_ids)
+        print("input_shape", input_shape)
         # 第一个是批次, 第二个是序列长度
         batch_size = input_shape[0]
         seq_length = input_shape[1]
@@ -167,6 +169,7 @@ class BertBackbone(layers.Layer):
 
         # 嵌入层的输出
         embedding_output = self.embeddings([input_ids, segment_ids], training=training)
+        # TODO: 继续, 到这里的输出已经是一样的了, 而且检查点里相关的变量也载入了
         # 注意力的 mask
         attention_mask = layers.get_attn_mask_bert(input_ids, input_mask)
         # 编码器的输出
@@ -264,6 +267,119 @@ class BertPreTrainedModel(PreTrainedModel):
             return sequence_output, pooled_output
         else:
             # 前三行同上
+            outputs = self.bert(inputs, training=training)
+            sequence_output = outputs[0]
+            pooled_output = outputs[1]
+            # 获取输入的形状
+            input_shape = layers.get_shape_list(sequence_output)
+            # 第一个维度是批次数量
+            batch_size = input_shape[0]
+            # 第二个维度是序列长度
+            seq_length = input_shape[1]
+            # 如果 masked_lm_positions 不存在, 初始化成 1
+            if masked_lm_positions is None:
+                masked_lm_positions = tf.ones(shape=[batch_size, seq_length], dtype=tf.int64)
+
+            # mlm 的输出, 需要使用 sequence_output 和 masked_lm_positions
+            mlm_logits = self.mlm(sequence_output, masked_lm_positions)
+            # nsp 的输出, 需要使用 pooled_output
+            nsp_logits = self.nsp(pooled_output)
+
+            # 然后返回三个值
+            return mlm_logits, nsp_logits, pooled_output
+
+
+class MyBertPreTrainedModel(MyPreTrainedModel):
+    """
+    bert 的预训练模型
+    """
+
+    # 配置类
+    config_class = BertConfig
+    # 模型名字和模型 ckpt 路径的映射
+    pretrained_model_archive_map = BERT_PRETRAINED_MODEL_ARCHIVE_MAP
+    # 模型名字和 config.json 路径的映射
+    pretrained_config_archive_map = BERT_PRETRAINED_CONFIG_ARCHIVE_MAP
+
+    def __init__(self, config, **kwargs):
+        """
+        初始化很基础, 就是设置了几个属性, 但是要确保这些都是来自 keras.layer.Layer 的
+        """
+        super().__init__(config, **kwargs)
+        # bert 骨架
+        self.bert = BertBackbone(config, name="bert", enable_whale=kwargs.get("enable_whale", False))
+        # MLMHead, 预测
+        self.mlm = layers.MLMHead(config, self.bert.embeddings, name="cls/predictions")
+        # NSPHead, 序列关系
+        self.nsp = layers.NSPHead(config, name="cls/seq_relationship")
+
+    def call(self, inputs, masked_lm_positions=None, **kwargs):
+        """
+        前向传播是关键
+        Args:
+
+            inputs : [input_ids, input_mask, segment_ids]
+            masked_lm_positions: masked_lm_positions
+
+        Returns:
+
+            sequence_output, pooled_output
+
+        Examples::
+
+
+            google-bert-tiny-zh
+
+            google-bert-tiny-en
+
+            google-bert-small-zh
+
+            google-bert-small-en
+
+            google-bert-base-zh
+
+            google-bert-base-en
+
+            google-bert-large-zh
+
+            google-bert-large-en
+
+            pai-bert-tiny-zh
+
+            pai-bert-tiny-en
+
+            pai-bert-small-zh
+
+            pai-bert-small-en
+
+            pai-bert-base-zh
+
+            pai-bert-base-en
+
+            pai-bert-large-zh
+
+            pai-bert-large-en
+
+            model = model_zoo.get_pretrained_model('google-bert-base-zh')
+            outputs = model([input_ids, input_mask, segment_ids], mode=mode)
+
+        """
+        # 是否是训练模式
+        training = kwargs["mode"] == tf.estimator.ModeKeys.TRAIN
+
+        # 是否需要输出特征
+        if kwargs.get("output_features", True) is True:
+            # bert 的输出
+            outputs = self.bert(inputs, training=training)
+            # 第一个是序列输出
+            sequence_output = outputs[0]
+            # 第二个是池化输出
+            pooled_output = outputs[1]
+            # 这个就是更明确点的, 变成了两个返回值, 原本的 outputs 是个元组
+            return sequence_output, pooled_output
+        else:
+            # 前三行同上
+            # 先把输入数据喂给 bert
             outputs = self.bert(inputs, training=training)
             sequence_output = outputs[0]
             pooled_output = outputs[1]
