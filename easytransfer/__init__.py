@@ -13,7 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import random
+import numpy as np
+import tensorflow as tf
+
 from easytransfer import layers
 from easytransfer.engines.model import base_model, Config, FLAGS
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"
+
+
+# 固定的种子
+SEED = 123123
+os.environ["PYTHONHASHSEED"] = str(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+tf.compat.v1.reset_default_graph()
+tf.compat.v1.set_random_seed(SEED)
+tf.random.set_seed(SEED)
