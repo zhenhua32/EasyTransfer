@@ -20,31 +20,30 @@ from .modeling_utils import PretrainedConfig, PreTrainedModel
 
 # 名字和模型路径的映射
 BERT_PRETRAINED_MODEL_ARCHIVE_MAP = {
-    'google-bert-tiny-en': "bert/google-bert-tiny-en/model.ckpt",
-    'google-bert-small-en': "bert/google-bert-small-en/model.ckpt",
-    'google-bert-base-zh': "bert/google-bert-base-zh/model.ckpt",
-    'google-bert-base-en': "bert/google-bert-base-en/model.ckpt",
-    'google-bert-large-en': "bert/google-bert-large-en/model.ckpt",
-    'pai-bert-tiny-zh-L2-H768-A12': "bert/pai-bert-tiny-zh-L2-H768-A12/model.ckpt",
-    'pai-bert-tiny-zh': "bert/pai-bert-tiny-zh/model.ckpt",
-    'pai-bert-small-zh': "bert/pai-bert-small-zh/model.ckpt",
-    'pai-bert-base-zh': "bert/pai-bert-base-zh/model.ckpt",
-    'pai-bert-large-zh': "bert/pai-bert-large-zh/model.ckpt",
+    "google-bert-tiny-en": "bert/google-bert-tiny-en/model.ckpt",
+    "google-bert-small-en": "bert/google-bert-small-en/model.ckpt",
+    "google-bert-base-zh": "bert/google-bert-base-zh/model.ckpt",
+    "google-bert-base-en": "bert/google-bert-base-en/model.ckpt",
+    "google-bert-large-en": "bert/google-bert-large-en/model.ckpt",
+    "pai-bert-tiny-zh-L2-H768-A12": "bert/pai-bert-tiny-zh-L2-H768-A12/model.ckpt",
+    "pai-bert-tiny-zh": "bert/pai-bert-tiny-zh/model.ckpt",
+    "pai-bert-small-zh": "bert/pai-bert-small-zh/model.ckpt",
+    "pai-bert-base-zh": "bert/pai-bert-base-zh/model.ckpt",
+    "pai-bert-large-zh": "bert/pai-bert-large-zh/model.ckpt",
 }
 
 # 名字和配置文件的映射
 BERT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    'google-bert-tiny-en': "bert/google-bert-tiny-en/config.json",
-    'google-bert-small-en': "bert/google-bert-small-en/config.json",
-    'google-bert-base-zh': "bert/google-bert-base-zh/config.json",
-    'google-bert-base-en': "bert/google-bert-base-en/config.json",
-    'google-bert-large-en': "bert/google-bert-large-en/config.json",
-    'pai-bert-tiny-zh-L2-H768-A12': "bert/pai-bert-tiny-zh-L2-H768-A12/config.json",
-    'pai-bert-tiny-zh': "bert/pai-bert-tiny-zh/config.json",
-    'pai-bert-small-zh': "bert/pai-bert-small-zh/config.json",
-    'pai-bert-base-zh': "bert/pai-bert-base-zh/config.json",
-    'pai-bert-large-zh': "bert/pai-bert-large-zh/config.json",
-
+    "google-bert-tiny-en": "bert/google-bert-tiny-en/config.json",
+    "google-bert-small-en": "bert/google-bert-small-en/config.json",
+    "google-bert-base-zh": "bert/google-bert-base-zh/config.json",
+    "google-bert-base-en": "bert/google-bert-base-en/config.json",
+    "google-bert-large-en": "bert/google-bert-large-en/config.json",
+    "pai-bert-tiny-zh-L2-H768-A12": "bert/pai-bert-tiny-zh-L2-H768-A12/config.json",
+    "pai-bert-tiny-zh": "bert/pai-bert-tiny-zh/config.json",
+    "pai-bert-small-zh": "bert/pai-bert-small-zh/config.json",
+    "pai-bert-base-zh": "bert/pai-bert-base-zh/config.json",
+    "pai-bert-large-zh": "bert/pai-bert-large-zh/config.json",
 }
 
 
@@ -82,18 +81,20 @@ class BertConfig(PretrainedConfig):
       truncated_normal_initializer 的标准差, 用于初始化所有的权重矩阵
     """
 
-    def __init__(self,
-                 vocab_size,
-                 hidden_size,
-                 intermediate_size,
-                 num_hidden_layers,
-                 num_attention_heads,
-                 max_position_embeddings,
-                 type_vocab_size,
-                 hidden_dropout_prob=0.1,
-                 attention_probs_dropout_prob=0.1,
-                 initializer_range=0.02,
-                 **kwargs):
+    def __init__(
+        self,
+        vocab_size,
+        hidden_size,
+        intermediate_size,
+        num_hidden_layers,
+        num_attention_heads,
+        max_position_embeddings,
+        type_vocab_size,
+        hidden_dropout_prob=0.1,
+        attention_probs_dropout_prob=0.1,
+        initializer_range=0.02,
+        **kwargs
+    ):
         super(BertConfig, self).__init__(**kwargs)
         self.vocab_size = vocab_size
         self.hidden_size = hidden_size
@@ -111,6 +112,7 @@ class BertBackbone(layers.Layer):
     """
     bert 的骨架, 也是一个层
     """
+
     def __init__(self, config: BertConfig, **kwargs):
         """
         config 是 BertConfig 的实例
@@ -118,7 +120,7 @@ class BertBackbone(layers.Layer):
         # 嵌入层
         self.embeddings = layers.BertEmbeddings(config, name="embeddings")
         # 编码器
-        if not kwargs.pop('enable_whale', False):
+        if not kwargs.pop("enable_whale", False):
             # 不开启 whale
             self.encoder = layers.Encoder(config, name="encoder")
         else:
@@ -128,16 +130,14 @@ class BertBackbone(layers.Layer):
         # 池化器
         self.pooler = layers.Dense(
             units=config.hidden_size,
-            activation='tanh',
+            activation="tanh",
             kernel_initializer=layers.get_initializer(config.initializer_range),
-            name="pooler/dense")
+            name="pooler/dense",
+        )
 
         super(BertBackbone, self).__init__(config, **kwargs)
 
-    def call(self, inputs,
-             input_mask=None,
-             segment_ids=None,
-             training=False):
+    def call(self, inputs, input_mask=None, segment_ids=None, training=False):
         """
         call 是给 Layer.__call__ 调用的, 可以直接将实例当作函数用
         """
@@ -182,6 +182,7 @@ class BertPreTrainedModel(PreTrainedModel):
     """
     bert 的预训练模型
     """
+
     # 配置类
     config_class = BertConfig
     # 模型名字和模型 ckpt 路径的映射
@@ -198,9 +199,7 @@ class BertPreTrainedModel(PreTrainedModel):
         # NSPHead, 序列关系
         self.nsp = layers.NSPHead(config, name="cls/seq_relationship")
 
-    def call(self, inputs,
-             masked_lm_positions=None,
-             **kwargs):
+    def call(self, inputs, masked_lm_positions=None, **kwargs):
         """
         Args:
 
@@ -251,7 +250,7 @@ class BertPreTrainedModel(PreTrainedModel):
 
         """
         # 是否是训练模式
-        training = kwargs['mode'] == tf.estimator.ModeKeys.TRAIN
+        training = kwargs["mode"] == tf.estimator.ModeKeys.TRAIN
 
         # 是否需要输出特征
         if kwargs.get("output_features", True) == True:
