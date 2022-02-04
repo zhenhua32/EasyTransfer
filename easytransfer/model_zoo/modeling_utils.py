@@ -126,22 +126,22 @@ class MyPreTrainedModel(keras.layers.Layer):
         # 先用假的输入调用一次, 看能否调用成功
         model(model.dummy_inputs(kwargs.get("input_sequence_length", 512)), mode="eval", output_features=False)
 
-        # # 模型的文件
-        # archive_file = None
-        # if pretrained_model_name_or_path in cls.pretrained_model_archive_map:
-        #     archive_file = cls.pretrained_model_archive_map[pretrained_model_name_or_path]
-        #     archive_file = os.path.join(FLAGS.modelZooBasePath, archive_file)
-        # elif "/" in pretrained_model_name_or_path:
-        #     archive_file = pretrained_model_name_or_path
+        # 模型的文件
+        archive_file = None
+        if pretrained_model_name_or_path in cls.pretrained_model_archive_map:
+            archive_file = cls.pretrained_model_archive_map[pretrained_model_name_or_path]
+            archive_file = os.path.join(FLAGS.modelZooBasePath, archive_file)
+        elif "/" in pretrained_model_name_or_path:
+            archive_file = pretrained_model_name_or_path
 
-        # # 如果这个模型文件存在, 就从这个文件中恢复
-        # if tf.io.gfile.exists(archive_file + ".data-00000-of-00001"):
-        #     model._init_from_pretrained_model(archive_file)
-        # else:
-        #     tf.compat.v1.logging.info("archive file {} does not exists".format(archive_file))
-        #     tf.compat.v1.logging.info(
-        #         "ckpt {} not in model zoo, random initialization".format(pretrained_model_name_or_path)
-        #     )
+        # 如果这个模型文件存在, 就从这个文件中恢复
+        if tf.io.gfile.exists(archive_file + ".data-00000-of-00001"):
+            model._init_from_pretrained_model(archive_file)
+        else:
+            tf.compat.v1.logging.info("archive file {} does not exists".format(archive_file))
+            tf.compat.v1.logging.info(
+                "ckpt {} not in model zoo, random initialization".format(pretrained_model_name_or_path)
+            )
 
         return model
 
@@ -167,7 +167,6 @@ class MyPreTrainedModel(keras.layers.Layer):
                 name = m.group(1)
             network_name_to_variable[name] = var
 
-        print("network_name_to_variable", list(network_name_to_variable.keys()))
         try:
             # 检查点读取器
             # reader = tf.compat.v1.train.NewCheckpointReader(pretrained_model_path)

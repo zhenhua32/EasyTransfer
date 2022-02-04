@@ -17,7 +17,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers as keras_layers
 from tensorflow.keras.layers import Layer
-from .core import Dropout
+from .core import Dropout, LayerNormalization
 from .utils import get_initializer, get_shape_list
 
 
@@ -34,8 +34,7 @@ class BertEmbeddings(Layer):
         self.token_type_vocab_size = config.type_vocab_size
         self.max_position_embeddings = config.max_position_embeddings
 
-        # self.LayerNorm = LayerNormalization
-        self.layer_norm = keras_layers.LayerNormalization(axis=-1, epsilon=1e-12, name="LayerNorm")
+        self.layer_norm = LayerNormalization(name="LayerNorm")
         self.dropout = Dropout(config.hidden_dropout_prob)
         self.initializer = get_initializer(self.initializer_range)
 
@@ -110,7 +109,7 @@ class AlbertEmbeddings(Layer):
         self.token_type_vocab_size = config.type_vocab_size
         self.max_position_embeddings = config.max_position_embeddings
 
-        self.LayerNorm = LayerNormalization
+        self.layer_norm = LayerNormalization(name="LayerNorm")
         self.dropout = Dropout(config.hidden_dropout_prob)
         self.initializer = get_initializer(self.initializer_range)
 
@@ -162,6 +161,6 @@ class AlbertEmbeddings(Layer):
 
         input_embeddings += position_embeddings
 
-        output = self.LayerNorm(input_embeddings, name="LayerNorm")
+        output = self.layer_norm(input_embeddings)
         output = self.dropout(output, training=training)
         return output

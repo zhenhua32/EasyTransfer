@@ -15,7 +15,7 @@
 
 
 import tensorflow as tf
-from tensorflow.python.layers.base import Layer
+from tensorflow.keras.layers import Layer
 from .utils import get_initializer
 from .core import Dropout, dense_dropoutput_layernorm
 
@@ -34,6 +34,9 @@ class SelfAttention(Layer):
         self.dropout = Dropout(config.attention_probs_dropout_prob)
 
     def build(self, input_shape):
+        """
+        添加权重, 基于 input_shape
+        """
         self.q_head_weight = self.add_weight(
             shape=(self.hidden_size, self.hidden_size),
             initializer=self.initializer,
@@ -121,6 +124,7 @@ class SelfAttention(Layer):
 class Attention(Layer):
     def __init__(self, config, **kwargs):
         super(Attention, self).__init__(**kwargs)
+        # 在这里定义了权重
         self.self_attention = SelfAttention(config, name="self")
         self.dense_output = dense_dropoutput_layernorm(config, name="output")
 

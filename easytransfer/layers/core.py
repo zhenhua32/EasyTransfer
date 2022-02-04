@@ -21,18 +21,16 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.keras import layers as keras_layers
-from tensorflow.python.layers import base
 import tf_slim as slim
 from .utils import get_initializer
 
 
-def LayerNormalization(input_tensor, name=None):
-    """TODO: DELETE: 没什么用了
-    Run layer normalization on the last dimension of the tensor."""
-    return slim.layers.layer_norm(inputs=input_tensor, begin_norm_axis=-1, begin_params_axis=-1, scope=name)
+def LayerNormalization(name=None):
+    """Run layer normalization on the last dimension of the tensor."""
+    return keras_layers.LayerNormalization(axis=-1, epsilon=1e-12, name=name)
 
 
-class Embedding(keras_layers.Embedding, base.Layer):
+class Embedding(keras_layers.Embedding):
     def __init__(
         self,
         input_dim,
@@ -58,7 +56,7 @@ class Embedding(keras_layers.Embedding, base.Layer):
         )
 
 
-class Dense(keras_layers.Dense, base.Layer):
+class Dense(keras_layers.Dense):
     def __init__(
         self,
         units,
@@ -92,7 +90,7 @@ class Dense(keras_layers.Dense, base.Layer):
         )
 
 
-class Dropout(keras_layers.Dropout, base.Layer):
+class Dropout(keras_layers.Dropout):
     def __init__(self, rate=0.5, noise_shape=None, seed=None, name=None, **kwargs):
         super(Dropout, self).__init__(rate=rate, noise_shape=noise_shape, seed=seed, name=name, **kwargs)
 
@@ -100,18 +98,18 @@ class Dropout(keras_layers.Dropout, base.Layer):
         return super(Dropout, self).call(inputs, training=training)
 
 
-class dense_dropoutput_layernorm(base.Layer):
+class dense_dropoutput_layernorm(keras_layers.Layer):
     def __init__(self, config, **kwargs):
         super(dense_dropoutput_layernorm, self).__init__(**kwargs)
         self.dense = Dense(
             config.hidden_size, kernel_initializer=get_initializer(config.initializer_range), name="dense"
         )
-        self.LayerNorm = LayerNormalization
+        self.layer_norm = LayerNormalization(name="LayerNorm")
         self.dropout = Dropout(config.hidden_dropout_prob)
 
     def call(self, inputs, training=False):
         hidden_states, input_tensor = inputs
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states, training=training)
-        hidden_states = self.LayerNorm(hidden_states + input_tensor, name="LayerNorm")
+        hidden_states = self.layer_norm(hidden_states + input_tensor)
         return hidden_states

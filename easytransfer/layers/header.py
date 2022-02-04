@@ -32,7 +32,7 @@ class MLMHead(Layer):
             name="transform/dense",
         )
 
-        self.LayerNorm = LayerNormalization
+        self.layer_norm = LayerNormalization(name="transform/LayerNorm")
         self.embeddings = embeddings
 
     def build(self, input_shape):
@@ -43,7 +43,7 @@ class MLMHead(Layer):
         hidden_states = gather_indexes(hidden_states, masked_lm_positions)
         word_embeddings = self.embeddings.word_embeddings
         hidden_states = self.dense(hidden_states)
-        hidden_states = self.LayerNorm(hidden_states, name="transform/LayerNorm")
+        hidden_states = self.layer_norm(hidden_states)
         logits = tf.matmul(hidden_states, word_embeddings, transpose_b=True)
         logits = tf.nn.bias_add(logits, self.bias)
         return logits
@@ -83,7 +83,7 @@ class AlbertMLMHead(Layer):
             activation=gelu_new,
             name="transform/dense",
         )
-        self.LayerNorm = LayerNormalization
+        self.layer_norm = LayerNormalization(name="transform/LayerNorm")
         self.embeddings = embeddings
 
     def build(self, input_shape):
@@ -94,7 +94,7 @@ class AlbertMLMHead(Layer):
         hidden_states = gather_indexes(hidden_states, masked_lm_positions)
         word_embeddings = self.embeddings.word_embeddings
         hidden_states = self.dense(hidden_states)
-        hidden_states = self.LayerNorm(hidden_states, name="transform/LayerNorm")
+        hidden_states = self.layer_norm(hidden_states, name="transform/LayerNorm")
         logits = tf.matmul(hidden_states, word_embeddings, transpose_b=True)
         logits = tf.nn.bias_add(logits, self.bias)
         return logits
@@ -110,7 +110,7 @@ class FactorizedBertMLMHead(Layer):
             activation=gelu_new,
             name="transform/dense",
         )
-        self.LayerNorm = LayerNormalization
+        self.layer_norm = LayerNormalization(name="transform/LayerNorm")
         self.embeddings = embeddings
 
     def build(self, input_shape):
@@ -121,7 +121,7 @@ class FactorizedBertMLMHead(Layer):
         hidden_states = gather_indexes(hidden_states, masked_lm_positions)
         word_embeddings = self.embeddings.word_embeddings
         hidden_states = self.dense(hidden_states)
-        hidden_states = self.LayerNorm(hidden_states, name="transform/LayerNorm")
+        hidden_states = self.layer_norm(hidden_states, name="transform/LayerNorm")
         logits = tf.matmul(hidden_states, word_embeddings, transpose_b=True)
         logits = tf.nn.bias_add(logits, self.bias)
         return logits
