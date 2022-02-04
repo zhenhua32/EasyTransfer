@@ -19,6 +19,7 @@ from tensorflow.python.layers.base import Layer
 from .utils import get_initializer
 from .core import Dropout, dense_dropoutput_layernorm
 
+
 class SelfAttention(Layer):
     def __init__(self, config, **kwargs):
         super(SelfAttention, self).__init__(**kwargs)
@@ -37,44 +38,43 @@ class SelfAttention(Layer):
             shape=(self.hidden_size, self.hidden_size),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='query/kernel',
+            name="query/kernel",
         )
         self.q_head_bias = self.add_weight(
             shape=(self.hidden_size,),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='query/bias',
+            name="query/bias",
         )
         self.k_head_weight = self.add_weight(
             shape=(self.hidden_size, self.hidden_size),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='key/kernel',
+            name="key/kernel",
         )
         self.k_head_bias = self.add_weight(
             shape=(self.hidden_size,),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='key/bias',
+            name="key/bias",
         )
         self.v_head_weight = self.add_weight(
             shape=(self.hidden_size, self.hidden_size),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='value/kernel',
+            name="value/kernel",
         )
         self.v_head_bias = self.add_weight(
             shape=(self.hidden_size,),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='value/bias',
+            name="value/bias",
         )
 
         super(SelfAttention, self).build(input_shape)
 
-    def _abs_attn_core(self, q_head, k_head, v_head, attn_mask, training,
-                       scale):
-        attn_score = tf.einsum('bind,bjnd->bnij', q_head, k_head)
+    def _abs_attn_core(self, q_head, k_head, v_head, attn_mask, training, scale):
+        attn_score = tf.einsum("bind,bjnd->bnij", q_head, k_head)
         attn_score = tf.multiply(attn_score, scale)
 
         attn_mask = tf.expand_dims(attn_mask, axis=[1])
@@ -84,7 +84,7 @@ class SelfAttention(Layer):
         attn_prob = tf.nn.softmax(attn_score)
         attn_prob = self.dropout(attn_prob, training=training)
 
-        attn_vec = tf.einsum('bnij,bjnd->bind', attn_prob, v_head)
+        attn_vec = tf.einsum("bnij,bjnd->bind", attn_prob, v_head)
         return attn_vec
 
     def call(self, attention_input, attention_mask, kv=None, training=False):
@@ -99,13 +99,13 @@ class SelfAttention(Layer):
         batch_size = tf.shape(input=attention_mask)[0]
         seq_length = tf.shape(input=attention_mask)[1]
 
-        q_head_h = tf.einsum('bih,hx->bix', q_input, self.q_head_weight)
+        q_head_h = tf.einsum("bih,hx->bix", q_input, self.q_head_weight)
         q_head_h = tf.nn.bias_add(q_head_h, self.q_head_bias)
 
-        k_head_h = tf.einsum('bih,hx->bix', k_input, self.k_head_weight)
+        k_head_h = tf.einsum("bih,hx->bix", k_input, self.k_head_weight)
         k_head_h = tf.nn.bias_add(k_head_h, self.k_head_bias)
 
-        v_head_h = tf.einsum('bih,hx->bix', v_input, self.v_head_weight)
+        v_head_h = tf.einsum("bih,hx->bix", v_input, self.v_head_weight)
         v_head_h = tf.nn.bias_add(v_head_h, self.v_head_bias)
 
         q_head_h = tf.reshape(q_head_h, [batch_size, seq_length, self.num_attention_heads, self.attention_head_size])
@@ -116,6 +116,7 @@ class SelfAttention(Layer):
         attn_vec = self._abs_attn_core(q_head_h, k_head_h, v_head_h, attention_mask, training, scale)
         attn_vec = tf.reshape(attn_vec, [batch_size, seq_length, self.hidden_size])
         return attn_vec
+
 
 class Attention(Layer):
     def __init__(self, config, **kwargs):
@@ -138,7 +139,6 @@ class CrossAttention(Layer):
 
     def call(self, inputs, training=False):
         input_tensor, encoder_hidden_states, attention_mask = inputs
-        self_outputs = self.cross_attention(input_tensor, attention_mask,
-                                           encoder_hidden_states, training=training)
+        self_outputs = self.cross_attention(input_tensor, attention_mask, encoder_hidden_states, training=training)
         attention_output = self.dense_output([self_outputs, input_tensor], training=training)
         return attention_output
