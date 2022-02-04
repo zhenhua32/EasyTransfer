@@ -29,57 +29,57 @@ from easytransfer.model_zoo import get_config_path
 
 # 句子 的 vocab 路径
 sentencepiece_model_name_vocab_path_map = {
-    'google-albert-base-zh': "albert/google-albert-base-zh/vocab.txt",
-    'google-albert-large-zh': "albert/google-albert-large-zh/vocab.txt",
-    'google-albert-xlarge-zh': "albert/google-albert-xlarge-zh/vocab.txt",
-    'google-albert-xxlarge-zh': "albert/google-albert-xxlarge-zh/vocab.txt",
-    'google-albert-base-en': "albert/google-albert-base-en/30k-clean.model",
-    'google-albert-large-en': "albert/google-albert-large-en/30k-clean.model",
-    'google-albert-xlarge-en': "albert/google-albert-xlarge-en/30k-clean.model",
-    'google-albert-xxlarge-en': "albert/google-albert-xxlarge-en/30k-clean.model",
-    'pai-albert-base-zh': "albert/pai-albert-base-zh/vocab.txt",
-    'pai-albert-large-zh': "albert/pai-albert-large-zh/vocab.txt",
-    'pai-albert-xlarge-zh': "albert/pai-albert-xlarge-zh/vocab.txt",
-    'pai-albert-xxlarge-zh': "albert/pai-albert-xxlarge-zh/vocab.txt",
-    'pai-albert-base-en': "albert/pai-albert-base-en/30k-clean.model",
-    'pai-albert-large-en': "albert/pai-albert-large-en/30k-clean.model",
-    'pai-albert-xlarge-en': "albert/pai-albert-xlarge-en/30k-clean.model",
-    'pai-albert-xxlarge-en': "albert/pai-albert-xxlarge-en/30k-clean.model",
+    "google-albert-base-zh": "albert/google-albert-base-zh/vocab.txt",
+    "google-albert-large-zh": "albert/google-albert-large-zh/vocab.txt",
+    "google-albert-xlarge-zh": "albert/google-albert-xlarge-zh/vocab.txt",
+    "google-albert-xxlarge-zh": "albert/google-albert-xxlarge-zh/vocab.txt",
+    "google-albert-base-en": "albert/google-albert-base-en/30k-clean.model",
+    "google-albert-large-en": "albert/google-albert-large-en/30k-clean.model",
+    "google-albert-xlarge-en": "albert/google-albert-xlarge-en/30k-clean.model",
+    "google-albert-xxlarge-en": "albert/google-albert-xxlarge-en/30k-clean.model",
+    "pai-albert-base-zh": "albert/pai-albert-base-zh/vocab.txt",
+    "pai-albert-large-zh": "albert/pai-albert-large-zh/vocab.txt",
+    "pai-albert-xlarge-zh": "albert/pai-albert-xlarge-zh/vocab.txt",
+    "pai-albert-xxlarge-zh": "albert/pai-albert-xxlarge-zh/vocab.txt",
+    "pai-albert-base-en": "albert/pai-albert-base-en/30k-clean.model",
+    "pai-albert-large-en": "albert/pai-albert-large-en/30k-clean.model",
+    "pai-albert-xlarge-en": "albert/pai-albert-xlarge-en/30k-clean.model",
+    "pai-albert-xxlarge-en": "albert/pai-albert-xxlarge-en/30k-clean.model",
 }
 
 # 单词 的 vocab 路径
 wordpiece_model_name_vocab_path_map = {
-    'google-bert-tiny-zh': "bert/google-bert-tiny-zh/vocab.txt",
-    'google-bert-tiny-en': "bert/google-bert-tiny-en/vocab.txt",
-    'google-bert-small-zh': "bert/google-bert-small-zh/vocab.txt",
-    'google-bert-small-en': "bert/google-bert-small-en/vocab.txt",
-    'google-bert-base-zh': "bert/google-bert-base-zh/vocab.txt",
-    'google-bert-base-en': "bert/google-bert-base-en/vocab.txt",
-    'google-bert-large-zh': "bert/google-bert-large-zh/vocab.txt",
-    'google-bert-large-en': "bert/google-bert-large-en/vocab.txt",
-    'pai-bert-tiny-zh-L2-H768-A12': "bert/pai-bert-tiny-zh-L2-H768-A12/vocab.txt",
-    'pai-bert-tiny-zh-L2-H128-A2': "bert/pai-bert-tiny-zh-L2-H128-A2/vocab.txt",
-    'pai-bert-tiny-en': "bert/pai-bert-tiny-en/vocab.txt",
-    'pai-bert-tiny-zh': "bert/pai-bert-tiny-zh/vocab.txt",
-    'pai-bert-small-zh': "bert/pai-bert-small-zh/vocab.txt",
-    'pai-bert-small-en': "bert/pai-bert-small-en/vocab.txt",
-    'pai-bert-base-zh': "bert/pai-bert-base-zh/vocab.txt",
-    'pai-bert-base-en': "bert/pai-bert-base-en/vocab.txt",
-    'pai-bert-large-zh': "bert/pai-bert-large-zh/vocab.txt",
-    'pai-bert-large-en': "bert/pai-bert-large-en/vocab.txt",
-    'hit-roberta-base-zh': "roberta/hit-roberta-base-zh/vocab.txt",
-    'hit-roberta-large-zh': "roberta/hit-roberta-large-zh/vocab.txt",
-    'pai-imagebert-base-zh': "imagebert/pai-imagebert-base-zh/vocab.txt",
-    'pai-videobert-base-zh': "imagebert/pai-videobert-base-zh/vocab.txt",
-    'brightmart-roberta-small-zh': "roberta/brightmart-roberta-small-zh/vocab.txt",
-    'brightmart-roberta-large-zh': "roberta/brightmart-roberta-large-zh/vocab.txt",
-    'icbu-imagebert-small-en': "imagebert/icbu-imagebert-small-en/vocab.txt",
-    'pai-transformer-base-zh': "transformer/pai-transformer-base-zh/vocab.txt",
-    'pai-linformer-base-en': "linformer/pai-linformer-base-en/vocab.txt",
-    'pai-xformer-base-en': "xformer/pai-xformer-base-en/vocab.txt",
-    'pai-imagebert-base-en': "imagebert/pai-imagebert-base-en/vocab.txt",
-    'pai-synthesizer-base-en': "synthesizer/pai-synthesizer-base-en/vocab.txt",
-    'pai-sentimentbert-base-zh': "sentimentbert/pai-sentimentbert-base-zh/vocab.txt"
+    "google-bert-tiny-zh": "bert/google-bert-tiny-zh/vocab.txt",
+    "google-bert-tiny-en": "bert/google-bert-tiny-en/vocab.txt",
+    "google-bert-small-zh": "bert/google-bert-small-zh/vocab.txt",
+    "google-bert-small-en": "bert/google-bert-small-en/vocab.txt",
+    "google-bert-base-zh": "bert/google-bert-base-zh/vocab.txt",
+    "google-bert-base-en": "bert/google-bert-base-en/vocab.txt",
+    "google-bert-large-zh": "bert/google-bert-large-zh/vocab.txt",
+    "google-bert-large-en": "bert/google-bert-large-en/vocab.txt",
+    "pai-bert-tiny-zh-L2-H768-A12": "bert/pai-bert-tiny-zh-L2-H768-A12/vocab.txt",
+    "pai-bert-tiny-zh-L2-H128-A2": "bert/pai-bert-tiny-zh-L2-H128-A2/vocab.txt",
+    "pai-bert-tiny-en": "bert/pai-bert-tiny-en/vocab.txt",
+    "pai-bert-tiny-zh": "bert/pai-bert-tiny-zh/vocab.txt",
+    "pai-bert-small-zh": "bert/pai-bert-small-zh/vocab.txt",
+    "pai-bert-small-en": "bert/pai-bert-small-en/vocab.txt",
+    "pai-bert-base-zh": "bert/pai-bert-base-zh/vocab.txt",
+    "pai-bert-base-en": "bert/pai-bert-base-en/vocab.txt",
+    "pai-bert-large-zh": "bert/pai-bert-large-zh/vocab.txt",
+    "pai-bert-large-en": "bert/pai-bert-large-en/vocab.txt",
+    "hit-roberta-base-zh": "roberta/hit-roberta-base-zh/vocab.txt",
+    "hit-roberta-large-zh": "roberta/hit-roberta-large-zh/vocab.txt",
+    "pai-imagebert-base-zh": "imagebert/pai-imagebert-base-zh/vocab.txt",
+    "pai-videobert-base-zh": "imagebert/pai-videobert-base-zh/vocab.txt",
+    "brightmart-roberta-small-zh": "roberta/brightmart-roberta-small-zh/vocab.txt",
+    "brightmart-roberta-large-zh": "roberta/brightmart-roberta-large-zh/vocab.txt",
+    "icbu-imagebert-small-en": "imagebert/icbu-imagebert-small-en/vocab.txt",
+    "pai-transformer-base-zh": "transformer/pai-transformer-base-zh/vocab.txt",
+    "pai-linformer-base-en": "linformer/pai-linformer-base-en/vocab.txt",
+    "pai-xformer-base-en": "xformer/pai-xformer-base-en/vocab.txt",
+    "pai-imagebert-base-en": "imagebert/pai-imagebert-base-en/vocab.txt",
+    "pai-synthesizer-base-en": "synthesizer/pai-synthesizer-base-en/vocab.txt",
+    "pai-sentimentbert-base-zh": "sentimentbert/pai-sentimentbert-base-zh/vocab.txt",
 }
 
 
@@ -107,6 +107,7 @@ class PreprocessorConfig(object):
     """
     预处理器的配置
     """
+
     def __init__(self, **kwargs):
 
         self.mode = kwargs.get("mode")
@@ -115,21 +116,23 @@ class PreprocessorConfig(object):
         self.append_feature_columns = kwargs.get("append_feature_columns")
 
         # configurate tokenizer
-        pretrain_model_name_or_path = kwargs['pretrain_model_name_or_path']
+        pretrain_model_name_or_path = kwargs["pretrain_model_name_or_path"]
 
         # 如果路径中没有 / 说明不是一个文件路径, 而是预定义的模型的名称
         if "/" not in pretrain_model_name_or_path:
             # - 分隔的第二个位置是模型类型 model_type
             model_type = pretrain_model_name_or_path.split("-")[1]
             # 检查配置文件是否存在, 如果存在, 就跳过. 否则就要下载模型
-            if tf.io.gfile.exists(os.path.join(FLAGS.modelZooBasePath, model_type,
-                                                pretrain_model_name_or_path, "config.json")):
+            if tf.io.gfile.exists(
+                os.path.join(FLAGS.modelZooBasePath, model_type, pretrain_model_name_or_path, "config.json")
+            ):
                 # If exists directory, not download
                 pass
             else:
                 # python 2 版本? 没想到啊, 一开始居然是支持 python 2.7 的
                 if six.PY2:
                     import errno
+
                     def mkdir_p(path):
                         try:
                             os.makedirs(path)
@@ -138,24 +141,33 @@ class PreprocessorConfig(object):
                                 pass
                             else:
                                 raise
+
                     mkdir_p(os.path.join(FLAGS.modelZooBasePath, model_type))
                 else:
                     # 创建完整的目录
                     os.makedirs(os.path.join(FLAGS.modelZooBasePath, model_type), exist_ok=True)
 
                 # 目标路径, 是 pretrain_model_name_or_path + .tgz 的文件
-                des_path = os.path.join(os.path.join(FLAGS.modelZooBasePath, model_type),
-                                        pretrain_model_name_or_path + ".tgz")
+                des_path = os.path.join(
+                    os.path.join(FLAGS.modelZooBasePath, model_type), pretrain_model_name_or_path + ".tgz"
+                )
                 if not os.path.exists(des_path):
                     tf.compat.v1.logging.info("********** Begin to download to {} **********".format(des_path))
                     # 没想到是直接调用命令行工具下载和解压的
                     os.system(
-                        'wget -O ' + des_path + ' https://atp-modelzoo-sh.oss-cn-shanghai.aliyuncs.com/eztransfer_modelzoo/' + model_type + '/' + pretrain_model_name_or_path + ".tgz")
-                    os.system('tar -zxvf ' + des_path + ' --directory ' + FLAGS.modelZooBasePath + "/" + model_type)
+                        "wget -O "
+                        + des_path
+                        + " https://atp-modelzoo-sh.oss-cn-shanghai.aliyuncs.com/eztransfer_modelzoo/"
+                        + model_type
+                        + "/"
+                        + pretrain_model_name_or_path
+                        + ".tgz"
+                    )
+                    os.system("tar -zxvf " + des_path + " --directory " + FLAGS.modelZooBasePath + "/" + model_type)
 
         # 如果是包含 train 的模式
         if "train" in self.mode:
-            model_dir = kwargs['model_dir']
+            model_dir = kwargs["model_dir"]
             assert model_dir is not None, "model_dir should be set in config"
             # 同样的, 组合出模型所在的目录 dir_path
             if "/" not in pretrain_model_name_or_path:
@@ -173,16 +185,15 @@ class PreprocessorConfig(object):
 
             # 如果 model_dir 中配置文件 config.json 不存在, 就从 dir_path 中复制配置文件和词汇表
             if not tf.io.gfile.exists(os.path.join(model_dir, "config.json")):
-                tf.io.gfile.copy(os.path.join(dir_path, "config.json"),
-                              os.path.join(model_dir, "config.json"))
+                tf.io.gfile.copy(os.path.join(dir_path, "config.json"), os.path.join(model_dir, "config.json"))
                 # 上面的 config.json 是一定有的, 直接复制过去
                 # 而词汇表, 因为文件名不统一, 所以是用 Exists 试探下再复制过去
                 if tf.io.gfile.exists(os.path.join(dir_path, "vocab.txt")):
-                    tf.io.gfile.copy(os.path.join(dir_path, "vocab.txt"),
-                                  os.path.join(model_dir, "vocab.txt"))
+                    tf.io.gfile.copy(os.path.join(dir_path, "vocab.txt"), os.path.join(model_dir, "vocab.txt"))
                 if tf.io.gfile.exists(os.path.join(dir_path, "30k-clean.model")):
-                    tf.io.gfile.copy(os.path.join(dir_path, "30k-clean.model"),
-                                  os.path.join(model_dir, "30k-clean.model"))
+                    tf.io.gfile.copy(
+                        os.path.join(dir_path, "30k-clean.model"), os.path.join(model_dir, "30k-clean.model")
+                    )
 
         albert_language = "zh"
         # 当使用预定义的模型名称时, 该如何获取词汇表的路径
@@ -190,16 +201,18 @@ class PreprocessorConfig(object):
             model_type = pretrain_model_name_or_path.split("-")[1]
             # albert 用的是句子级别的词汇表 sentencepiece_model_name_vocab_path_map
             if model_type == "albert":
-                vocab_path = os.path.join(FLAGS.modelZooBasePath,
-                                          sentencepiece_model_name_vocab_path_map[pretrain_model_name_or_path])
+                vocab_path = os.path.join(
+                    FLAGS.modelZooBasePath, sentencepiece_model_name_vocab_path_map[pretrain_model_name_or_path]
+                )
                 if "30k-clean.model" in vocab_path:
                     albert_language = "en"
                 else:
                     albert_language = "zh"
             else:
                 # 反之就是单词级别的词汇表 wordpiece_model_name_vocab_path_map
-                vocab_path = os.path.join(FLAGS.modelZooBasePath,
-                                          wordpiece_model_name_vocab_path_map[pretrain_model_name_or_path])
+                vocab_path = os.path.join(
+                    FLAGS.modelZooBasePath, wordpiece_model_name_vocab_path_map[pretrain_model_name_or_path]
+                )
 
         else:
             # 否则, 就需要从 config.json 中读取 model_type
@@ -253,13 +266,10 @@ class Preprocessor(easytransfer.layers.Layer, Process):
     """
     预处理器
     """
-    def __init__(self,
-                 config,
-                 thread_num=1,
-                 input_queue=None,
-                 output_queue=None,
-                 job_name='DISTPreprocessor',
-                 **kwargs):
+
+    def __init__(
+        self, config, thread_num=1, input_queue=None, output_queue=None, job_name="DISTPreprocessor", **kwargs
+    ):
 
         kwargs.clear()
         easytransfer.layers.Layer.__init__(self, **kwargs)
@@ -267,11 +277,13 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         # 预测和预处理的 batch_size 从不同的配置项中获取
         if config.mode.startswith("predict"):
             Process.__init__(
-                self, job_name, thread_num, input_queue, output_queue, batch_size=config.predict_batch_size)
+                self, job_name, thread_num, input_queue, output_queue, batch_size=config.predict_batch_size
+            )
 
         elif config.mode == "preprocess":
             Process.__init__(
-                self, job_name, thread_num, input_queue, output_queue, batch_size=config.preprocess_batch_size)
+                self, job_name, thread_num, input_queue, output_queue, batch_size=config.preprocess_batch_size
+            )
 
         # 如果有额外添加的列, 将这些名字添加进去
         self.append_tensor_names = []
@@ -300,7 +312,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         else:
             # 从 FLAGS.config 中获取配置文件的路径
             json_file = FLAGS.config
-            with tf.io.gfile.GFile(json_file, mode='r') as reader:
+            with tf.io.gfile.GFile(json_file, mode="r") as reader:
                 text = reader.read()
 
             config_dict = json.loads(text)
@@ -318,7 +330,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
             kwargs["mode"] = FLAGS.mode
             # export 也是和上面类似的处理, 是从 input_tensors_schema 中获取的
             if FLAGS.mode == "export":
-                kwargs["input_schema"] = config_dict['export_config']['input_tensors_schema']
+                kwargs["input_schema"] = config_dict["export_config"]["input_tensors_schema"]
 
         # 然后就可以用 kwargs 重新构建 config 了
         # cls.config_class 果然是在子类里定义的, 基本上都是 PreprocessorConfig 的子类
@@ -398,9 +410,9 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         # partial 组装了一个新函数, 预先定义了 convert_example_to_features 参数
         # py_func 定义了一个 python 函数, 然后将它封装为 tf op 操作
         # 这个函数的输入是 items, 输出结构是 self.Tout
-        batch_features = tf.compat.v1.py_func(functools.partial(self._convert,
-                                                      self.convert_example_to_features),
-                                    items, self.Tout)
+        batch_features = tf.compat.v1.py_func(
+            functools.partial(self._convert, self.convert_example_to_features), items, self.Tout
+        )
 
         ret = []
         # 循环 self._convert 的输出结果
@@ -414,11 +426,12 @@ class Preprocessor(easytransfer.layers.Layer, Process):
                 input_tensor = tf.strings.to_number(
                     # 在最前面还添加了一个轴, 变成了 (1, )
                     tf.compat.v1.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
-                    tf.int64)
+                    tf.int64,
+                )
             elif feature_type == tf.float32:
                 input_tensor = tf.strings.to_number(
-                    tf.compat.v1.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values,
-                    tf.float32)
+                    tf.compat.v1.string_split(tf.expand_dims(feature, axis=0), delimiter=" ").values, tf.float32
+                )
             elif feature_type == tf.string:
                 input_tensor = feature
             else:
