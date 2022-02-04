@@ -20,6 +20,7 @@ from .attention import Attention, CrossAttention
 from .core import dense_dropoutput_layernorm, Dense
 from .utils import get_initializer
 
+
 class EncoderBlock(Layer):
     def __init__(self, config, **kwargs):
         super(EncoderBlock, self).__init__(**kwargs)
@@ -29,7 +30,8 @@ class EncoderBlock(Layer):
             units=config.intermediate_size,
             activation=gelu_new,
             kernel_initializer=get_initializer(config.initializer_range),
-            name="intermediate/dense")
+            name="intermediate/dense",
+        )
 
         self.bert_output = dense_dropoutput_layernorm(config, name="output")
 
@@ -51,7 +53,8 @@ class DecoderBlock(Layer):
             units=config.intermediate_size,
             activation=gelu_new,
             kernel_initializer=get_initializer(config.initializer_range),
-            name="intermediate/dense")
+            name="intermediate/dense",
+        )
 
         self.output_1 = dense_dropoutput_layernorm(config, name="output_1")
 
@@ -61,13 +64,13 @@ class DecoderBlock(Layer):
         hidden_states, encoder_hidden_states, attention_mask, encoder_attention_mask = inputs
         attention_output = self.attention([hidden_states, attention_mask], training=training)
 
-        cross_attention_output = self.cross_attention([hidden_states, encoder_hidden_states,
-                                                       encoder_attention_mask])
+        cross_attention_output = self.cross_attention([hidden_states, encoder_hidden_states, encoder_attention_mask])
 
         attention_output = self.output_1([attention_output, cross_attention_output], training=training)
         intermediate_output = self.intermediate(attention_output)
         layer_output = self.output_2([intermediate_output, attention_output], training=training)
         return layer_output, attention_output
+
 
 class Encoder(Layer):
     def __init__(self, config, **kwargs):
@@ -103,11 +106,9 @@ class Decoder(Layer):
         all_hidden_states = ()
         all_att_outputs = ()
         for i, layer_module in enumerate(self.layer):
-            layer_output, att_output = layer_module([hidden_states,
-                                                     encoder_hidden_states,
-                                                     attention_mask,
-                                                     encoder_attention_mask
-                                                     ], training=training)
+            layer_output, att_output = layer_module(
+                [hidden_states, encoder_hidden_states, attention_mask, encoder_attention_mask], training=training
+            )
             hidden_states = layer_output
             all_hidden_states = all_hidden_states + (hidden_states,)
             all_att_outputs = all_att_outputs + (att_output,)
