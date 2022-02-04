@@ -105,7 +105,7 @@ class Reader(Process):
         tf.compat.v1.logging.info("num_micro_batches {}".format(num_micro_batches))
         tf.compat.v1.logging.info("input_schema {}".format(self.input_schema))
 
-    def _get_data_pipeline(self, dataset: tf.data.Dataset, _decode_fn):
+    def _get_data_pipeline(self, dataset: tf.data.Dataset, _decode_fn, preprocessor=None):
         """
         获取数据流水线
         """
@@ -118,22 +118,35 @@ class Reader(Process):
                 )
                 self.shuffle_buffer_size = self.num_train_examples
             # 如果没有参数, 就是无限重复数据集
-            dataset = dataset.repeat()
+            # dataset = dataset.repeat()
             # 打乱数据
             dataset = dataset.shuffle(buffer_size=self.shuffle_buffer_size)
         else:
-            dataset = dataset.repeat(1)
+            # dataset = dataset.repeat(1)
+            dataset = dataset
 
-        return self._map_batch_prefetch(dataset, _decode_fn)
+        return self._map_batch_prefetch(dataset, _decode_fn, preprocessor)
 
-    def _map_batch_prefetch(self, dataset: tf.data.Dataset, decode_fn):
+    def _map_batch_prefetch(self, dataset: tf.data.Dataset, _decode_fn, preprocessor):
         # 就是在数据流水线中应用了 decode_fn 函数
-        dataset = dataset.map(lambda *record: decode_fn(*record), num_parallel_calls=self.num_parallel_batches).batch(
-            self.batch_size, drop_remainder=False
-        )
+        dataset = dataset.map(lambda *x: _decode_fn(*x), num_parallel_calls=self.num_parallel_batches)
+        dataset = dataset.batch(self.batch_size, drop_remainder=False)
+
+        if preprocessor:
+            dataset = dataset.map(lambda *x: preprocessor(*x), num_parallel_calls=self.num_parallel_batches)
+
+        # dataset = dataset.map(lambda *record: decode_fn(*record), num_parallel_calls=self.num_parallel_batches).batch(
+        #     self.batch_size, drop_remainder=False
+        # )
         # 预取数据, 提高吞吐量. 文档上建议流水线以这个结束
         dataset = dataset.prefetch(self.prefetch_buffer_size)
         return dataset
 
     def process(self, input_data):
+        raise NotImplementedError("must be implemented in descendants")
+
+    def get_dataset(self) -> tf.data.Dataset:
+        """
+        获取数据集
+        """
         raise NotImplementedError("must be implemented in descendants")

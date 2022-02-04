@@ -124,6 +124,7 @@ class MyPreTrainedModel(keras.layers.Layer):
         model = cls(config, **kwargs)
 
         # 先用假的输入调用一次, 看能否调用成功
+        # 原来是要调用过后, 才会生成 weights
         model(model.dummy_inputs(kwargs.get("input_sequence_length", 512)), mode="eval", output_features=False)
 
         # 模型的文件
@@ -151,8 +152,6 @@ class MyPreTrainedModel(keras.layers.Layer):
         """
         print("从文件中还原预训练模型")
         # 所有可训练的变量
-        # TODO: 这种方式已经不可取了
-        # tvars = tf.compat.v1.trainable_variables()
         tvars = self.weights
         # 网络名字到变量的映射
         network_name_to_variable = {}
@@ -295,7 +294,6 @@ class PreTrainedModel(layers.Layer):
         """
         tf.compat.v1.logging.info("从文件中还原预训练模型")
         # 所有可训练的变量
-        # tvars = tf.compat.v1.trainable_variables()
         tvars = self.weights
         # 网络名字到变量的映射
         network_name_to_variable = {}

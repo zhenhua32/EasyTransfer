@@ -22,17 +22,14 @@ from .mask import get_attn_mask_bert, get_attn_mask_imagebert, get_attn_mask_vid
 from .utils import get_initializer, get_shape_list, gather_indexes
 from .embedding import BertEmbeddings, AlbertEmbeddings
 from .encoder_decoder import Encoder, Decoder
+
 try:
     from .encoder_decoder_whale import Encoder as Encoder_whale
 except:
     pass
 from .header import MLMHead, NSPHead, AlbertMLMHead, FactorizedBertMLMHead
 from .attention import SelfAttention
-from tensorflow.python.layers.base import Layer
+# from tensorflow.python.layers.base import Layer
 
-
-
-
-
-
-
+# TODO: 将 Layer 替换成下面的 Layer
+from tensorflow.keras.layers import Layer

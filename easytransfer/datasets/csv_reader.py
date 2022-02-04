@@ -72,6 +72,10 @@ class CSVReader(Reader):
 
         return input_fn
 
+    def get_dataset(self, preprocessor=None) -> tf.data.Dataset:
+        dataset = tf.data.TextLineDataset(self.input_glob)
+        return self._get_data_pipeline(dataset, self._decode_csv, preprocessor)
+
     def _decode_csv(self, record):
         """
         解析 csv 文件

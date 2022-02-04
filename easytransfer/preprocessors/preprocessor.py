@@ -415,6 +415,8 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         )
 
         ret = []
+        label_tensor = None  # 标签
+        # 假设 batch_features 的最后一个输出是标签
         # 循环 self._convert 的输出结果
         for idx, feature in enumerate(batch_features):
             # 序列长度
@@ -438,13 +440,21 @@ class Preprocessor(easytransfer.layers.Layer, Process):
                 raise NotImplementedError
 
             input_tensor = tf.reshape(input_tensor, [-1, seq_len])
-            ret.append(input_tensor)
+
+            # 区分 x 和 y
+            if idx == len(batch_features) - 1:
+                label_tensor = input_tensor
+            else:
+                ret.append(input_tensor)
 
         # 新增的几个
         for name in self.append_tensor_names:
             ret.append(inputs[name])
 
-        return ret
+        # 要提取出来, 变成一个元组, 这样就能直接用于训练了
+        # (inputs, targets)
+
+        return (ret, label_tensor)
 
     def process(self, inputs):
         """
