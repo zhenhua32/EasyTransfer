@@ -410,7 +410,7 @@ class Preprocessor(easytransfer.layers.Layer, Process):
         # partial 组装了一个新函数, 预先定义了 convert_example_to_features 参数
         # py_func 定义了一个 python 函数, 然后将它封装为 tf op 操作
         # 这个函数的输入是 items, 输出结构是 self.Tout
-        batch_features = tf.compat.v1.py_func(
+        batch_features = tf.numpy_function(
             functools.partial(self._convert, self.convert_example_to_features), items, self.Tout
         )
 
