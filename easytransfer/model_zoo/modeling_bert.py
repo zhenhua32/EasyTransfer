@@ -148,6 +148,18 @@ class BertBackbone(layers.Layer):
             # 取出可能的 input_mask 和 segment_ids
             input_mask = inputs[1] if len(inputs) > 1 else input_mask
             segment_ids = inputs[2] if len(inputs) > 2 else segment_ids
+        elif isinstance(inputs, tf.Tensor):
+            # 增加一种可能性, 如果 inputs 的维度是 3, 且第一个维度表示的是把输入堆叠起来
+            # inputs.shape 为 (None, batch_size, seq_length)
+            inputs_shape = inputs.shape
+            print("input_shape", inputs_shape)
+            if len(inputs_shape) == 3:
+                inputs_shape_0 = inputs_shape[0]
+                input_ids = inputs[0]
+                input_mask = inputs[1] if inputs_shape_0 is None or inputs_shape_0 > 1 else input_mask
+                segment_ids = inputs[2] if inputs_shape_0 is None or inputs_shape_0 > 1 else segment_ids
+            else:
+                input_ids = inputs
         else:
             # 不然输入就只有 input_ids
             input_ids = inputs
@@ -365,7 +377,7 @@ class MyBertPreTrainedModel(MyPreTrainedModel):
 
         """
         # 是否是训练模式
-        training = kwargs["mode"] == tf.estimator.ModeKeys.TRAIN
+        training = bool(kwargs["training"])
 
         # 是否需要输出特征
         if kwargs.get("output_features", True) is True:
