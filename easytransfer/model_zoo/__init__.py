@@ -66,7 +66,7 @@ def get_pretrained_model(pretrain_model_name_or_path, **kwargs):
         model_type = json_config["model_type"]
         assert model_type is not None, "you must specify model_type in config.json when pass pretrained_model_path"
         if model_type == "bert":
-            from .modeling_bert import BertPreTrainedModel
+            from .modeling_bert import MyBertPreTrainedModel as BertPreTrainedModel
 
             return BertPreTrainedModel.get(pretrain_model_name_or_path, **kwargs)
         elif model_type == "roberta":

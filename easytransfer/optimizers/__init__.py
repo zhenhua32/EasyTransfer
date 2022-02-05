@@ -16,6 +16,7 @@
 
 
 import tensorflow as tf
+import tensorflow.keras.optimizers as keras_optimizers
 from tensorflow.python.framework import ops
 from .adam_weight_decay_optimizer import AdamWeightDecayOptimizer
 from .lamb_weight_decay_optimizer import LambWeightDecayOptimizer
@@ -186,3 +187,42 @@ def get_train_op(
     tf.compat.v1.summary.scalar("learning_rate", learning_rate)
 
     return train_op
+
+
+def get_optimizer(
+    learning_rate,
+    optimizer_name,
+    weight_decay_ratio=0.0,
+    num_towers=1,
+    num_freezed_layers=0,
+    clip_norm=False,
+    clip_norm_value=1.0,
+):
+    """
+    初始化优化器
+    :param learning_rate: 学习率
+    :param optimizer_name: 优化器名字
+    # TODO: 以下参数没实现
+    :param weight_decay_ratio: 权重衰减系数
+    :param num_towers: 塔数
+    :param num_freezed_layers: 冻结的层数
+    :param clip_norm: 是否裁剪梯度
+    :param clip_norm_value: 裁剪梯度的值
+    :return:
+    """
+    if optimizer_name == "adam":
+        optimizer = keras_optimizers.Adam(
+            learning_rate=learning_rate,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-6,
+        )
+    # 另外两个优化器, 不需要使用权重衰减系数, 只需要学习率
+    elif optimizer_name == "adagrad":
+        optimizer = keras_optimizers.Adagrad(learning_rate)
+    elif optimizer_name == "adadelta":
+        optimizer = keras_optimizers.Adadelta(learning_rate)
+    else:
+        raise ValueError("Set train op optimizer adam or lamb")
+
+    return optimizer

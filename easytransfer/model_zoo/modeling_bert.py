@@ -181,7 +181,6 @@ class BertBackbone(layers.Layer):
 
         # 嵌入层的输出
         embedding_output = self.embeddings([input_ids, segment_ids], training=training)
-        # TODO: 继续, 到这里的输出已经是一样的了, 而且检查点里相关的变量也载入了
         # 注意力的 mask
         attention_mask = layers.get_attn_mask_bert(input_ids, input_mask)
         # 编码器的输出
